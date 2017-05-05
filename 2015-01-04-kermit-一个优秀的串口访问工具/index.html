@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>kermit:一个优秀的串口访问工具</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-01-04-kermit-%E4%B8%80%E4%B8%AA%E4%BC%98%E7%A7%80%E7%9A%84%E4%B8%B2%E5%8F%A3%E8%AE%BF%E9%97%AE%E5%B7%A5%E5%85%B7/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">kermit:一个优秀的串口访问工具</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-01-04&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/技术"><i class="fa fa-tag">&nbsp;&nbsp;技术</i></a>
+           <!--a class="post-tag" href="/tag/技术">技术</a-->
+         
+           <a class="post-tag" href="/tag/linux"><i class="fa fa-tag">&nbsp;&nbsp;linux</i></a>
+           <!--a class="post-tag" href="/tag/linux">linux</a-->
+         
+           <a class="post-tag" href="/tag/tool"><i class="fa fa-tag">&nbsp;&nbsp;tool</i></a>
+           <!--a class="post-tag" href="/tag/tool">tool</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>网络设备、*nix自带了命令行界面属性，而windows完全相反，骨子里就是GUI界面。所以系统管理员更喜欢linux，因而出现问题的时候，可以通过串口来访问linux服务器，这意味着不需要显示器也能进行排错。</p>
+</div>
+<div class="paragraph">
+<p>著名的SecuCRT和xshell都支持串口协议，但它们都是for windows的，而*nix下流行的串口工具有minicom和kermit，经过测试，最后决定选用kermit。</p>
+</div>
+<div class="paragraph">
+<p>原因是kermit对嵌入式的boot loader支持较好，具体表现为：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>kermit对键盘响应正常；</p>
+</li>
+<li>
+<p>窗口可最大化；</p>
+</li>
+<li>
+<p>可随时detach和attach。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>minicom在连接openwrt时，键盘无响应，窗口无法最大化，detach和attach比较麻烦。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装">安装</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>linux</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get update
+$ sudo apt-get install ckermit</pre>
+</div>
+</div>
+</li>
+<li>
+<p>openbsd</p>
+<div class="literalblock">
+<div class="content">
+<pre>pkg_add -r kermit</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置">配置</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>linux</p>
+<div class="listingblock">
+<div class="title">~/.kermrc</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>set line /dev/ttyUSB0
+set speed 38400
+set carrier-watch off
+set handshake none
+set flow-control none
+robust
+set parity none
+set stop-bits 1
+set file type bin
+set file name lit
+set rec pack 1000
+set send pack 1000
+set window 5
+c</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>openbsd</p>
+<div class="listingblock">
+<div class="title">~/.kermrc</div>
+<div class="content">
+<pre>vim ~/.kermrc
+set line /dev/tty00
+set speed 115200
+set carrier-watch off
+set handshake none
+set flow-control none
+robust
+set parity none
+set stop-bits 1
+set file type bin
+set file name lit
+set rec pack 1000
+set send pack 1000
+set window 5
+c</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+现在的笔记本为了降低厚度，均取消com口，因而需通过usb转com转接线(简称PL2302转接线)<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>+null modem才能连接到服务器的串口。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>在linux下查看PL2302转接线是否可正常被识别：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 008 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 002: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port <i class="conum" data-value="1"></i><b>(1)</b>
+Bus 005 Device 002: ID 046d:c52b Logitech, Inc. Unifying Receiver</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>说明转接线PL2303已被识别。</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>这时在terminal中输入kermit，然后kbd:[enter]即可连接到linux/openwrt的串口。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="附录">附录</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>linux/openbsd服务器均需要配置串口，才能被访问，下面是centos5的serial console配置：</p>
+</div>
+<div class="listingblock">
+<div class="title">/boot/grub/grub.conf</div>
+<div class="content">
+<pre>default=0
+timeout=5
+#splashimage=(hd0,0)/boot/grub/splash.xpm.gz
+serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+terminal --timeout=8 serial console
+
+hiddenmenu
+title CentOS (2.6.18-308.16.1.el5xen)
+        root (hd0,0)
+        kernel /boot/xen.gz-3.4.4 dom0_mem=512M console=com1 com1=115200,8n1
+        module /boot/vmlinuz-2.6.18-308.16.1.el5xen ro root=/dev/md0 console=ttyS0,115200n8
+        module /boot/initrd-2.6.18-308.16.1.el5xen.img
+title CentOS (2.6.18-308.13.1.el5)
+        root (hd0,0)
+        kernel /boot/vmlinuz-2.6.18-308.13.1.el5 ro root=/dev/md0 console=tty1 console=ttyS0,115200
+        initrd /boot/initrd-2.6.18-308.13.1.el5.img
+title CentOS (2.6.18-238.el5)
+        root (hd0,0)
+        kernel /boot/vmlinuz-2.6.18-238.el5 ro root=/dev/md0 console=tty1 console=ttyS0,115200
+        initrd /boot/initrd-2.6.18-238.el5.img</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>openbsd的serial console详见官方文档。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+勿在tmux下使用kermit去连接另外一个*nix系统，否则会出现乱码。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 转接线的芯片大多为PL2302
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

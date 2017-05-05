@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何验证两个vm镜像的一致性</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-02-13-%E5%A6%82%E4%BD%95%E9%AA%8C%E8%AF%81%E4%B8%A4%E4%B8%AAvm%E9%95%9C%E5%83%8F%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何验证两个vm镜像的一致性</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-02-13&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/virtualization"><i class="fa fa-tag">&nbsp;&nbsp;virtualization</i></a>
+           <!--a class="post-tag" href="/tag/virtualization">virtualization</a-->
+         
+           <a class="post-tag" href="/tag/技巧"><i class="fa fa-tag">&nbsp;&nbsp;技巧</i></a>
+           <!--a class="post-tag" href="/tag/技巧">技巧</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="paragraph">
+<p>虚拟机需要经常在不同的host之间迁移，在迁移的过程中是否发生异常，出现数据丢失的情况？这就需要用到md5进行验证。</p>
+</div>
+<div class="dlist quata">
+<dl>
+<dt>md5sum和sha1sum谁更快？</dt>
+<dd>
+<p>答：md5更快一些</p>
+<div class="literalblock">
+<div class="content">
+<pre>root@proxmox1:~# time sha1sum /dev/pve/vm-101-disk-1
+224f021a11a165445634fedd600571f362cf340f  /dev/pve/vm-101-disk-1
+real    2m15.577s
+user    0m37.709s
+sys     0m11.308s
+root@proxmox1:~# time md5sum /dev/pve/vm-101-disk-1
+ca0b0148fad43569d039e21b0412c7a7  /dev/pve/vm-101-disk-1
+real    1m53.967s
+user    0m29.713s
+sys     0m10.881s</pre>
+</div>
+</div>
+</dd>
+<dt>一个以raw文件形式保存的镜像文件，通过dd复制到lvm后，两者的md5是否一致？</dt>
+<dd>
+<p>答：一致。使用dd复制一个文件，是以byte to byte方式进行的，所以只要成功完成复制，则不管是file还是lvm方式，他们的md5值就肯定是一致的。</p>
+</dd>
+<dt>能否截取dd前后两个镜像文件的前面一部分进行md5sum校验？</dt>
+<dd>
+<p>简答之：不行。假如复制过程中止，那么前面的字节完全一致，但后面的字节就有问题了，所以，要判断dd前后两者的差异，必须是对整个文件做md5sum，而不能仅对两个文件的前半部分做md5sum。</p>
+<div class="paragraph">
+<p>以下是对上面两个问题的验证：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>root@proxmox2:/var/lib/vz/images/105# dd if=vm-105-disk-1-copy.raw of=/dev/pve/vm-103-disk-1 bs=64M
+94+0 records in
+94+0 records out
+6308233216 bytes (6.3 GB) copied, 31.173 s, 202 MB/s
+root@proxmox2:/var/lib/vz/images/105# dd if=vm-105-disk-1-copy.raw bs=1M count=6000 | md5sum -
+6000+0 records in
+6000+0 records out
+6291456000 bytes (6.3 GB) copied, 21.7435 s, 289 MB/s
+7851bf8b8223a0d75f200ca0a634cebc  -
+root@proxmox2:/var/lib/vz/images/105# dd if=/dev/pve/vm-103-disk-1 bs=1M count=6000 | md5sum -
+7851bf8b8223a0d75f200ca0a634cebc  -
+6000+0 records in
+6000+0 records out
+6291456000 bytes (6.3 GB) copied, 28.4937 s, 221 MB/s
+root@proxmox2:/var/lib/vz/images/105# dd if=/dev/pve/vm-103-disk-1 bs=1M count=6700 | md5sum -
+d43ba920c9e8552f81fe79dcb5f25d5a  -
+6700+0 records in
+6700+0 records out
+7025459200 bytes (7.0 GB) copied, 31.5748 s, 223 MB/s
+root@proxmox2:/var/lib/vz/images/105# dd if=vm-105-disk-1-copy.raw bs=1M count=6700 | md5sum -
+6700+0 records in
+6700+0 records out
+7025459200 bytes (7.0 GB) copied, 24.3232 s, 289 MB/s
+b402d2ad99acd39c352b2dfa54e65691  -
+root@proxmox2:/var/lib/vz/images/105# md5sum /dev/pve/vm-103-disk-1
+3f7820f6818ea698620828aa55f9b56d  /dev/pve/vm-103-disk-1
+root@proxmox2:/var/lib/vz/images/105# md5sum vm-105-disk-1-copy.raw
+3f7820f6818ea698620828aa55f9b56d  vm-105-disk-1.raw</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>设想：假如dd能从反方向读取镜像文件，是否就可以实现快速验证的目的呢？尚未测试，理论上是可以，但是对于生产用的数据，还是建议针对整个文件做md5校验。</p>
+</div>
+</dd>
+<dt>当虚拟机的硬盘数据发生变化时，镜像的md5是否会发生改变？</dt>
+<dd>
+<div class="paragraph">
+<p>答：会</p>
+</div>
+<div class="paragraph">
+<p>在关机状态下，先创建md5</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>root@proxmox1:/var/lib/vz/images/103# md5sum vm-103-disk-1.raw
+aba7268ebf9bfcfec011337aa3a14dec  vm-103-disk-1.raw</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>虚拟机启动后，生成一个测试文件test.txt</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>root@proxmox1:~# md5sum /dev/pve/vm-103-disk-1
+3da2a9521f3ffdad41d8bd240762ff93  /dev/pve/vm-103-disk-1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明只要虚拟机硬盘内容发生变化，镜像的md5就一定会发生变化。</p>
+</div>
+</dd>
+</dl>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

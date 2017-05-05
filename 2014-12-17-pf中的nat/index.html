@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>pf中的nat</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2014-12-17-pf%E4%B8%AD%E7%9A%84nat/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">pf中的nat</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2014-12-17&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openbsd"><i class="fa fa-tag">&nbsp;&nbsp;openbsd</i></a>
+           <!--a class="post-tag" href="/tag/openbsd">openbsd</a-->
+         
+           <a class="post-tag" href="/tag/pf"><i class="fa fa-tag">&nbsp;&nbsp;pf</i></a>
+           <!--a class="post-tag" href="/tag/pf">pf</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>在pf.conf中，nat的配置有一些讲究。本文分为<strong>nat masq</strong>和<strong>port forwarding</strong>两部分，也就是linux iptables中常说的snat和dnat。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="nat-masq">nat masq</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>有两种写法：</p>
+</div>
+<div class="sect2">
+<h3 id="第一种">第一种</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>block out on em0
+match out quick on em0 from 192.168.168.0/24 to any nat-to 1.2.3.4
+pass out quick on em0 proto tcp from 1.2.3.4 to any port = 80</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这种写法的好处是可以根据outbound数据包的类型进行nat，譬如上面的第3行，表明只有符合访问外网http的，才进行nat。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+在第3行rule中，源地址应设为已映射的外网IP地址：<code>1.2.3.4</code>，而不是<code>192.168.168.0/24</code>，否则会出现nat失败的情况，举例说明：
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>match out on $wan_if from !($wan_if) to any nat-to ($wan_if)
+pass out on $wan_if all
+...
+pass inet icmp from any to any</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>目的是实现内网主机访问外网时，譬如ping 221.182.235.44，将会在$wan_if上做snat，然而实际情况是，目标主机上启用tcpdump抓包，发现源地址并未改变，仍然是192.168.33.83，这意味着：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>icmp数据包命中了pass inet icmp from any to any，然而并未做snat；</p>
+</li>
+<li>
+<p>源地址为RFC1918地址的数据包可以在互联网上进行路由，可达到目的主机。目的地址为RFC1918地址的数据包不可在互联网上路由。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>最好的做法应该是将<code>Pass out on $wan_if all</code>改成<code>pass out quick on $wan_if from $wan_if to any</code>。</p>
+</div>
+<div class="paragraph">
+<p>是否正确snat可通过在$lan_if和$wan_if接口上开启tcpdump来进行检验</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas tcpdump -nvi &lt;wan_if&gt; icmp
+15:10:18.770734 192.168.33.83 &gt; 221.182.235.44: icmp: echo request (id:59fe seq:5) (DF) (ttl 63, id 0, len 84)
+15:10:18.772604 221.182.235.44 &gt; 192.168.33.83: icmp: echo reply (id:59fe seq:5) [tos 0xc0] (ttl 57, id 33332, len 84)</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas tcpdump -nvi &lt;lan_if&gt; icmp
+15:10:18.770813 221.182.254.165 &gt; 221.182.235.44: icmp: echo request (id:8ec3 seq:5) (DF) (ttl 62, id 0, len 84)
+15:10:18.772540 221.182.235.44 &gt; 221.182.254.165: icmp: echo reply (id:8ec3 seq:5) [tos 0xc0] (ttl 58, id 33332, len 84)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可以看出，在$lan_if上尚未做<strong>snat</strong>，在$wan_if上已经做<strong>snat</strong>
+ 
+ 
+=== 第二种</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>block out on em0
+pass out quick on em0 proto 192.168.168.0/24 to any nat-to 1.2.3.4</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>与match+pass相比，这种写法比较简单，差异体现在systat的结果上，match+pass的state分两条，容易分辨，单pass的state只有一条，跟普通的pass类似，比较难分辨。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>match + pass(nat-to)下的systat</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas systat rules
+RULE  ACTION   DIR LOG Q IF     PR        K     PKTS    BYTES   STATES   MAX INFO
+   3  Match    Out Log   fxp2                     61     5761        0       inet from ! (fxp2) to any
+   4  Pass     Out Log   fxp2             K       61     5761       17       inet from 221.182.254.190/32 to any</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可以看出match和pass是成双出现的，能看得出是snat</p>
+</div>
+</li>
+<li>
+<p>pass(nat-to)下的systat</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas systat rules
+RULE  ACTION   DIR LOG Q IF     PR        K     PKTS    BYTES   STATES   MAX INFO
+   3  Pass     Out Log   fxp2             K       37     3893        9       inet from ! (fxp2) to any</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>看不出已经做了<code>snat</code>，所以，推荐使用第一种写法。
+ 
+== port forwarding</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>需求：允许客户端访问一台内网服务器ssh服务，openbsd是防火墙。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>pass in on $ext_if inet proto tcp to $ext_carp_if port 7022 \
+     rdr-to $vm_debn6 port ssh
+pass quick on $dmz_if inet proto tcp to $vm_debn6 port ssh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>pass rule有rdr-to选项时，必须指定方向：<code>in</code>或<code>out</code>，故不能直接写：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language- " data-lang=" ">pass on $wan_if ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>必须写成：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>pass in on $wan_if ... to $wan_if port &lt;port&gt; \
+  rdr-to $internal_server port</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>还需要额外增加一条：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>pass on { $dmz_if, $lan_if } ... to $internal_server port &lt;port&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果是映射到防火墙的自有服务，写法为：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># SSH
+pass in quick log inet proto tcp to $ext_if port ssh
+ 
+# OpenVPN
+pass in quick log inet proto udp to $ext_if port 1194</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+这个时候不能将<code>$ext_if</code>更改成<code>$ext_carp_if</code>。因为防火墙返回的数据包是以它外网卡的IP地址作为源地址，而不是虚拟的外网IP地址。因此，只能让用户直接访问防火墙的外网IP地址，不建议通过虚拟的外网IP地址来访问防火墙自身所提供的服务。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://reggle.wordpress.com/2012/01/18/openbsd-part-ii/" class="bare">http://reggle.wordpress.com/2012/01/18/openbsd-part-ii/</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

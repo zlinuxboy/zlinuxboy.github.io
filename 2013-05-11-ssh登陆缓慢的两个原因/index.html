@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>ssh登陆缓慢的两个原因</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-05-11-ssh%E7%99%BB%E9%99%86%E7%BC%93%E6%85%A2%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%8E%9F%E5%9B%A0/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">ssh登陆缓慢的两个原因</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-05-11&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/linux"><i class="fa fa-tag">&nbsp;&nbsp;linux</i></a>
+           <!--a class="post-tag" href="/tag/linux">linux</a-->
+         
+           <a class="post-tag" href="/tag/ssh"><i class="fa fa-tag">&nbsp;&nbsp;ssh</i></a>
+           <!--a class="post-tag" href="/tag/ssh">ssh</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>这段时间遇到两次ssh登陆缓慢的问题，花了点时间找找原因，各不相同。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="dns故障">dns故障</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>三台服务器，RH2285-3、RH2285-4和DL165-1，RH2285-4 ssh登录DL165-1很快，RH2285-3 ssh登录DL165-1很慢，需要找到原因。</p>
+</div>
+<div class="paragraph">
+<p>尝试了关闭UseDNS no，未果，结果在RH2285-3中，<code>ssh -vvv dl165-1</code>发现：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>debug1: Next authentication method: gssapi-with-mic
+debug1: Unspecified GSS failure.  Minor code may provide more information</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>google后，有网友建议在<code>/etc/ssh/sshd_config</code>中添加以下配置：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>GSSAPIAuthentication no</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>经测试，有一定的改善，但是还是比不上RH2285-4快，偶然发现在RH2285-3中ping dl165-1和rh2285-4都很慢，但是ping ip就很快，应该是dns的问题</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/resolv.conf发现
+nameserver 172.16.33.253
+nameserver 172.16.33.252</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>而RH2285-4的<code>/etc/resolv.conf</code>为</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>nameserver 172.16.33.254</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>联想到openbsd2已经宕机，253已经没有响应，当然是254（252的vip）更快，把RH2285-3的resolv.conf改过来，问题解决！</p>
+</div>
+<div class="paragraph">
+<p>参考：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://networklessons.com/linux/ssh-slow-login-fix/" class="bare">https://networklessons.com/linux/ssh-slow-login-fix/</a></p>
+</li>
+<li>
+<p><a href="http://superuser.com/questions/166359/top-causes-of-slow-ssh-logins" class="bare">http://superuser.com/questions/166359/top-causes-of-slow-ssh-logins</a></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>下面这个<a href="http://www.preshweb.co.uk/2010/03/slow-ssh-connections-hanging-at-gssapi-auth/">连接</a></p>
+</div>
+<div class="paragraph">
+<p>给出如何对一个publickey的ssh进行计时：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[davidp@columbia:~]$ time ssh 10.1.1.192 touch /dev/null | grep real
+real  0m15.512s
+After adding it:
+[davidp@columbia:~]$ time ssh 10.1.1.192 touch /dev/null | grep real
+real  0m0.611s
+Problem solved.</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tcp-incorrect-checksum">tcp incorrect checksum</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>master有4块网卡，eth0和eth1做了bond0，并且使用了linux kernel自带的bridge，eth2和eth3使用ovs做了bond1和bridge。其中10.10.0.50位于br300&lt;&#8594;bond0.300，192.168.111.1位于vlan111，一个隶属于ovsbr1的internal port，并且tag=111。</p>
+</div>
+<div class="paragraph">
+<p>从u1404-64-mgmt-2 ssh到10.10.0.50，速度正常。然而ssh到192.168.111.1，速度极其缓慢。开始的时候，使用ping，没有发现掉包现象，延时也很正常，使用paping也没有问题，非常奇怪。</p>
+</div>
+<div class="paragraph">
+<p>最后只能出tcpdump这个大招了。使用<code>ssh -vvv root@192.168.111.1</code>，显示正常，没有错误的迹象，然而在u1404-64-mgmt-2中使用tcpdump -nvi eth1 port 22 and host 192.168.111.1，发现很多incorrect checksum。</p>
+</div>
+<div class="paragraph">
+<p>经<a href="http://discussions.citrix.com/topic/151801-tcp-checksum-errors-on-the-host-and-vm/">提醒</a>，将eth2和eth3的rx和tx都关闭。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ethtool -K eth2 rx off tx off
+$ sudo ethtool -K eth3 rx off tx off</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>vola！ssh的访问速度恢复正常。</p>
+</div>
+<div class="paragraph">
+<p>该解决办法由于禁止了nic的checksum offload功能，会导致cpu的负载增加，最终还是需要从broadcom的驱动入手来解决此问题。实际上incorrect checksum是正常的，原因如下：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://sokratisg.net/2012/04/01/udp-tcp-checksum-errors-from-tcpdump-nic-hardware-offloading/" class="bare">https://sokratisg.net/2012/04/01/udp-tcp-checksum-errors-from-tcpdump-nic-hardware-offloading/</a></p>
+</li>
+<li>
+<p><a href="http://sandilands.info/sgordon/segmentation-offloading-with-wireshark-and-ethtool" class="bare">http://sandilands.info/sgordon/segmentation-offloading-with-wireshark-and-ethtool</a></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>为了永久生效，需要写到ifcfg-ethX中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/sysconfig/network-scripts/ifcfg-ethX
+-----------8&lt;-------------
+ETHTOOL_OPTS='--offload ethX rx off tx off'
+-----------&gt;8-------------</code></pre>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

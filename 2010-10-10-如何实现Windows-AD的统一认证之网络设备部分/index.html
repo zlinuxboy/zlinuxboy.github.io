@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何实现Windows AD的统一认证之网络设备部分</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2010-10-10-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0Windows-AD%E7%9A%84%E7%BB%9F%E4%B8%80%E8%AE%A4%E8%AF%81%E4%B9%8B%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E9%83%A8%E5%88%86/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何实现Windows AD的统一认证之网络设备部分</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2010-10-10&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+           <a class="post-tag" href="/tag/AD"><i class="fa fa-tag">&nbsp;&nbsp;AD</i></a>
+           <!--a class="post-tag" href="/tag/AD">AD</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>在企业内实现统一认证是所有系统管理员梦寐以求的事情，先不说情况多变的普通用户，单就网络设备的管理就是一件很麻烦的事情。假设一个企业拥有的网络设备多达100台，它们全部采用传统的本地登录认证方式。那么任何一个系统管理员离职或调动，就需要对所有网络设备的账号进行变更，理想情况下需重复操作100次。实现统一认证之后，只需要在后台的用户数据库操作1次即可，这就是统一认证的魅力。</p>
+</div>
+<div class="paragraph">
+<p>受限于网络设备这个独特的群体，可供选择的技术并不多，首先网络设备品牌多种多样，一个标准的协议必不可少，目前Radius是绝大部分厂家都支持的，因此选用Radius作为统一认证基础。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="一-工作原理">一、工作原理</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>系统管理员telnet或ssh网络设备时，根据提示输入自己的AD帐号和密码；</p>
+</li>
+<li>
+<p>网络设备将这个身份凭证提交到radius服务器进行处理；</p>
+</li>
+<li>
+<p>radius服务器将根据配置将该身份凭证转交给用户数据库申请比对；</p>
+</li>
+<li>
+<p>接着radius服务器将比对结果返回网络设备；</p>
+</li>
+<li>
+<p>网络设备根据返回结果判断是否允许该系统管理员登录系统；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>在统一认证过程中涉及radius客户端、radius服务器和用户数据库三部分，其中绝大部分可网管的网络设备都内嵌的radius客户端，这部分不需要担心；接着选择用户数据库，在企业中，Windows桌面操作系统占据绝对的统治地位，Windows的Active Directory也得到广泛的部署，因此本文将选择Windows AD作为用户数据库。同样地，Radius服务器选择了Windows server自带的IAS。</p>
+</div>
+<div class="paragraph">
+<p>IAS最核心的部分就是认证策略。IAS支持多个认证策略，它收到一个请求后将从上到下与策略进行比对，一旦适配则根据策略的配置返回结果给请求者，否则继续比对直至末尾，若最终仍无合适的策略则返回一个错误结果给请求者。</p>
+</div>
+<div class="paragraph">
+<p>接下来需要了解一下网络设备的授权机制，网络设备大都支持多权限管理机制，不同的管理员将获得不同的管理权限，譬如：高级管理员将拥有全部命令的执行权限，实习生则只具有查看的权限。</p>
+</div>
+<div class="paragraph">
+<p>这个时候IAS的多策略就起作用了，假设现在公司有4个管理员，分别是A、B、C和D，其中A和B隶属高级管理员组，C和D隶属实习生组。我们将针对这两个组分别创建一条IAS认证策略，当A和B登录的时候，认证策略将在返回的RADIUS数据包中携带高级管理权限标识，当C和D登录的时候，认证策略将在返回的RADIUS数据包中携带查看管理权限标识，从而实现不同管理员拥有不同管理权限的目的。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="二-准备工作">二、准备工作</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Windows AD的安装和部署；</p>
+</li>
+<li>
+<p>Windows IAS的安装和部署；</p>
+</li>
+<li>
+<p>了解网络设备的配置指令；</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="三-nas配置">三、NAS配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在本文中假设企业内有两种不同厂商的网络设备，分别是cisco路由器和H3C交换机。网络管理员分高级和实习生两类，他们对网络设备拥有不同的权限。</p>
+</div>
+<div class="sect2">
+<h3 id="3-1-创建radius客户端">3.1. 创建RADIUS客户端</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>在IAS的管理页面右键点击左边栏的“新建RADIUS客户端&#169;”将开启配置向导，其中：</p>
+</li>
+<li>
+<p>客户端-供应商选择默认的“RADIUS Standard”；</p>
+</li>
+<li>
+<p>共享的机密可以任意输入一串可打印字符，并记录下来，后面配置网络设备的时需要用到；</p>
+</li>
+<li>
+<p>配置完成的客户端属性如下所示：</p>
+</li>
+</ol>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2010-10-10-sw_core属性.jpg" alt="sw_core属性">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-2-创建认证策略">3.2. 创建认证策略</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>两个不同的厂家设备，两种不同的用户授权，意味着需要创建四条认证策略：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">编号</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">策略名称</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户组</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">作用</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">h3c_admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">h3c-admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当登录用户隶属于h3c-admin组时，赋予该用户全部权限</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">h3c_viewonly</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">h3c-trainee</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当登录用户隶属于h3c-trainee组时，赋予该用户只读权限</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cisco_admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cisco-admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当登录用户隶属于cisco-admin组时，赋予该用户全部权限</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cisco_viewonly</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cisco-trainee</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当登录用户隶属于cisco-trainee组时，赋予该用户只读权限</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>因此，首先在Windows AD域控制器中创建4个组，并将A、B、C和D分别纳入这些组中，接下来以创建h3c_admin策略为例进行说明：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>在IAS管理界面，右键点击左边栏的“远程访问策略”，选择“新建远程访问策略”。</p>
+</li>
+<li>
+<p>在“策略配置方法”中，选择“设置自定义策略”，填入“h3c_admin”，点击下一步；</p>
+</li>
+<li>
+<p>在“策略情况”中需要添加判断条件：<code>NAS-Port-Type为Ethernet</code>和<code>Windows Groups为h3c-admin</code>；</p>
+</li>
+<li>
+<p>在“权限”一步中选择“授予远程访问权限”；</p>
+</li>
+<li>
+<p>在“配置文件”一步中点击“编辑配置文件”按钮，激活“身份认证”标签页，取消掉默认的MS-CHAP v2和MS-CHAP，勾选“未加密的身份验证（PAP, SPAP）”,然后激活“高级”标签页：</p>
+</li>
+<li>
+<p>将Framed-Protocol属性删除，添加：<code>Login-Service=telnet</code></p>
+</li>
+<li>
+<p>接着添加“Vendor-Specific”，在“多值属性信息”中点击“添加”按钮，出现“供应商特有的属性信息”窗口，选择输入供应商代码，输入“2011”，接着选择“符合”并点击“配置属性”按钮。</p>
+</li>
+</ol>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2010-10-10-h3c_admin策略.jpg" alt="h3c_admin策略">
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>并在“配置VSA（符合RFC的）”对话框中输入以下内容：</pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2010-10-10-配置VSA.jpg" alt="配置VSA">
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>添加完毕后的结果如下所示：</pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2010-10-10-编辑拨入配置文件.jpg" alt="编辑拨入配置文件">
+</div>
+</div>
+<div class="paragraph">
+<p>至此，h3c_admin认证策略创建完毕，h3c_viewonly的配置类似，只是最后一步的vendor-specific值应填0。</p>
+</div>
+<div class="paragraph">
+<p>cisco的策略跟h3c的又略有不同，主要表现在返回值的配置上，在上面第7步的“供应商特有的属性信息”窗口中，应从下拉框中选择“cisco”，在“配置VSA（符合RFC的）”的对话框中输入：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2010-10-10-配置VSA-cisco.jpg" alt="配置VSA-cisco">
+</div>
+</div>
+<div class="paragraph">
+<p>最终ias的认证策略如下表所示：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2010-10-10-IAS认证策略配置.jpg" alt="IAS认证策略配置">
+</div>
+</div>
+<div class="paragraph">
+<p>h3c和cisco在radius的实现上有差别，譬如cisco就要求返回值须带有其私有属性，因此这部分还需要读者自行参考其它厂商的设备使用文档。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-网络设备配置">4. 网络设备配置</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="4-1-cisco">4.1. cisco</h3>
+<div class="listingblock">
+<div class="content">
+<pre>!-该语句启用aaa
+aaa new-model
+!-该语句定义默认的认证方法，先radius，后本地
+aaa authentication login default group radius local
+!-定义no_authent的认证方法，用于console口，none的意思是无须
+!-验证即可登陆路由器，默认权限为1
+aaa authentication login no_authent none
+aaa authentication ppp default if-needed group radius local
+!-定义特权模式的授权方法，先radius，后local
+aaa authorization exec default group radius local
+aaa authorization network default group radius local
+!-定义审计
+aaa accounting delay-start
+aaa accounting exec default start-stop group radius
+aaa accounting network default start-stop group radius
+aaa session-id common
+!-当radius服务器不可用时，使用下列本地的用户名和密码作为
+!-fallback的身份凭证
+!-其中cisco只可获得权限6，而admin可获得权限15。
+username cisco privilege 6 password 0 cisco*06
+username admin privilege 15 password 0 cisco*15
+!-实习生具有查看权限，同时需使用ping，traceroute辅助排错
+!-但是他们的权限6无法使用show running命令，所以需要为
+!-权限6的用户增加以下几条命令
+privilege exec level 6 traceroute
+privilege exec level 6 ping
+privilege exec level 6 show startup-config
+privilege exec level 6 show running-config
+privilege exec level 6 show
+!-定义radius服务器的ip地址和认证，审计端口
+radius-server host 192.168.100.1 auth-port 1812 acct-port 1813
+!-定义本客户端使用的share key，这和服务器的设置必须一致
+radius-server key hello.kitty
+!-the enable secret is the same as the password of local user admin
+!-插上console口的电脑，可以直接用远程终端登陆，获得权限1，接着输入
+!-enable secret的密码来获取15的权限。
+line con 0
+ logging synchronous
+ login authentication no_authent
+end</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明：本配置适用于ios12.1，实际的配置请读者根据实际的ios版本查阅相应的cisco官方帮助文档。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-2-h3c">4.2. h3c</h3>
+<div class="sect3">
+<h4 id="4-2-1-h3c-s5500">4.2.1. h3c s5500</h4>
+<div class="listingblock">
+<div class="content">
+<pre>local-user local_admin
+ password cipher y#s`q`v3dqp9,2i_=/l2`1!!
+ authorization-attribute level 3
+ service-type telnet
+user-interface vty 0 4
+ authentication-mode scheme
+radius scheme [scheme_name]
+ server-type extended
+ primary authentication [ias-1 ip]
+  primary accounting [ias-1 ip]
+ secondary authentication [ias-2 ip]
+  secondary accounting [ias-2 ip]
+  key authentication [共享的机密]
+  key accounting [共享的机密]
+  user-name-format without-domain
+  nas-ip [本设备的ip，建议选择loopback]
+domain [scheme_name]
+  authentication login radius-scheme [scheme_name] local
+  authorization login radius-scheme [scheme_name] local
+  accounting login radius-scheme [scheme_name] local
+  accounting optional
+domain default enable [scheme_name]</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="4-2-2-h3c-s3600">4.2.2. h3c s3600</h4>
+<div class="listingblock">
+<div class="content">
+<pre>local-user local_admin
+  password cipher y#s`q`v3dqp9,2i_=/l2`1!!
+  service-type telnet
+  level 3
+user-interface vty 0 4
+  authentication-mode scheme
+radius scheme &lt;scheme_name&gt; <i class="conum" data-value="1"></i><b>(1)</b>
+  server-type extended
+  primary authentication &lt;ias-1&gt; <i class="conum" data-value="2"></i><b>(2)</b>
+  primary accounting &lt;ias-1&gt;
+  secondary authentication &lt;ias-2&gt; <i class="conum" data-value="3"></i><b>(3)</b>
+  secondary accounting &lt;ias-2&gt;
+ key authentication &lt;shared-secret&gt; <i class="conum" data-value="4"></i><b>(4)</b>
+  key accounting &lt;shared-secret&gt;
+  user-name-format without-domain
+  nas-ip &lt;loopback-ip&gt; <i class="conum" data-value="5"></i><b>(5)</b>
+domain &lt;scheme_name&gt;
+  authentication radius-scheme &lt;scheme_name&gt; local
+  accounting optional
+domain default enable &lt;scheme_name&gt;</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>scheme_name是指radius的策略名称</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>ias-1 ip是ias服务器1的ip地址</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>ias-2 ip是ias服务器1的ip地址</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>shared-secret是指在ias服务器中创建网络设备时的共享机密</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>loopback-ip地址为本机的loopback ip</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>配置结束后可用ssh客户端登录测试。</p>
+</div>
+<div class="paragraph">
+<p>上述的配置中除了可以做统一认证之外，还可以做本地认证，前提是ias失效（意思是ias服务处于停止状态）。系统管理员此时就可以通过本地账号local_admin进行登录。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="五-参考">五、参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://shop.oreilly.com/product/9780596003227.do">o’reilly radius</a></p>
+</li>
+<li>
+<p><a href="http://www.cisco.com/en/us/docs/ios/12_2/security/configuration/guide/scfrad.html">cisco官方文档</a></p>
+</li>
+<li>
+<p>h3c s3600系列以太网交换机操作手册</p>
+</li>
+<li>
+<p>h3c s5500系列以太网交换机操作手册</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

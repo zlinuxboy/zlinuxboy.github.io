@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>OmniOS中的nfs</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-07-08-omnios%E4%B8%AD%E7%9A%84nfs/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">OmniOS中的nfs</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-07-08&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>ZFS只是共享存储的基础，最终还是需要通过nfs、smb/cifs、iscsi和fc提供给其它主机使用。本文仅涉及nfs。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="术语">术语</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 1. 主机及用户角色</caption>
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">主机名</th>
+<th class="tableblock halign-left valign-top">OS</th>
+<th class="tableblock halign-left valign-top">角色</th>
+<th class="tableblock halign-left valign-top">user/uid</th>
+<th class="tableblock halign-left valign-top">group/gid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">storage1</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">OmniOS</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">NFS Server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">alice/500</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">alice/500</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bob/501</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bob/501</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">shareuser/60000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sharegroup/60000</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">proxmox</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">proxmox</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">NFS Client</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">alice/500</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">alice/500</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bob/501</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bob/501</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">shareuser/60000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sharegroup/60000</p></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">share-point</dt>
+<dd>
+<p>nfs server中的共享目录，在本文中是<code>/tank2/software/sharedir</code></p>
+</dd>
+<dt class="hdlist1">mount-point</dt>
+<dd>
+<p>nfs client中的挂载点，在本文中是<code>/mnt/dir.alice</code>、<code>/mnt/dir.bob</code>和<code>/mnt/sharedir</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>分别在omnios和proxmox中添加两个账号</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec zfs create rpool/export/home/alice
+$ pfexec zfs create rpool/export/home/bob
+$ pfexec groupadd -g 500 alice
+$ pfexec groupadd -g 501 bob
+$ pfexec useradd -u 500 -g alice -s /bin/bash -d /rpool/export/home/alice -c "alice" -m alice
+$ pfexec useradd -u 501 -g alice -s /bin/bash -d /rpool/export/home/bob -c "alice" -m bob</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>在omnios中创建两个nfs共享</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec zfs create tank2/software/alice
+$ pfexec chgrp alice /tank2/software/alice
+$ pfexec chmod g+rwx /tank2/software/alice
+$ pfexec zfs set sharenfs=on /tank2/software/alice
+$ pfexec sharemgr set -P nfs -S sys -p rw="*" tank2/software/alice
+
+$ pfexec zfs create tank2/software/bob
+$ pfexec chgrp bob /tank2/software/bob
+$ pfexec chmod g+rwx /tank2/software/bob
+$ pfexec zfs set sharenfs=on /tank2/software/bob
+$ pfexec sharemgr set -P nfs tank2/software/bob</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查nfs共享信息</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec sharemgr show -vp
+default nfs=()
+zfs nfs=() smb=()
+    zfs/tank2/software/alice nfs=() nfs:sys=(rw="*")
+          /tank2/software/alice
+    zfs/tank2/software/bob nfs=()</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>在proxmox中创建两个目录并分别<code>mount</code>之</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo mkdir /mnt/dir.alice &amp;&amp; chown alice.alice /mnt/dir.alice
+$ sudo mkdir /mnt/dir.bob &amp;&amp; chown bob.bob /mnt/dir.bob
+
+$ sudo mount -t nfs storage1:/tank2/software/alice /mnt/dir.alice
+$ sudo mount -t nfs storage1:/tank2/software/bob /mnt/dir.bob</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查mount-point的信息</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ ls -ltr
+drwxr-xr-x  6 root     root     4.0K Sep 12 23:58 .
+drwxr-xr-x 23 root     root     4.0K Jul 23 20:21 ..
+drwxr-xr-x  2 alice  alice     3 Sep 12 23:59 dir.alice <i class="conum" data-value="1"></i><b>(1)</b>
+drwxr-xr-x  2 bob    bob    2 Sep 12 23:52 dir.bob <i class="conum" data-value="2"></i><b>(2)</b>
+drwxr-xr-x  2 root     root     4.0K Jul 23 18:40 tmp
+drwxr-xr-x  2 root     root     4.0K Sep  6 22:48 vm</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>mount后，属主正常显示为alice</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>mount后，属主正常显示为bob</td>
+</tr>
+</table>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="测试">测试</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>使用alice账号登陆proxmox，对mount-point(<code>/mnt/dir.alice</code>)可以执行文件的读、写、删除，目录的创建和删除等操作。bob账号同样。</p>
+</div>
+<div class="paragraph">
+<p>该测试表明：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>nfs server是否设置nfs:sys=(rw="*")对于mount-point中的读写权限并无影响。</p>
+</li>
+<li>
+<p>idmapd通过omnios中的zfs owner来映射mountpoint中的owner</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="权限问题">权限问题</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>我使用proxmox挂载OmniOS中的nfs共享时，遇到权限的问题。现阶段，解决权限问题的关键是nfs server和nfs client需添加相同uid/gid的组和账号。</p>
+</div>
+<div class="paragraph">
+<p>NFSv4使用一个辅助程序来映射用户名和uid，该辅助程序在不同的OS中，名字也不一样。</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top">OS</th>
+<th class="tableblock halign-center valign-top">idmapd辅助程序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">OpenSolaris*</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">nfsmapid</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Ubuntu</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">rpc.idmapd</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">FreeBSD</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">nfsuserd</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>两边的idmapd会比对各自的域名，假如域名不一致，则nfs client所挂载的mount-point属主则为<code>nobody/nogroup</code>。</p>
+</div>
+<div class="paragraph">
+<p>所以，当发生权限问题时，首先要检查两边的idmapd的配置。下面详细介绍nfs的配置和权限的实验过程。</p>
+</div>
+<div class="sect2">
+<h3 id="nfs-server-omnios-的idmap-nfsmapid-配置">nfs server(OmniOS)的idmap(nfsmapid)配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec vim /etc/hosts
+
+$ pfexec sharectl set nfsmapdid_domain=jklab.qmcc
+$ pfexec svcadm retart svc:network/nfs/mapid:default</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>现在都需要通过<code>sharectl</code>来对nfs进行配置，通过修改<code>/etc/default/nfs</code>配置文件的设置方式已经弃用。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="linux-client-proxmox-的idmap-nfs-idmapd-配置">linux client(proxmox)的idmap(nfs.idmapd)配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/idmapd.conf
+Domain=jklab.qmcc
+
+$ sudo vim /etc/default/nfs-common
+[General]
+NEED_IDMAPD=yes
+...</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>重启nfs服务</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo systemctl restart nfs-common
+$ sudo systemctl status nfs-common
+alice@pmx2:/etc/default$ sudo systemctl status nfs-common
+● nfs-common.service - LSB: NFS support files common to client and server
+   Loaded: loaded (/etc/init.d/nfs-common)
+   Active: active (running) since Mon 2016-09-12 23:54:34 CST; 8h ago
+  Process: 2306 ExecStop=/etc/init.d/nfs-common stop (code=exited, status=0/SUCCESS)
+  Process: 2315 ExecStart=/etc/init.d/nfs-common start (code=exited, status=0/SUCCESS)
+   CGroup: /system.slice/nfs-common.service
+           ├─2323 /sbin/rpc.statd
+           └─2335 /usr/sbin/rpc.idmapd
+
+Sep 12 23:54:34 pmx2 rpc.statd[2323]: Version 1.2.8 starting
+Sep 12 23:54:34 pmx2 nfs-common[2315]: Starting NFS common utilities: statd idmapd.</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>打开log</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/idmapd.conf
+[General]
+Verbosity = 3
+...
+
+$ sudo journalctl -f | grep rpc.idmapd</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>以alice账号登陆后</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo mount -t nfs storage1:/tank2/software/bob /mnt/bob
+$ cd /mnt/bob
+$ touch bob.test
+touch: cannot touch ‘bob.test’: Permission denied</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>说明文件的权限是通过文件的标识位来控制的，但是究竟是以nfs server还是以nfs client的uid/gid来控制呢？</p>
+</div>
+<div class="listingblock">
+<div class="title">nfs server</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec chmod A+user:alice:read_data/write_data:allow bob.test</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">nfs client</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>alice@pmx2:/mnt/dir.bob$ echo "add line by alice" &gt;&gt; bob.test
+alice@pmx2:/mnt/dir.bob$ cat bob.test
+add line by alice</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明在nfs client中对mount-point进行操作时，是以nfs server中的uid/gid，甚至是nfsv4 acl来控制share-point中的文件权限。那如何保证nfs client可以读写nfs server中的文件和目录？简言之，要求mount-point和share-point的属主一致，即该用户同时存在于nfs server和nfs client中，且user/group、uid/gid均需一致。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="nfs-server">nfs server</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>创建共享账号和组</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec groupadd -g 60000 sharegroup
+$ pfexec useradd -u 60000 -g sharegroup -s /bin/false -d /export/home/shareuser -c "share $ pfexec user account" -m shareuser
+$ pfexec usermod -G sharegroup alice
+$ pfexec usermod -G sharegroup bob</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>创建一个zfs dataset</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo zfs create tank2/software/sharedir
+$ sudo chown shareuser:sharegroup /tank2/software/sharedir
+$ sudo chgrp g+rwx /tank2/software/sharedir</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>开启nfs共享</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo zfs set sharenfs=on tank2/software/sharedir</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>最后结果是：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>share-point                 owner:group             uid:gid     权限位
+/tank2/software/sharedir	shareuser/sharegroup	60000/60000	drwxrwxr-x/775</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="nfs-client">nfs client</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>创建一个mount-point并挂载</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo mkdir /mnt/sharedir <i class="conum" data-value="1"></i><b>(1)</b>
+$ ls -ltr /mnt
+/mnt/sharedir	drwxr-xr-x	root/root <i class="conum" data-value="2"></i><b>(2)</b>
+$ sudo mount -t nfs storage1:/tank2/software/sharedir /mnt/sharedir
+$ ls -ltr /mnt
+/mnt/sharedir	drwxrwxr-x	nobody/nobody <i class="conum" data-value="3"></i><b>(3)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>创建一个空目录/挂载点；</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>在alice账号下使用sudo创建目录的本地属主为root/root；</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>挂载后，目录权限位变成了775，这跟storage1中的/tank2/software/sharedir的权限位一致。另外，由于storage1 share-point的属主为<code>shareuser:sharegroup/60000:60000</code>，而pmx2中尚无对应的账号，所以nfs client会自动将mount-point的属主置为<code>nobody:nobody/65534:65534</code>。</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>这时候，alice用户无法在该目录进行文件/目录的创建、读和写的操作。</p>
+</div>
+</li>
+<li>
+<p>创建共享账号和组</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo groupadd -g 60000 sharegroup
+$ sudo useradd -u 60000 -g sharegroup -s /bin/bin -m shareuser
+$ sudo usermod -G sharegroup,sudo alice
+$ sudo usermod -G sharegroup bob</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>更改挂载点的属主和权限</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ sudo chown shareuser:sharegroup /mnt/sharedir</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>重新挂载并检查mount-point属性</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo umount /mnt/sharedir
+$ sudo mount -t nfs storage1:/tank2/software/sharedir /mnt/sharedir
+$ ls -ltr
+/mnt/sharedir	drwxrwxr-x	shareuser/sharegroup <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>挂载点的属性已经转换成本地目录属性。</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>这时，alice账号可以在该mount-point进行文件/目录的创建、读和写的操作。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+proxmox forum用户认为是solaris和linux关于nfsv4 acl的实现不兼容所致，然而通过上面的实验可以判断他是错的。
+</td>
+</tr>
+</table>
+</div>
+<div class="quoteblock">
+<blockquote>
+Solaris and derivatives implementation of NFS ACL is not compliant to the Linux NFS ACL.
+More directly it is the ACL in Linux which is not POSIX conformant so to avoid problems you
+should add the mount option noacl in your Linux fstab file. Noacl will instruct Omnios NFS to revert to plain old uid/gid.
+</blockquote>
+<div class="attribution">
+&#8212; mir@proxmox.forum<br>
+<cite>http://lists.omniti.com/pipermail/omnios-discuss/2014-December/003786.html</cite>
+</div>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

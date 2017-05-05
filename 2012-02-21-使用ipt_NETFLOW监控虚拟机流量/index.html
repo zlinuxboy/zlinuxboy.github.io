@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>使用ipt_NETFLOW监控虚拟机流量</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-02-21-%E4%BD%BF%E7%94%A8ipt_NETFLOW%E7%9B%91%E6%8E%A7%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%B5%81%E9%87%8F/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">使用ipt_NETFLOW监控虚拟机流量</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-02-21&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/iptables"><i class="fa fa-tag">&nbsp;&nbsp;iptables</i></a>
+           <!--a class="post-tag" href="/tag/iptables">iptables</a-->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>VPS提供商会在一个物理主机中提供多个VPS，该物理主机的资源将被这些VPS所分享，CPU、RAM、硬盘和带宽是四种最常见的资源。本文讨论的是如何为每台VPS划分一定的带宽；</p>
+</div>
+<div class="paragraph">
+<p>每个VPS用户都希望能用尽他所能使用的带宽，这就导致带宽争抢的问题，经常有用户抱怨网速过慢，那如何保证每个VPS都能独占一定的带宽呢？首先，我们要能分拣出每个VPS的带宽利用率，然后利用iptables对VPS进行限速。本文解决的是第一个问题，使用netflow对每个VPS的流量进行监控。</p>
+</div>
+<div class="paragraph">
+<p>netflow能提供比snmp更细粒度的流量统计数据，因此被广泛应用于网络管理。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="一-安装">一、安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>iptables中有一个ipt_NETFLOW的内核模块，它将统计每一条流经net_filter的flow，并将结果export到指定的collector中，在内核模块实现该功能的好处是性能和精确性。本站采用的就是这种实现方式。在CentOS中安装ipt_NETFLOW可以采用编译的方式，也可以安装CentALT这个源的二进制版本。</p>
+</div>
+<div class="sect2">
+<h3 id="1-1-检查内核版本">1.1 检查内核版本</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo uname -r
+2.6.18-238.el5xen</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-2-添加centalt-repo">1.2 添加CentALT repo</h3>
+<div class="paragraph">
+<p>官网的repo没有ipt_netflow二进制包，需要自行添加CentALT这个repo。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-3-安装ipt_netflow">1.3 安装ipt_NETFLOW</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo yum -y kmod-netflow-xen ipt_netflow
+$ sudo rpm -ql kmod-netflow-xen
+/lib/modules/2.6.18-164.2.1.1.el5xen
+/lib/modules/2.6.18-164.2.1.1.el5xen/extra
+/lib/modules/2.6.18-164.2.1.1.el5xen/extra/netflow
+/lib/modules/2.6.18-164.2.1.1.el5xen/extra/netflow/ipt_NETFLOW.ko
+
+$ sudo rpm -ql ipt_netflow
+/lib64/iptables/libipt_NETFLOW.so</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>因为CentALT的rpm版本比xen hypervisor的内核版本低，因此需要将相应的文件手工拷贝到xen hypervisor的/lib/modules目录中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo mkdir -p /lib/modules/2.6.18-238.el5xen/extra/netflow
+$ sudo cp /lib/modules/2.6.18-164.2.1.1.el5xen/extra/netflow/ipt_NETFLOW.ko /lib/modules/2.6.18-238.el5xen/extra/netflow/ipt_NETFLOW.ko</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="二-启动ipt_netflow">二、启动ipt_NETFLOW</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="2-1-手工启动">2.1 手工启动</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo depmod
+$ sudo modprobe ipt_NETFLOW destination=127.0.0.1:2055</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="2-2-自启动">2.2 自启动</h3>
+<div class="paragraph">
+<p>将ipt_NETFLOW添加到iptables_config中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/sysconfig/iptables-config
+...
+IPTABLES_MODULES="ipt_NETFLOW  ip_conntrack_netbios_ns .."</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="三-测试">三、测试</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>以下是测试环境的网络拓扑：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>客户机使用wget下载一个大文件，譬如一个操作系统的镜像文件；</p>
+</li>
+<li>
+<p>xen hypervisor启用ipt_NETFLOW，并将flow export到collector；</p>
+</li>
+<li>
+<p>在collector中进行网络流量分析；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>在本例中，客户机、netflow exportor、netflow collector使用同一台机器。</p>
+</div>
+<div class="sect2">
+<h3 id="3-1-客户机">3.1 客户机</h3>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo wget --limit-rate=5k http://path/to/your/img.iso</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-2-xen-hyperviso">3.2 xen hyperviso</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>启用ipt_NETFLOW，并将flow export到本机。此步骤见上文</p>
+</li>
+<li>
+<p>配置ipt_netflow：</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo sysctl -a | grep netflow
+net.netflow.maxflows = 2000000
+net.netflow.aggregation = none
+net.netflow.destination = 192.168.33.68:2055
+net.netflow.sndbuf = 129024
+net.netflow.hashsize = 2080
+net.netflow.debug = 0
+net.netflow.inactive_timeout = 15
+net.netflow.active_timeout = 15</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>net.netflow.active_timeout默认为1800s，需更改为15s，否则一条处于活动状态的flow需要等待30分钟才能输出统计结果</p>
+</div>
+</li>
+<li>
+<p>配置iptables规则：</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo iptables -A INPUT -j NETFLOW
+$ sudo iptables -A OUTPUT -j NETFLOW
+$ s+udo iptables -A FORWARD -j NETFLOW</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这几条语句应分别位于三条chain的最顶端。</p>
+</div>
+</li>
+<li>
+<p>启用iptables的bridge处理</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo sysctl net.bridge.bridge-nf-call-iptables=1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>默认配置为0，默认情况下，domU的流量不经过FORWARD，所以ipt_NETFLOW无法看到domU的流量。</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>On XEN bridged domains, packets for the slave domains are being inspected at the "FORWARD" iptables chain, so this is what we have to play with.First step is to make sure that xen runs the packets for and from bridged domains through iptables. Make sure following sysctl mib has value "1" for ipv4:</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>不过这个参数有安全性和性能上的问题，详见 <a href="https://bugzilla.redhat.com/show_bug.cgi?id=512206" class="bare">https://bugzilla.redhat.com/show_bug.cgi?id=512206</a></p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-3-netflow-collector">3.3 netflow collector</h3>
+<div class="paragraph">
+<p>等待10分钟之后，执行nfdump语句：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo nfdump -o "fmt:%ts %sap -&gt; %dap %bps %byt %fl" -r ../29/nfcapd.201201290610 -a '(src ip 150.65.7.130 and port=80)'
+Date flow start              Src IP Addr:Port          Dst IP Addr:Port       bps    Bytes Flows
+2012-01-29 06:09:12.252     150.65.7.130:80    -&gt;    192.168.33.68:43989    44705    1.6 M    18
+Summary: total flows: 18, total bytes: 1.6 M, total packets: 1640, avg bps: 44705, avg pps: 5, avg bpp: 948
+Time window: 2012-01-29 06:09:12 - 2012-01-29 06:13:50
+Total flows processed: 240, Blocks skipped: 0, Bytes read: 12508
+Sys: 0.000s flows/second: 0.0        Wall: 0.000s flows/second: 1935483.9</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在5分钟的间隔中，总共下载了1.6MB，换算成速率就是：1.6MB X 1000/300 = 5.3KB/s，与wget的速率限制几乎吻合。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="五-结论">五、结论</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>通过上面的例子可以证明netflow能够很精确地监控到单IP（VPS）速率。</p>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

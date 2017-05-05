@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>在rb450g中安装openwrt</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-10-21-%E5%9C%A8rb450g%E4%B8%AD%E5%AE%89%E8%A3%85openwrt/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">在rb450g中安装openwrt</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-10-21&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openwrt"><i class="fa fa-tag">&nbsp;&nbsp;openwrt</i></a>
+           <!--a class="post-tag" href="/tag/openwrt">openwrt</a-->
+         
+           <a class="post-tag" href="/tag/mikrotik"><i class="fa fa-tag">&nbsp;&nbsp;mikrotik</i></a>
+           <!--a class="post-tag" href="/tag/mikrotik">mikrotik</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+本文基本上翻译自<a href="http://wiki.hwmn.org/w/Mikrotik_RouterBoard_450G">MikroTik_RouterBoard_450G</a>，特此指出。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>RB450G是MikkroTik公司出品的一款内置RouterOS的MIPS架构主板，CPU680Mhz，内存256M，nand512M，提供5个千兆网口和serial口，支持MicroSD，性能远高于现市面上的无线路由设备。当然，它的售价也要高出许多。硬件规格高是一方面，另一个原因是RouterOS，它提供的路由、交换、VPN等功能特性非常丰富，目前在中低端市场，特别是欧洲占据了很大的市场份额。</p>
+</div>
+<div class="paragraph">
+<p>RouterOS虽然基于linux，但却不开源，无法安装第三方软件包，其灵活性比OpenWRT差得多，因而本文就教大家如何把OpenWRT 12.09刷入RB450G。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="工具">工具</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>1台PC，提供dhcp和ssh服务，windows或linux均可；</p>
+</li>
+<li>
+<p>1条null modern串口线+1个usb转RS232转接线；</p>
+</li>
+<li>
+<p>1条网线；</p>
+</li>
+<li>
+<p>下载OpenWRT 12.09的下列文件：</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://downloads.openwrt.org/attitude_adjustment/12.09-beta2/ar71xx/nand/openwrt-ar71xx-nand-vmlinux-initramfs.elf">ramdisk image</a></p>
+</li>
+<li>
+<p><a href="http://downloads.openwrt.org/attitude_adjustment/12.09/ar71xx/nand/openwrt-ar71xx-nand-vmlinux.elf">vmlinux.elf</a></p>
+</li>
+<li>
+<p><a href="http:///downloads.openwrt.org/attitude_adjustment/12.09/ar71xx/nand/openwrt-ar71xx-nand-rootfs.tar.gz">rootfs.tar.gz</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>我所使用的PC是windows，因而安装了tftpd32和bitvise SSH server这两个软件，其中，tftpd32负责提供dhcp server功能，bitvise SSH server负责提供ssh服务。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="rb450g介绍">RB450G介绍</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+以下说明针对OpenWRT，不一定适用于RouterOS。
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="nand和分区">nand和分区</h3>
+<div class="paragraph">
+<p>nand和硬盘有些区别，它本身并无分区表的概念，直接由OpenWRT的kernel分配，因而在编译OpenWRT时就需要制定分区的大小，如下所示：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># dmesg | less
+...
+[    3.100000] Creating 3 MTD partitions on "NAND01GW3B2CN6":
+[    3.110000] 0x000000000000-0x000000040000 : "booter"
+[    3.110000] 0x000000040000-0x000000400000 : "kernel"
+[    3.120000] 0x000000400000-0x000008000000 : "rootfs"
+[    3.130000] mtd: partition "rootfs" set to be root filesystem
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>openwrt kernel将nand划分为三个分区：booter、kernel和rootfs。其中booter分区不可读，作用未知，剩余两个的作用就很明显了，kernel分区保存的openwrt kernel，rootfs则是openwrt 根文件系统，mountpoint也就是“/”。</p>
+</div>
+<div class="paragraph">
+<p><strong>kernel分区</strong></p>
+</div>
+<div class="paragraph">
+<p>kernel分区大小为4MiB，openwrt kernel尺寸在3.6-3.8MiB之间，加上yaffs的metadata和保留空间，正常情况下无法塞入kernel分区，因而openwrt耍了一个小聪明，将3.8MiB的kernel塞入[6MiB][]的kernel分区中。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="boot-loader">boot loader</h3>
+<div class="paragraph">
+<p>RB450G提供了一个私有的bootloader：Routerboot。该bootloader提供了两份拷贝：一个保存于可读写的memory中，允许用户升级，甚至刷成第三方的bootloader；另一个保存于只读memory中，作为备份之用。当可读写的拷贝出现问题后，用户可以切换到备份拷贝，继续完成系统引导，所以说，RB450G的可玩性极强，不必担心刷成砖头。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="serial">serial</h3>
+<div class="paragraph">
+<p>RB450G提供了一个串口（serial），这对管理员来说非常方便，使用一台PC+一条null modern就可以登录操作系统进行调试。</p>
+</div>
+<div class="paragraph">
+<p>在windows下，使用xshell或secucrt均可正常登录openwrt，linux下则建议使用kermit，minicom不靠谱。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="交换机端口">交换机端口</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>  +-----------+       +-----------+
+  |           | eth0  |           |
+  |           +-------+----------5+-Eth1/PoE
+  |           |       |           |
+  |  AR7161   |       | AR8316 +-1+-Eth2
+  |           | eth1  |        +-4+-Eth3
+  |           +-------+0-------+-3+-Eth4
+  |           |       |        +-2+-Eth5
+  +-----------+       +-----------+</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置方式跟其它MIPS架构的交换机一样。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="准备工作">准备工作</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>连接线缆</p>
+<div class="paragraph">
+<p>将usb2rs232+null modern线将笔记本与RB450G的serial口相连。打开笔记本的“控制面板”，查看com口信息，然后打开SecuCRT创建一个serial连接，xx选择刚才看到的com口。</p>
+</div>
+<div class="paragraph">
+<p>接着用网线连接笔记本和RB450G的eth0口，因为只有eth0口才是处于活动状态。</p>
+</div>
+</li>
+<li>
+<p>tftpd32</p>
+<div class="paragraph">
+<p>将<code>ramdisk image</code>放在tftpd32的根目录，剩下的设置请自行百度。</p>
+</div>
+</li>
+<li>
+<p>bitvise SSH server</p>
+<div class="paragraph">
+<p>没什么特别的，参照官方文档一步步设置就好了。主要用于openwrt的initram启动之后，备份RouterOS的kernel和rootfs。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="刷机">刷机</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>修改启动参数</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>加电后，立刻在SecuCRT中敲任意键，进入<code>boot option</code>界面</p>
+</div>
+<div class="paragraph">
+<p>成功后将通过dhcp server下载vmlinux-initramfs到内存，并顺利进入操作系统，目前操作系统运行在内存中，因而需要把真正的img刷入nand</p>
+</div>
+<div class="paragraph">
+<p>内存区的一部分用于跑临时OpenWRT，剩余的125M挂载到`/tmp`目录。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>备份RouterOS</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>通过winbox连接RB450G，备份出license.key，具体请参考RouterOS的官方文档。</p>
+</li>
+<li>
+<p>备份RouterOS的kernel和rootfs</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># cd /tmp
+# dd if=/dev/mtd5 | gzip -9 &gt; routeros_kernel.img.gz
+# dd if=/dev/mtd6 | gzip -9 &gt; routeros_rootfs.img.gz
+# scp routeros_kernel.img.gz routeros_rootfs.img.gz username@laptop.ip:/e//backup</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+创建rootfs.img.gz的过程非常慢，需要耐心等待，估计是gzip用了-9这个参数。
+</td>
+</tr>
+</table>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>若玩腻了OpenWRT，想回归RouterOS，既可以采用之前备份的<code>img.gz</code>恢复，也可以通用官方的<a href="http://wiki.mikrotik.com/wiki/Manual:Netinstall">netinstall</a>方式实现。</p>
+</div>
+</li>
+<li>
+<p>灌入</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># cd /tmp
+# scp username@laptop.ip:/e//backup//openwrt-ar71xx-nand-vmlinux.elf .
+# scp username@laptop.ip:/e//backup//openwrt-ar71xx-nand-rootfs.tar.gz .
+# mtd erase kernel
+# mount -t yaffs /dev/mtdblock5 /mnt
+# cp openwrt-ar71xx-nand-vmlinux.elf /mnt/kernel
+# umount /mnt
+# mtd erase rootfs
+# mount -t yaffs /dev/mtdblock6 /mnt
+# cd /mnt
+# tar xpzf /tmp/openwrt-ar71xx-nand-rootfs.tar.gz
+# cd /tmp
+# umount /mnt</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>mtd erase rootfs</code>的时候，出现bad erase block的提示，这是<a href="http://wiki.openmoko.org/wiki/NAND_bad_blocks">正常现象</a>，只要bad block的尺寸不超过nand大小的1%即可放心使用。每个block大小为1/2KB。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>刷完之后，reboot即可进入OpenWRT 12.09。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>网络设备自动化管理利器-rancid</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-06-09-%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E8%87%AA%E5%8A%A8%E5%8C%96%E7%AE%A1%E7%90%86%E5%88%A9%E5%99%A8-rancid/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">网络设备自动化管理利器-rancid</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-06-09&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Rancid的全称是Really Awesome New Cisco ConfIg Differ，顾名思义，该软件的初衷是为了管理cisco设备，然而由于它非常实用，目前已经被扩展到支持多种网络设备，诸如常见的dell，hp，juniper,foundry,redback等，当然，国内常见的h3c也不在话下。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="rancid的工作原理">rancid的工作原理</h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装">安装</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude install rancid-core rancid rancid-utils</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="rancid配置">Rancid配置</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/rancid/rancid.conf
+-------------8&lt;----------------
+CVSROOT=$BASEDIR/SVN; export CVSROOT
+RCSSYS=svn; export RCSSYS
+LIST_OF_GROUPS=”access dist core”
+-------------&gt;8----------------</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>rancid支持CVS和SVN这两种版本管理工具，本文选择了SVN，因为CVS太古老了。</p>
+</li>
+<li>
+<p>根据cisco的定义，一个大型的网络规划应该分成三层，分别是access、distribution和core，因此我们也创建三个组：access、dist、core</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>配置设备</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd /var/lib/rancid/
+$ sudo mkdir access
+$ sudo mkdir dist
+$ sudo mkdir core
+$ sudo touch access/router.db
+$ sudo touch dist/router.db
+$ sudo touch core/router.db</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着往router.db里面填内容：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim access/router.db
+10.0.0.1:h3c:up:sw_access_1f_A
+10.0.0.2:h3c:up:sw_access_1f_B
+10.0.0.3:h3c:up:sw_access_1f_C
+10.0.0.4:h3c:up:sw_access_1f_D
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>依次创建dist/router.db和core/router.db</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim .cloginrc
+add user * &lt;username&gt;
+add password * &lt;password&gt;
+add method * telnet</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="h3c脚本">H3C脚本</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>H3C并不在rancid的官方支持之列，不过好在有热心的网友Jethro Binks制作了<a href="http://xingfuke.net/psyblog/xingfuke766.html">h3c的脚本</a></p>
+</div>
+<div class="paragraph">
+<p>H3C的OS叫Comware，有3和5这两个系列，常见的S3100，S3600，S5600，S5800等均能正常使用。以下是经过测试的型号列表：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>H3C S3100 (Comware 3)</p>
+</li>
+<li>
+<p>H3C S5600 (Comware 3)</p>
+</li>
+<li>
+<p>H3C S7506 (Comware 5)</p>
+</li>
+<li>
+<p>H3C S7906E (Comware 5)</p>
+</li>
+<li>
+<p>H3C S5820X (Comware 5)</p>
+</li>
+<li>
+<p>H3C S5800 (Comware 5)</p>
+</li>
+<li>
+<p>H3C S3610 (Comware 5)</p>
+</li>
+<li>
+<p>H3C MSR30-60 (Comware 5)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Jethro Binks的脚本并不适合于Debian,需要做一点小修改：</p>
+</div>
+<div class="paragraph">
+<p><strong>h3clogin:</strong></p>
+</div>
+<div class="paragraph">
+<p>将</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#! /usr/local/bin/expect --</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>改成</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#! /usr/bin/expect --</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>h3crancid:</strong></p>
+</div>
+<div class="paragraph">
+<p>将</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#! /usr/bin/perl5</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>改成</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#! /usr/bin/perl</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着将它们拷贝到<code>/usr/lib/rancid/bin</code>中，同时赋予<code>+x</code>的属性。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cp h3clogin h3crancid /usr/lib/rancid/bin
+$ sudo chmod +x h3crancid h3clogin</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="h3c设备配置">H3C设备配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>rancid的脚本将使用perl+expect来登录H3C设备，并执行一些display命令来获取设备信息，虽然然而所以安全性需要着重考虑，直接给完整的特权账号肯定不合适，最好创建一个单独的ranciduser，并且仅分配level1权限：</p>
+</div>
+<div class="paragraph">
+<p>local-user ranciduser
+authorization-attribute level 1</p>
+</div>
+<div class="paragraph">
+<p>看到这，有些读者不禁倒吸一口凉气：糟糕，手头上管理着几十台设备，难不成我要逐台登录和创建几十个相同的帐号？别急，我们完全可以利用clogin/h3clogin来自动完成这个任务。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim create.rancid.account
+sys
+local-user rancid
+authorization-attribute level 1
+quit
+save</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>h3clogin -x /path/to/commands.file &lt;device-ip&gt;</p>
+</div>
+<div class="paragraph">
+<p>最后测试一下</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo -u rancid -H /usr/lib/rancid/h3clogin &lt;H3C-device-ip&gt; FIXME</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置变更">配置变更</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="软件配置变更">软件配置变更</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>版本管理工具</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>rancid利用版本管理工具对配置变更进行管理，这是一个聪明而省力的做法，unix哲学就是帅。rancid支持CVS和SVN这两个版本管理工具，本文选择的是SVN，因为CVS太古老了。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>安装svn</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude install svn</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>整合svn</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /var/lib/rancid/
+$ sudo svnadmin create configs
+svn mkdir file:///var/lib/rancid/configs/access -m "created folder"
+svn mkdir file:///var/lib/rancid/configs/dist -m "created folder"
+svn mkdir file:///var/lib/rancid/configs/core -m "created folder"
+svn co file:///var/lib/rancid/configs/access ./access/
+svn co file:///var/lib/rancid/configs/dist ./dist/
+svn co file:///var/lib/rancid/configs/core ./core/
+
+$ sudo chown -R rancid:rancid /var/lib/rancid/
+$ sudo chmod 0600 /var/lib/rancid/.cloginrc
+$ sudo -u rancid -H /usr/lib/rancid/bin/rancid-run
+
+$ sudo svn mkdir access/configs
+$ sudo svn mkdir dist/configs
+$ sudo svn mkdir core/configs
+$ sudo svn add access/*
+$ sudo svn add dist/*
+$ sudo svn add core/*
+$ sudo svn commit -m "added files" access/
+$ sudo svn commit -m "added files" dist/
+$ sudo svn commit -m "added files" core/</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置变更提醒">配置变更提醒</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>当rancid检测到变更时，<code>control_rancid</code>组件利用sendmail将变更信息通过邮件发送给管理员。对于debian来说，我们将使用默认的MTA exim4来完成这项工作。</p>
+</div>
+<div class="sect2">
+<h3 id="exim4的安装和配置">exim4的安装和配置</h3>
+<div class="paragraph">
+<p>详见《如何利用exim4通过gmail发送邮件》</p>
+</div>
+<div class="listingblock">
+<div class="title">/etc/aliases</div>
+<div class="content">
+<pre>$ sudo vim /etc/aliases
+...
+rancid-&lt;group-name&gt; : mail-address@domain.name
+rancid-adimin-&lt;group-name&gt; : mail-address@domain.name
+...
+# newaliases
+# /etc/init.d/exim4 restart</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>当配置变更时，邮件将发送给rancid-&lt;group-name&gt;，当有错误信息时，邮件将发送给rancid-admin-&lt;group-name&gt;。</p>
+</div>
+<div class="paragraph">
+<p>至此完成了配置变更的邮件提醒功能。</p>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

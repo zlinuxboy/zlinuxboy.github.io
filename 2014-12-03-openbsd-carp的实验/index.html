@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>openbsd carp的实验</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2014-12-03-openbsd-carp%E7%9A%84%E5%AE%9E%E9%AA%8C/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">openbsd carp的实验</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2014-12-03&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openbsd"><i class="fa fa-tag">&nbsp;&nbsp;openbsd</i></a>
+           <!--a class="post-tag" href="/tag/openbsd">openbsd</a-->
+         
+           <a class="post-tag" href="/tag/carp"><i class="fa fa-tag">&nbsp;&nbsp;carp</i></a>
+           <!--a class="post-tag" href="/tag/carp">carp</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+对于openbsd或freebsd来说，任何疑问，都应该先阅读官方文档，里面可以几乎可以找到你想知道的一切。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="准备工作">准备工作</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>实验室有两台openbsd防火墙，每台3张网卡，网络拓扑如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>         +----| WAN/Internet |----+
+         |                        |
+      em0|                        |em0
+      +-----+                  +-----+
+      | ob1 |-em2----------em2-| ob2 |
+      +-----+                  +-----+
+      em1|                        |em1
+         |                        |
+      ---+-------Shared LAN--+----+---
+                             |
+                             |eth0
+                          +--+--+
+                          |debn6|
+                          +-----+</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>网卡和IP地址关系列表：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">nic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">openbsd1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">em0($wan_if)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.199.18.97</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">em1($dmz_if)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.5.251</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">em2($sync_if)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">172.16.1.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">carp1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.199.18.90</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">openbsd2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">em0($wan_if)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.199.18.98</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">em1($dmz_if)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.5.252</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">em2($sync_if)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">172.16.1.2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">carp2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.5.254</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">debn6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eth0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.5.3</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>两台ob的carp虚拟网卡拥有相同的virtual mac。</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">carp中的virtual mac</div>
+<div class="paragraph">
+<p>Virtual MAC Address: The Carp virtual MAC is in the format 00-00-5e-00-01-xx where the last octet is filled in by the CARP vhid. For example if you look at the MASTER firewall you will see carp1 has the MAC address of 00-00-5e-00-01-01 and carp2 is 00-00-5e-00-01-02</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>在ob中，可以将多个carp虚拟网卡加入一个组里面，通过控制carpdemote count来实现整机的master和backup角色的互换，譬如说，ob1的carpdemote count为0，ob2的carpdemote count为100，则ob1为master，ob2为backup（ob1的carp1、carp2全部为master，ob2的carp1和carp2为backup）</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>openbsd1</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ ifconfig -g carp
+carp: carp demote count 0</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>openbsd2</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ ifconfig -g carp
+carp: carp demote count 50</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>这个时候，master角色位于openbsd1上。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="测试一-master角色从ob1迁移至ob2">测试一：master角色从ob1迁移至ob2</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在ob1中执行<code>ifconfig -g carp carpdemote 50</code>，则ob1的carp角色由master变成backup，ob2则从backup变成master。</p>
+</div>
+<div class="paragraph">
+<p>在ob1中执行<code>ifconfig em1 down</code>，相当于停用<code>carp2</code>，ob2 ping不通ob1的192.168.5.251(em1)，debn6还是可以ping通10.199.18.97(carp1)。</p>
+</div>
+<div class="paragraph">
+<p>在ob1中执行<code>ifconfig em1 up</code>，相当于启用<code>carp2</code>，ob2可以ping通ob1的192.168.5.251(em1)。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="测试二-master角色从ob2迁移回ob1">测试二：master角色从ob2迁移回ob1</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>ob1中的pf.conf已配置，ob1的carp角色是backup</p>
+</li>
+<li>
+<p>ob2中的pf.conf未配置，ob2的carp角色是master</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>此时，外网无法访问debn6，接着在ob1中执行：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>ifconfig -g carp -carpdemote 50</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>此时：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ob1变成master</p>
+</li>
+<li>
+<p>ob2变成backup</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>外网可以访问debn6的ssh服务。
+ 
+== 测试三：拔插网线</p>
+</div>
+<div class="paragraph">
+<p>拔掉ob1中em1（dmz_if）网卡的网线：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ob1的carp1变成backup，carp2变成INIT</p>
+</li>
+<li>
+<p>ob2变成master
+ 
+插上ob1中em1（dmz_if）网卡的网线：</p>
+</li>
+<li>
+<p>ob1变回master，ob2变成backup
+ 
+拔掉ob1中em2（sync_if）网卡的网线：</p>
+</li>
+<li>
+<p>ob1和ob2的状态不变。原因是两台openbsd防火墙的同步数据包的通道不仅仅是$sync_if，也包括$wan_if、$dmz_if。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>两台防火墙均配置了相同pf.conf，对debn6做了<code>wan:9322&#8594;dmz:22</code>端口映射：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>wan_vip = "221.182.254.188"
+...
+pass in quick log on $wan_if inet proto tcp to $wan_vip port 9322 \
+    rdr-to $debn6 port 22
+pass quick log on $lan_if inet proto tcp to $debn6 port 22</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>从外网使用paping工具探测9322端口</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>paping 221.182.254.188 -p 9322</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>通过tcpdump工具在ob1和ob2上观察的结果如下：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>探测数据包到达ob1；</p>
+</li>
+<li>
+<p>探测数据包无法到达ob2；</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>在ob1上</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>ifconfig -g carp carpdemote 50</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>ob1变为backup，ob2变为master</p>
+</div>
+<div class="paragraph">
+<p>此时，ob1和ob2的tcpdump结果正好跟上面结果倒转过来。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="排错">排错</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>假设将该虚拟IP附着在fxp0上，需要先配置好hostname.fxp0，然后启动该接口<code>sh /etc/netstart fxp0</code>
+否则会出现以下错误：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>root@openbsd-1/etc: # ifconfig carp0 221.182.254.187 vhid 1
+ifconfig: SIOCAIFADDR: Can't assign requested address</code></pre>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何在kvm中为linux guest热添加/删除设备</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2017-02-20-%E5%A6%82%E4%BD%95%E5%9C%A8kvm%E4%B8%AD%E4%B8%BAlinux-guest%E7%83%AD%E6%B7%BB%E5%8A%A0%E5%8F%8A%E5%88%A0%E9%99%A4%E8%AE%BE%E5%A4%87/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何在kvm中为linux guest热添加/删除设备</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2017-02-20&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/kvm"><i class="fa fa-tag">&nbsp;&nbsp;kvm</i></a>
+           <!--a class="post-tag" href="/tag/kvm">kvm</a-->
+         
+           <a class="post-tag" href="/tag/virtualization"><i class="fa fa-tag">&nbsp;&nbsp;virtualization</i></a>
+           <!--a class="post-tag" href="/tag/virtualization">virtualization</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="sect1">
+<h2 id="网卡">网卡</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>热添加</p>
+<div class="paragraph">
+<p>linux guest需要加载<code>acpiphp</code>和<code>pci_hotplug</code>这两个模块方能支持pci hotplug，对应的kernel options<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>为</p>
+</div>
+<div class="listingblock">
+<div class="title">GUEST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>CONFIG_HOTPLUG_PCI=y
+CONFIG_HOTPLUG_PCI_ACPI=y</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>现有redhat/centos6+，ubuntu14.04+、debian8+都已经默认将这两个模块编译到内核中了。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>方法一、配置文件</p>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>host $ sudo vim /etc/libvirt/qemu/$domain-2nd-nic.xml
+-------8&lt;--------
+&lt;interface type='network'&gt; <i class="conum" data-value="1"></i><b>(1)</b>
+    &lt;mac address='52:54:00:d8:11:22'/&gt;
+    &lt;source network='ovs-network' portgroup='vlan-112'/&gt;
+    &lt;model type='virtio'/&gt;
+    &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/&gt; <i class="conum" data-value="2"></i><b>(2)</b>
+&lt;/interface&gt;
+-------&gt;8--------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>此处的network影响到后续detach-interface的操作，详见下文。</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>slot值必须唯一，可使用<code>virsh dumpxml</code>来查看所有设备的slot值</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh attach-device $domain-2nd-nic.xml --persistent <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>--persistent</code>表示vm重启后该网卡依然存在。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>方法二、命令行</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh attach-interface --domain d8-64-tester1 --type network \
+  --source ovs-network --model virtio --mac 52:54:00:d8:11:22 \
+  --target d8Test1-112 --config
+Interface attached successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>+
+.GUEST</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo dmesg
+-------&gt;8--------
+[ 1262.177937] virtio-pci 0000:00:07.0: no hotplug settings from platform
+[ 1262.181735] virtio-pci 0000:00:07.0: using default PCI settings
+-------&gt;8--------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>+
+说明已经成功地将一块网卡热添加到guest中了。</p>
+</div>
+</li>
+<li>
+<p>热删除</p>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh detach-interface $domain --type network --mac 52:54:00:d8:11:22
+error: No found interface whose type is network</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>oops!</p>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh dumpxml $domain | less
+--------&gt;8--------
+    &lt;interface type='bridge'&gt;  <i class="conum" data-value="1"></i><b>(1)</b>
+      &lt;mac address='52:54:00:d8:11:22'/&gt;
+      &lt;source bridge='ovsbr1'/&gt;
+      &lt;virtualport type='openvswitch'&gt;
+        &lt;parameters interfaceid='bc1ca6e5-7c99-7607-1b32-fdac7e2346be'/&gt;
+      &lt;/virtualport&gt;
+      &lt;target dev='d8Test1-112'/&gt;
+      &lt;model type='virtio'/&gt;
+      &lt;alias name='net2'/&gt;
+      &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/&gt;
+    &lt;/interface&gt;
+--------8&lt;--------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>原来libvirt已经自动将type从network转换成了bridge</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>将type换成bridge再试一下：</p>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh detach-interface d8-64-tester1 --type bridge --mac 52:54:00:d8:11:22
+Interface detached successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这里还有个尾巴没有处理干净，由于detach-interface没有&#8212;&#8203;config选项，所以libvirt并未删除$domain配置文件中的&lt;interface&gt;，因而下次重启后该网卡仍然存在于vm中。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="硬盘">硬盘</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>添加和卸载的流程跟网卡类似</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>热添加</p>
+<div class="paragraph">
+<p>创建新硬盘的配置文件</p>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>cat /etc/libvirt/qemu/new-hd.xml
+&lt;disk type='file' device='disk'&gt;
+    &lt;driver name='qemu' type='qcow2' cache='none'/&gt;
+    &lt;source file='/mnt/kvm/vm/d8Tester1-test.qcow2'/&gt;
+    &lt;target dev='vdb' bus='virtio'/&gt; <i class="conum" data-value="1"></i><b>(1)</b>
+    &lt;alias name='virtio-disk1'/&gt;
+    &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/&gt;
+&lt;/disk&gt;</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>因为第一块硬盘占用了vda，所以第二块硬盘需从vdb开始。</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh attach-disk $domain $file --persistent</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在guest中使用<code>dmesg</code>验证一下：</p>
+</div>
+<div class="listingblock">
+<div class="title">GUEST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo dmesg
+[ 7455.322914] pci 0000:00:08.0: no hotplug settings from platform
+[ 7455.326497] pci 0000:00:08.0: using default PCI settings
+[ 7455.330247] virtio-pci 0000:00:08.0: enabling device (0000 -&gt; 0003)
+[ 7455.366755] virtio-pci 0000:00:08.0: irq 51 for MSI/MSI-X
+[ 7455.366806] virtio-pci 0000:00:08.0: irq 52 for MSI/MSI-X
+[ 7455.391041]  vdb: unknown partition table</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>热删除</p>
+<div class="paragraph">
+<p>当然，卸载该硬盘也不在话下，不过需要确保guest已经成功umount了该硬盘的文件系统</p>
+</div>
+<div class="listingblock">
+<div class="title">HOST</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ virsh detach-disk $domain $target --config <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>此处的$target为vdb。</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">vm配置文件之间的关系</div>
+<div class="paragraph">
+<p>virsh dumpxml $domain
+输出的是vm运行态的配置文件，热添加/卸载设备会影响到该配置文件，而无论是否使用了&#8212;&#8203;persistent或&#8212;&#8203;config这两个参数。</p>
+</div>
+<div class="paragraph">
+<p>virsh edit $domain
+这时看到是vm在libvirtd里的配置文件。热添加/卸载设备时，仅当使用了&#8212;&#8203;persistent或&#8212;&#8203;config这两个参数时才会影响到该文件。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="内存">内存</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>热添加、卸载内容是最近才实现的功能，对host中的qemu、libvirt以及guest kernel都有一定的要求。网上已有文档<a href="https://medium.com/@juergen_thomann/memory-hotplug-with-qemu-kvm-and-libvirt-558f1c635972#.pa9kmia0s">1</a>，<a href="https://medium.com/@juergen_thomann/memory-hot-unplug-with-qemu-and-libvirt-6011777f0d48#.4zz3f039k">2</a>，我尚无相应环境测试。</p>
+</div>
+<div class="paragraph">
+<p>proxmox支持<a href="https://pve.proxmox.com/wiki/Hotplug_%28qemu_disk,nic,cpu,memory%29">热添加/删除cpu、ram、disk和nic</a>，非常方便。如果没有特别的需求的话，还是建议用proxmox来取代centos+kvm这个组合。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://serverfault.com/questions/457250/kvm-and-libvirt-how-do-i-hotplug-a-new-virtio-disk" class="bare">http://serverfault.com/questions/457250/kvm-and-libvirt-how-do-i-hotplug-a-new-virtio-disk</a></p>
+</li>
+<li>
+<p><a href="https://kashyapc.fedorapeople.org/virt/add-network-card-in-guest.txt" class="bare">https://kashyapc.fedorapeople.org/virt/add-network-card-in-guest.txt</a></p>
+</li>
+<li>
+<p><a href="https://bugzilla.redhat.com/show_bug.cgi?format=multiple&amp;id=840344" class="bare">https://bugzilla.redhat.com/show_bug.cgi?format=multiple&amp;id=840344</a></p>
+</li>
+<li>
+<p><a href="http://www.unixarena.com/2015/12/linux-kvm-how-to-add-remove-memory-to-guest-on-fly.html" class="bare">http://www.unixarena.com/2015/12/linux-kvm-how-to-add-remove-memory-to-guest-on-fly.html</a></p>
+</li>
+<li>
+<p><a href="http://www.thegeekstuff.com/2015/02/add-memory-cpu-disk-to-kvm-vm/" class="bare">http://www.thegeekstuff.com/2015/02/add-memory-cpu-disk-to-kvm-vm/</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 可通过/boot/config-$version查看
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

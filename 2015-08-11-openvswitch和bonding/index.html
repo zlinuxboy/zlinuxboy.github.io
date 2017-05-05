@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>openvswitch和bonding</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-08-11-openvswitch%E5%92%8Cbonding/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">openvswitch和bonding</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-08-11&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openvswitch"><i class="fa fa-tag">&nbsp;&nbsp;openvswitch</i></a>
+           <!--a class="post-tag" href="/tag/openvswitch">openvswitch</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>为了增加带宽或提升高可用性，需要用到bonding功能，openvswitch也可以和bonding很好的结合。将分两种应用场景分别讲述bonding的配置。</p>
+</div>
+<div class="paragraph">
+<p>本实验使用的服务器和ip地址如下：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">服务器</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dl165-1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.33.231</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dl165-2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.33.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rh2285-3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.33.233</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rh2285-4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.33.234</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>这些服务器的业务口全部连接到同一台物理服务器上，隶属于同一个vlan（192.168.33.0/24）。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="场景一">场景一</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>一台物理服务器(RH2285-4)，两个物理网口(eth2/eth3)接入同一台物理交换机(huawei 5328)的不同网口(gi0/0/7和gi0/0/8)</p>
+</div>
+<div class="sect2">
+<h3 id="服务器端设置">服务器端设置</h3>
+<div class="paragraph">
+<p>eth2和eth3构成bond1，ovsbr1桥接至bond1，以下是详细配置：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>rh2285-4端口配置</p>
+<div class="listingblock">
+<div class="title">ifcfg-eth2</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>DEVICE="eth2"
+BOOTPROTO="none"
+ONBOOT="yes"
+NM_CONTROLLED="no"
+USERCTL="no"</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">ifcfg-eth3</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>DEVICE="eth3"
+BOOTPROTO="none"
+ONBOOT="yes"
+NM_CONTROLLED="no"
+USERCTL="no"</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">ifcfg-bond1</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>DEVICE=bond1
+ONBOOT=yes
+DEVICETYPE=ovs
+TYPE=OVSBond
+OVS_BRIDGE=ovsbr1
+BOOTPROTO=none
+BOND_IFACES="eth2 eth3"
+OVS_OPTIONS="bond_mode=balance-tcp lacp=active other_config:lacp-time=fast"
+HOTPLUG=no</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">ifcfg-ovsbr1</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>DEVICE=ovsbr1
+ONBOOT=yes
+DEVICETYPE=ovs
+TYPE=OVSBridge
+BOOTPROTO=static
+IPADDR=192.168.33.232
+NETMASK=255.255.255.0
+HOTPLUG=no</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看bond状态</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ovs-appctl bond/show
+---- bond1 ----
+bond_mode: balance-tcp
+bond may use recirculation: yes, Recirc-ID : 300
+bond-hash-basis: 0
+updelay: 0 ms
+downdelay: 0 ms
+next rebalance: 2546 ms
+lacp_status: negotiated
+active slave mac: 3c:d9:2b:fd:39:f0(eth2)
+
+slave eth2: enabled
+        active slave
+        may_enable: true
+
+slave eth3: enabled
+        may_enable: true</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看lacp状态</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ovs-appctl lacp/show
+---- bond1 ----
+        status: active negotiated
+        sys_id: 3c:d9:2b:fd:39:f0
+        sys_priority: 65534
+        aggregation key: 1
+        lacp_time: fast
+
+slave: eth2: current attached
+        port_id: 2
+        port_priority: 65535
+        may_enable: true
+
+        actor sys_id: 3c:d9:2b:fd:39:f0
+        actor sys_priority: 65534
+        actor port_id: 2
+        actor port_priority: 65535
+        actor key: 1
+        actor state: activity timeout aggregation synchronized collecting distributing
+
+        partner sys_id: 54:89:98:73:bb:07
+        partner sys_priority: 32768
+        partner port_id: 7
+        partner port_priority: 32768
+        partner key: 305
+        partner state: activity timeout aggregation synchronized collecting distributing
+
+slave: eth3: current attached
+        port_id: 1
+        port_priority: 65535
+        may_enable: true
+
+        actor sys_id: 3c:d9:2b:fd:39:f0
+        actor sys_priority: 65534
+        actor port_id: 1
+        actor port_priority: 65535
+        actor key: 1
+        actor state: activity timeout aggregation synchronized collecting distributing
+
+        partner sys_id: 54:89:98:73:bb:07
+        partner sys_priority: 32768
+        partner port_id: 8
+        partner port_priority: 32768
+        partner key: 305
+        partner state: activity timeout aggregation synchronized collecting distributing</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="交换机配置">交换机配置</h3>
+<div class="paragraph">
+<p>本次使用的是华为5328交换机。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>interface Eth-Trunk1
+ description to [RH2285-4]
+ port link-type access
+ port default vlan 55
+ mode lacp-static
+ lacp timeout fast
+ ntdp enable
+ ndp enable
+ bpdu enable
+interface GigabitEthernet0/0/7
+ description [RH2285-4 eth2]
+ eth-trunk 1
+ undo ntdp enable
+ undo ndp enable
+interface GigabitEthernet0/0/8
+ description to [RH2285-4 eth3]
+ eth-trunk 1
+ undo ntdp enable
+ undo ndp enable</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>分别在rh2285-3、dl165-1、dl165-2中执行：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo ping rh2285-4
+$ sudo paping rh2285-4 -p 5900</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>rh2285-4使用tcpdump来观察eth2和eth3的流量分布情况，命令如下：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tcpdump -nvi eth2 icmp
+$ sudo tcpdump -nvi eth3 icmp</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>以及</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tcpdump -nvi eth2 port 5900
+$ sudo tcpdump -nvi eth3 port 5900</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>观察到的结果：流量呈现分布状态。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>icmp</p>
+<div class="paragraph">
+<p>从eth2进来，从eth3出去。</p>
+</div>
+</li>
+<li>
+<p>tcp:5900</p>
+<div class="paragraph">
+<p>从eth2、eth3进来后又出去，流量比较混杂，还夹杂了一些incorrect的数据包。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">关于incorrect</div>
+<div class="paragraph">
+<p>从rh2285-3 ssh rh2285-4，可以成功登陆。
+同时在rh2285-4使用<code>tcpdump -nvi eth2 port 22 and host 192.168.33.233</code>，出现incorrect数据包，但似乎不影响ssh服务。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>18:14:28.085592 IP (tos 0x10, ttl 64, id 32770, offset 0, flags [DF], proto TCP (6), length 404)
+    192.168.33.232.ssh &gt; 192.168.33.231.36134: Flags [P.], cksum 0xf2a6 (incorrect -&gt; 0x3d3e), seq 433:785, ack 432, win 189, options [nop,nop,TS val 96361804 ecr 1815678915], length 352</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可能的原因是开启了网卡的tcp checksum offload。实际上incorrect checksum是<a href="https://sokratisg.net/2012/04/01/udp-tcp-checksum-errors-from-tcpdump-nic-hardware-offloading">正常的</a>。<a href="http://sandilands.info/sgordon/segmentation-offloading-with-wireshark-and-ethtool">这里</a>有更详细的说明。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="场景二-h3c-5800">场景二（h3c 5800）</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="服务器配置">服务器配置</h3>
+<div class="paragraph">
+<p>服务器的配置跟场景一的服务器配置一致。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="交换机配置-2">交换机配置</h3>
+<div class="paragraph">
+<p>rh2285-4的两个物理网口分别连接两台物理交换机(h3c 5800)。两台h3c 5800已经做了IRF堆叠，<code>link-aggregation</code>的配置如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>interface Bridge-Aggregation20
+ description "rh2285-4 bond1"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 20 24 28 111
+ link-aggregation mode dynamic
+interface GigabitEthernet1/0/20
+ port link-mode bridge
+ description "rh2285-4:port2"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 20 24 28 111
+ port link-aggregation group 20
+interface GigabitEthernet2/0/20
+ port link-mode bridge
+ description "rh2285-4:port3"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 20 24 28 111
+ port link-aggregation group 20</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>实验的结果跟<strong>场景一的结果</strong>一致。特别需要提醒的是，两台物理交换机之间必须做了堆叠。每个厂家在堆叠技术方面都有自己的私有协议，因而不同厂家之间的交换机不一定能够成功实现堆叠。</p>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

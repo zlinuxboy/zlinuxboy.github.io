@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何修复一个域控制器失效的hyper-v server群集环境</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2017-01-06-%E5%A6%82%E4%BD%95%E4%BF%AE%E5%A4%8D%E4%B8%80%E4%B8%AA%E5%9F%9F%E6%8E%A7%E5%88%B6%E5%99%A8%E5%A4%B1%E6%95%88%E7%9A%84hyper-v-server%E7%BE%A4%E9%9B%86%E7%8E%AF%E5%A2%83/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何修复一个域控制器失效的hyper-v server群集环境</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2017-01-06&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/windows"><i class="fa fa-tag">&nbsp;&nbsp;windows</i></a>
+           <!--a class="post-tag" href="/tag/windows">windows</a-->
+         
+           <a class="post-tag" href="/tag/ad"><i class="fa fa-tag">&nbsp;&nbsp;ad</i></a>
+           <!--a class="post-tag" href="/tag/ad">ad</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="sect1">
+<h2 id="相关缩写和术语"><a class="anchor" href="#相关缩写和术语"></a>相关缩写和术语</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">RSAT</dt>
+<dd>
+<p>微软为了方便用户远程管理windows server，专门推出了远程服务器管理工具，以下简称<strong>RSAT</strong>，通过RSAT，用户可以方便地在一台管理机来管理剩余的windows server服务器，RSAT是一个工具集，包括了Server Manager、Hyper-V Manager、Failover Cluster Manager、Computer Management、Windows Powershell等重要的管理工具。</p>
+</dd>
+<dt class="hdlist1">FOCM</dt>
+<dd>
+<p>微软的“故障迁移群集管理器”（Failover cluster manager，简称<strong>FOCM</strong>）可用于管理windows系列群集，包括windows群集、hyper-v群集和sqlserver群集，非常方便。每个群集都有一个群集的名称，FOCM就是通过群集名称来管理各个群集的。另外，只要是windows系列的群集，都必须跟域绑定在一起，所以创建群集的前提条件是有一个域环境。</p>
+</dd>
+<dt class="hdlist1">Hyper-V Manager</dt>
+<dd>
+<p>微软推出的用于管理Hyper-V的管理工具，可以管理hv主机中的本地vm。</p>
+</dd>
+<dt class="hdlist1">host OS</dt>
+<dd>
+<p>物理服务器操作系统，在本项目中安装的是hyper-v server 2012 r2(以下简写为<strong>hv12r2</strong>)，一个windows server 2012 r2精简版本，没有GUI，只有命令行。</p>
+</dd>
+<dt class="hdlist1">host</dt>
+<dd>
+<p>物理服务器，因为安装了hv12r2，所以称之为<strong>hv主机</strong></p>
+</dd>
+<dt class="hdlist1">Windows Boot Manager</dt>
+<dd>
+<p>windows启动管理器，简称<strong>wbm</strong>，wbm提供了多个启动模式，包括安全模式、带网络连接的安全模式，只要你启动了相应的</p>
+</dd>
+<dt class="hdlist1">directory services restore mode</dt>
+<dd>
+<p>目录服务恢复模式，简称dsrm</p>
+</dd>
+<dt class="hdlist1">domain contorller</dt>
+<dd>
+<p>域控制器，简称dc</p>
+</dd>
+<dt class="hdlist1">additional domain controller</dt>
+<dd>
+<p>额外域控制器，简称adc</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="背景和故障描述"><a class="anchor" href="#背景和故障描述"></a>背景和故障描述</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在某个项目中部署了hyper-v群集，网络拓扑如下：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2017-01-06-hyv-cluster-top.jpg" alt="hyv-cluster-top">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>三台host安装了hv12r2，通过iscsi协议访问共享存储；</p>
+</li>
+<li>
+<p>安装了两台本地vm：dc2(域林中的第一台域控制器，运行在hyv4主机中)和dc1(额外域控制器，运行在hyv3主机中)，分别担任域控制器和额外域控制器角色。三台hv主机加入域并构建了一个故障迁移群集；</p>
+</li>
+<li>
+<p>另外一台本地vm：ws12r2-mgmt-1担任管理机，安装了rsat，包括hyper-v manager和focm，平时系统管理员通过远程桌面登陆该管理机，利用hyper-v manager来管理hv主机中的本地vm，利用focm来管理hyper-v群集中的高可用性vm。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>但是机房的电力环境堪忧，经常停电，dc1在半年前的一次停电事故中就崩溃了，但是dc2还能正常工作，所以也没太在意，也未备份。终于在最近一次停电事故中，dc2也崩溃了，两个域控制器全部失效！所有跟域控制器有关的操作都无法进行，包括最重要的netlogon。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="修复过程"><a class="anchor" href="#修复过程"></a>修复过程</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>目标：修复这两台域控制器。</p>
+</div>
+<div class="paragraph">
+<p>因为域控制器已经失效，所以无法通过远程桌面访问，于是遇到第一个问题：</p>
+</div>
+<div class="sect2">
+<h3 id="问题1-如何访问已崩溃的域控制器vm的控制台"><a class="anchor" href="#问题1-如何访问已崩溃的域控制器vm的控制台"></a>问题1、如何访问已崩溃的域控制器vm的控制台</h3>
+<div class="paragraph">
+<p>因为域控制器失效，就无法使用域账号登陆ws12r2-mgmt-1，也就无法使用hyper-v manager连接hv主机，那就打不开域控制器的控制台。打不开控制台就获取不到更多的错误信息，也就无法修复域控制器。陷入了死循环！son of a &#8230;&#8203;！这个问题进一步演变成了：<strong>如何使用hyper-v manager访问一台加入了域，但是域控制器全部失效的hv主机</strong>。</p>
+</div>
+<div class="paragraph">
+<p>有人说，那何不直接使用本地管理员账号登陆hv主机的控制台，然后使用host os自带的hyper-v manager来管理打开dc的控制台？前面说过，hv主机的host OS是hv2012r2，没有图形界面，也就没有hyper-v manager。</p>
+</div>
+<div class="paragraph">
+<p>怎么办？这都是活动目录的netlogon失效引起的，那我们能否可以使用一台工作组服务器的hyper-v manager来管理hv主机呢？答案也是否定的，因为hyper-v manager在连接远程hv主机的时候，同样需要域账号进行认证。</p>
+</div>
+<div class="paragraph">
+<p>那就只能使出终极杀招：将hv主机强制脱离域<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>，变成一台工作组服务器，然后使用另外一台工作组服务器的hyper-v manager去连接该hv主机，两台工作组服务器的本地administrator密码设为一样。</p>
+</div>
+<div class="paragraph">
+<p>事实证明该思路是可行的，首先将hyv4<a href="http://www.dell.com/support/article/cn/zh/cndhs1/SLN163702">强制脱离域</a>，然后在esxi6的一台win8.1 vm中安装rsat，最后通过hyper-v manager打开hyv4中的dc2这台域控制器的控制台。至此<strong>解决了问题1</strong>。</p>
+</div>
+<div class="paragraph">
+<p>这，仅仅只是开始，打开控制台只是为了获取到更多的错误信息，以便定位和解决故障。dc2启动后不久就遇到了蓝屏，于是碰到第二个问题：</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="问题2-c00002e2-0xc0000001-directory-services-restore-mode"><a class="anchor" href="#问题2-c00002e2-0xc0000001-directory-services-restore-mode"></a>问题2、 c00002e2 0xc0000001 directory services restore mode</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>STOP: c00002e2 Directory Services could not start because of the following error: A device attached to the system is not functioning.
+
+Error Status: 0xc0000001. Please shutdown this system and reboot into Directory Services Restore Mode, check the event log for more detailed information.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>该错误信息提示需重启至Directory Services Restore Mode，然而重启后在控制台中按<kbd>F8</kbd>无反应。即便是激活了笔记本的<kbd>Fn</kbd>，再按<kbd>F8</kbd>也没有效果，又需要解决另外一个问题：<a href="#q3">如何进入已损坏windows VM的dsrm</a>。解决完该问题后继续回到问题2，估计是ntds数据库损坏，需要修复：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>C:\Windows\system32\&gt;cd \windows\system32
+C:\Windows\system32&gt;ntdsutil
+C:\Windows\system32\ntdsutil.exe: activate instance NTDS
+Active instance set to "ntds".
+C:\Windows\system32\ntdsutil.exe: files</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>将弹出以下错误：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Could not initialize the Jet engine: Jet Error -501. Failed to open DIT for AD DS/LDS instance NTDS. Error -2147418113</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>需要先退出ntdsutil，对数据库进行修复</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>C:\Windows\system32\ntdsutil.exe: quit
+C:\Windows\system32\md backupad
+C:\Windows\system32&gt;copy ntds.dit backupad
+C:\Windows\system32&gt;esentutl /g c:\windows\ntds\ntds.dit <i class="conum" data-value="1"></i><b>(1)</b>
+C:\Windows\system32&gt;esentutl /p c:\windows\ntds\ntds.dit
+C:\Windows\system32&gt;cd \windows\ntds
+C:\Windows\NTDS\&gt;move *.log backupad</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>该命令执行ntds.dit数据库的校验检测.不出意外的话将以失败告终，所以还需要执行后面的修复操作</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>自此完成了ntds数据库的修复工作，下面检查一下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>C:\windows\system32&gt;ntdsutil
+C:\Windows\system32\ntdsutil.exe: activate instance ntds
+Active instance set to "ntds".
+C:\Windows\system32\ntdsutil.exe: files
+file maintenance: info
+
+Drive Information:
+
+        C:\ NTFS (Fixed Drive  ) free(46.6 Gb) total(59.9 Gb)
+
+DS Path Information:
+
+        Database   : C:\Windows\NTDS\ntds.dit - 22.1 Mb
+        Backup dir : C:\Windows\NTDS\dsadata.bak
+        Working dir: C:\Windows\NTDS
+        Log dir    : C:\Windows\NTDS - 50.0 Mb total
+                        edbres00002.jrs - 10.0 Mb
+                        edbres00001.jrs - 10.0 Mb
+                        edb00006.log - 10.0 Mb
+                        edb00005.log - 10.0 Mb
+                        edb.log - 10.0 Mb</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>当然，也可以用<code>esentutl /g</code>进行检查</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>C:\&gt; esentutl /g c:\windows\ntds\ntds.dit
+
+Extensible Storage Engine Utilities for Microsoft(R) Windows(R)
+Version 6.1
+Copyright (C) Microsoft Corporation. All Rights Reserved.
+
+Initiating INTEGRITY mode...
+        Database: c:\windows\ntds\ntds.dit
+  Temp. Database: TEMPINTEG2684.EDB
+
+Checking database integrity.
+
+                     Scanning Status (% complete)
+
+          0    10   20   30   40   50   60   70   80   90  100
+          |----|----|----|----|----|----|----|----|----|----|
+          ...................................................
+
+Integrity check successful.
+
+Operation completed successfully in 1.482 seconds.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>大功告成，终于修复了一台域控制器，最后重启至正常模式，使用其它域成员服务器进行netlogon测试均正常。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="q3"><a class="anchor" href="#q3"></a>问题3、如何进入已损坏windows VM的dsrm</h3>
+<div class="paragraph">
+<p>原来自vista开始，微软为了提高开机速度，更改了boot manager默认设置，F8菜单被隐藏了起来。需要用户手工打开这个选项，如何打开呢？</p>
+</div>
+<div class="paragraph">
+<p>因为这是一台损坏的VM，所以只能启动到以下界面：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.system-recovery-options.jpg" alt="system-recovery-options">
+</div>
+</div>
+<div class="paragraph">
+<p>没有GUI，只有命令行可用。由于在hyper-v控制台中，<kbd>F8</kbd>的失效意味着需要将dsrm设置为默认启动项。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>c:\&gt;bcdedit /copy {default} /d "DSRM Mode"
+The entry was successfully copied to {d1caf19e-4976-11e5-8432-9492d15296bf}.
+c:\&gt;bcdedit /set {d1caf19e-4976-11e5-8432-9492d15296bf} safeboot dsrepair
+The Operation completed successfully
+c:\&gt;bcdedit /timeout 5
+c:\&gt;bcdedit
+Windows Boot Manager
+--------------------
+identifier              {bootmgr}
+device                  partition=\Device\HarddiskVolume1
+description             Windows Boot Manager
+locale                  en-US
+inherit                 {globalsettings}
+default                 {current}
+resumeobject            {d1caf198-4976-11e5-8432-9492d15296bf}
+displayorder            {current}
+                        {d1caf19e-4976-11e5-8432-9492d15296bf}
+toolsdisplayorder       {memdiag}
+timeout                 30
+displaybootmenu         Yes
+
+Windows Boot Loader
+-------------------
+identifier              {current}
+device                  partition=C:
+path                    \Windows\system32\winload.exe
+description             Windows Server 2008 R2
+locale                  en-US
+inherit                 {bootloadersettings}
+recoverysequence        {d1caf19c-4976-11e5-8432-9492d15296bf}
+recoveryenabled         Yes
+osdevice                partition=C:
+systemroot              \Windows
+resumeobject            {d1caf198-4976-11e5-8432-9492d15296bf}
+nx                      OptOut
+
+Windows Boot Loader
+-------------------
+identifier              {d1caf19e-4976-11e5-8432-9492d15296bf}
+device                  partition=C:
+path                    \Windows\system32\winload.exe
+description             DSRM mode
+locale                  en-US
+inherit                 {bootloadersettings}
+recoverysequence        {d1caf19c-4976-11e5-8432-9492d15296bf}
+recoveryenabled         Yes
+osdevice                partition=C:
+systemroot              \Windows
+resumeobject            {d1caf198-4976-11e5-8432-9492d15296bf}
+nx                      OptOut
+safeboot                DsRepair <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>dsrm安全模式</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>退出命令行，然后点击<b class="button">重启计算机</b>选项。</p>
+</div>
+<div class="paragraph">
+<p>重启之后，出现如下画面：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.wbm-dsrm-options.jpg" alt="wbm-dsrm-options">
+</div>
+</div>
+<div class="paragraph">
+<p>通过键盘的上下键终于可以选择<span class="menu">DSRM mode</span>进入了dsrm登陆界面，然而好事多磨，在登陆界面又遇到了一个问题：administrator密码丢失，没有道理啊，我记录下所有administrator的密码，不会记错，百思不得其解，兜兜转转了半个小时，最后无意中发现原来在dcpromo过程中将会创建一个dsrm的administrator账号，如下图所示：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.dsrm-password-setting.jpg" alt="dsrm-password-setting">
+</div>
+</div>
+<div class="paragraph">
+<p>该账号不同于本地管理员或域管理员，是专门在dsrm下使用的，而且登陆账号应是<code>.\Administrator</code>，既不是<code>Administrator</code>，也不是<code>local\Administrator</code>。最终通过穷举法顺利地进入了dsrm。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.saftmode-dsrm-GUI.jpg" alt="saftmode-dsrm-GUI">
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">几种不同的administrator账号</div>
+<div class="ulist">
+<ul>
+<li>
+<p>local 初始化安装一台windows服务器后，默认的administrator密码，</p>
+</li>
+<li>
+<p>domain 顾名思义，就是域管理员账号，具有最高的权限。</p>
+</li>
+<li>
+<p>dsrm 在将一台域成员提升为域控制器时，将设置dsrm的administrator密码，仅限于dsrm下登陆系统，账号格式为<code>.\Administrator</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tips"><a class="anchor" href="#tips"></a>tips</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>在安全模式-命令行下，可以使用<code>start notepad</code>来查看和编辑文本文件。</p>
+</li>
+<li>
+<p>购买HP服务器的时候，可以同时采购OEM版本的windows server 2008 r2操作系统的安装媒介和授权，在安装媒介中将提供两种安装序列号：physical key和virtual key，其中physical key既可以用于激活物理计算机操作系统(Host OS)，也可以用于激活一台虚拟计算机操作系统(guest OS)。</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 因为域控制器已失效，所以只能强制脱离域。
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

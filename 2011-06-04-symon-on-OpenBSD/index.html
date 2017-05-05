@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>symon on OpenBSD</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2011-06-04-symon-on-OpenBSD/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">symon on OpenBSD</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2011-06-04&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/OpenBSD"><i class="fa fa-tag">&nbsp;&nbsp;OpenBSD</i></a>
+           <!--a class="post-tag" href="/tag/OpenBSD">OpenBSD</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenBSD有非常丰富的命令行工具可以查看系统状态，譬如优秀的systat，但是systat只能显示当前的状态，无法显示历史记录，这当然无法满足网管员的溯源要求，这个时候就需要用到图形界面的网管工具了。</p>
+</div>
+<div class="paragraph">
+<p>OpenBSD开发人员也port了不少linux下的网管工具，包括collectd、nagios、smokeping等，不过功能就比linux下的差一些，譬如collectd中就有好多插件无法使用。好在OpenBSD还有原生的symon供用户选择。</p>
+</div>
+<div class="paragraph">
+<p>symon是一个系统监控工具，跑在FreeBSD、NetBSD、OpenBSD和linux下，它能精确地搜集到最新的系统性能数据，譬如cpu、内存、pf、网卡流量和进程等。symon软件包由symon和symux两个组件组成，symon每隔5秒钟收集系统状态，然后将数据传递给symux，由symux写入到rrd文件中。rrd本身并不是一个图形文件，因此symon还提供了一个单独的syweb组件来完成绘图和web展示。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-准备工作">1. 准备工作</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenBSD的默认安装包含了apache1.3.8，但是默认情况下并未启动，因此需要先激活：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>/etc/rc.conf
+httpd=YES</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-安装">2. 安装</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="2-1-symon">2.1 symon</h3>
+<div class="literalblock">
+<div class="content">
+<pre># pkg_add -I symon</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="2-2-syweb">2.2 syweb</h3>
+<div class="literalblock">
+<div class="content">
+<pre># cd /usr/ports/www/syweb/ &amp;&amp; sudo make install</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-配置symon-conf和symux-conf文件">3. 配置symon.conf和symux.conf文件</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>默认情况下，安装symon后自动在<code>/etc</code>目录下生成<code>symon.conf</code>和<code>symux.conf</code>两个文件，用户需要根据自己的情况进行调整，另外，symon自带了一个脚本，可用于生成新的symon.conf文件：<code>/usr/local/share/symon/c_config.sh</code></p>
+</div>
+<div class="sect2">
+<h3 id="3-1-symon-conf">3.1 symon.conf</h3>
+<div class="listingblock">
+<div class="content">
+<pre># vim /etc/symon.conf
+  monitor { cpu(0),  mem,
+      if(fxp0), if(fxp1), if(fxp2), if(fxp3),
+      pf,
+      mbuf,
+      sensor(lm2.temp0),sensor(lm2.temp1),
+      sensor(lm2.fan0),sensor(lm2.fan1),sensor(lm2.fan2),
+      proc(httpd), proc(sshd),
+      io(wd0), df(wd0f), df(wd0a)
+  } stream to 127.0.0.1 2100
+
+[...]</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-2-symux-conf">3.2 symux.conf</h3>
+<div class="listingblock">
+<div class="content">
+<pre># vim /etc/symux.conf
+ mux 127.0.0.1 2100
+ source 127.0.0.1 {
+   accept { cpu(0),  mem,
+        pf,
+        mbuf,
+        sensor(lm2.temp0), sensor(lm2.temp1),
+        sensor(lm2.fan0), sensor(lm2.fan1), sensor(lm2.fan2),
+        proc(httpd), proc(sshd),
+        if(fxp0), if(fxp1), if(fxp2), if(fxp3),
+        io(wd0), df(wd0f), df(wd0a)
+   }
+        datadir "/var/www/symon/rrds/localhost"
+ }
+
+[...]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-在chroot中安装rrdtool">4. 在chroot中安装rrdtool</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre># /var/www/symon/install_rrdtool.sh
+rrdtool and libs installed in apache root</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着创建rrd文件</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># mkdir /var/www/symon/rrds/localhost &amp;&amp; cd /var/www/symon/rrds/localhost
+# /usr/local/share/symon/c_smrrds.sh all
+/var/www/symon/rrds/localhost/df_sd0d.rrd created
+/var/www/symon/rrds/localhost/df_sd0a.rrd created
+/var/www/symon/rrds/localhost/io_sd0.rrd created
+/var/www/symon/rrds/localhost/if_em3.rrd created
+/var/www/symon/rrds/localhost/if_em2.rrd created
+/var/www/symon/rrds/localhost/if_em1.rrd created
+/var/www/symon/rrds/localhost/if_em0.rrd created
+/var/www/symon/rrds/localhost/proc_openvpn.rrd created
+/var/www/symon/rrds/localhost/proc_unbound.rrd created
+/var/www/symon/rrds/localhost/proc_httpd.rrd created
+/var/www/symon/rrds/localhost/mbuf.rrd created
+/var/www/symon/rrds/localhost/pf.rrd created
+/var/www/symon/rrds/localhost/mem.rrd created
+/var/www/symon/rrds/localhost/cpu0.rrd created</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="5-启动symux和symon">5. 启动symux和symon</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre># /usr/local/libexec/symux
+# /usr/local/libexec/symon</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>设置开机启动symux &amp; symon</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>/etc/rc.local
+if [ -x /usr/local/libexec/symux ]; then
+  echo -n ' symux';
+  /usr/local/libexec/symux
+fi
+ 
+if [ -x /usr/local/libexec/symon ]; then
+  echo -n ' symon';
+  /usr/local/libexec/symon
+fi</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="6-调整syweb的配置">6. 调整syweb的配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenBSD中的apache默认跑在chroot下，因此确保以下目录配置是否正确，另外需要将其它模式下的目录配置注释掉。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>/var/www/htdocs/syweb/setup.inc
+/* running OpenBSD, apache chrooted: */
+$symon['rrdtool_path']='/usr/local/bin/rrdtool';
+$symon['cache_dir']='/symon/cache';
+$symon['host_tree']='/symon/rrds';
+$symon['layout_dir']='/symon';
+[...]</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="7-测试">7. 测试</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>通过浏览器访问：<code><a href="http://&lt;your.ip&gt;/syweb/index.php" class="bare">http://&lt;your.ip&gt;/syweb/index.php</a></code></p>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

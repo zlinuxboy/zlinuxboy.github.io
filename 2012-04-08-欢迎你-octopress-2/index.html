@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>欢迎你，octopress！（下）</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-04-08-%E6%AC%A2%E8%BF%8E%E4%BD%A0-octopress-2/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">欢迎你，octopress！（下）</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-04-08&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/blog"><i class="fa fa-tag">&nbsp;&nbsp;blog</i></a>
+           <!--a class="post-tag" href="/tag/blog">blog</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>在<a href="/2012-04-08-%E6%AC%A2%E8%BF%8E%E4%BD%A0-octopress-1/">欢迎你，octopress！（上）</a>中提到，octopress的部署分为本地环境和博客平台这两个部分。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="一-本地环境">一、本地环境</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>本地环境主要是指octopress。octopress采用ruby脚本语言编写，源代码放在github上，因此，只要OS支持git和ruby就可以安装octopress。本文针对的是windows。</p>
+</div>
+<div class="sect2">
+<h3 id="1-1-git">1.1 git</h3>
+<div class="paragraph">
+<p>在windows中，我选择的是<a href="http://code.google.com/p/msysgit/downloads/list">msysgit</a>这个软件包。该软件包基于MSys/MinGW，它将linux中常用的命令和git打包在一起。octopress对git的版本没有要求，因此用户下载最新的版本安装即可。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-2-ruby">1.2 ruby</h3>
+<div class="paragraph">
+<p>在windows中，octopress的正常安装和运行依赖于以下两个组件：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em><a href="http://rubyforge.org/frs/download.php/75127/rubyinstaller-1.9.2-p290.exe">rubyinstaller</a></em> <em>octopress要求ruby1.9.2。</em></p>
+</li>
+<li>
+<p><em><a href="https://github.com/oneclick/rubyinstaller/wiki/development-kit">RubyInstaller DevKit</a></em> <em>gem在生成本地模块的时候需要用到编译环境。</em></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>安装完毕后，首先将<code>ruby.exe</code>添加到windows操作系统的环境变量中，这样就可以在当前目录中直接使用ruby命令。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://dl.linuxabc.net.cn/u/74911209/octopress/2012-05-27_environment-config.jpg" alt="环境变量配置">
+</div>
+</div>
+<div class="paragraph">
+<p>接着修改gem source，因为默认的rubygems.org对于国内用户来说速度太慢，建议替换成淘宝的源：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ gem sources --remove http://rubygems.org/
+$ gem sources --a http://ruby.taobao.org/</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>最后安装<code>rdoc</code>和<code>bundler</code>这两个gem</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ gem install rdoc bundler</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-3-octopress">1.3 octopress</h3>
+<div class="sect3">
+<h4 id="1-3-1-安装">1.3.1 安装</h4>
+<div class="literalblock">
+<div class="content">
+<pre>$ mkdir /d/octopress
+$ cd /d/octopress
+$ git clone git://github.com/imathis/octopress.git
+$ bundle install</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="1-3-2-配置">1.3.2 配置</h4>
+<div class="paragraph">
+<p>octopress的配置文件是<code>_config.yml</code>，用户通过它来配置博客的基本信息和第三方插件。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="1-3-3-第一篇文章">1.3.3 第一篇文章</h4>
+<div class="literalblock">
+<div class="content">
+<pre>$ rake new_post["octopress on heroku"]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>执行<code>ls -al</code>就会发现在<code>d:\octopress\source\_posts</code>中已经生成<code>2012-04-08-octopress-on-heroku.markdown</code>文档。接下来用户就可以用自己喜欢的编辑器来编辑这篇文章了。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="1-3-4-预览-生成">1.3.4 预览&amp;生成</h4>
+<div class="paragraph">
+<p>编辑完文档后，先在本地预览一下，查看排版是否满意</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ rake preview</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>该命令将启动内置的网页服务器，监听端口为4000，用户可通过浏览器访问<code><a href="http://localhost:4000" class="bare">http://localhost:4000</a></code>进行预览。最后生成静态网站：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ rake generate</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="二-博客平台">二、博客平台</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>博客平台既可以采用免费的github/heroku，也可以用VPS。我选择的是heroku。</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ gem install heroku</pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="2-1-申请帐号">2.1 申请帐号</h3>
+<div class="paragraph">
+<p>用户可在<code>www.heroku.com</code>上申请一个新的帐号，过程很简单，就不累述了，详情可参考heroku的官方文档。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="2-2-创建一个新应用">2.2 创建一个新应用</h3>
+<div class="literalblock">
+<div class="content">
+<pre>$ heroku create linuxabc</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>linuxabc指的是应用名称</p>
+</div>
+<div class="paragraph">
+<p>至此，创建了一个基于heroku的博客平台，最后步骤就是将静态网站部署到博客平台上：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ git add .
+$ git commit -m 'site updated'
+$ git push heroku master</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>大功告成！</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="三-更新博客">三、更新博客</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>如何更新博客呢？</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ rake generate
+$ git add .
+$ git commit -m 'add &lt;new-post-title&gt;'
+$ git push heroku master</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>建议将这四条语句放在一个bash脚本中，简化操作。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="四-排错">四、排错</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>无法终止<code>rake preview</code></p>
+<div class="paragraph">
+<p>启用<code>rake preview</code>后，直接按<code>ctrl+c</code>无法正常终止该进程，老提示<code>终止批处理操作吗（Y/N）？</code>，这时候可以另开一个<code>Git Bash</code>窗口，使用<code>ps aux | grep ruby</code>命令找出<code>pid</code>(第一个数值)，然后执行<code>kill &lt;pid&gt;</code>来停止该进程。</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>在debian中安装octopress</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-04-30-%E5%9C%A8debian%E4%B8%AD%E5%AE%89%E8%A3%85octopress/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">在debian中安装octopress</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-04-30&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/debian"><i class="fa fa-tag">&nbsp;&nbsp;debian</i></a>
+           <!--a class="post-tag" href="/tag/debian">debian</a-->
+         
+           <a class="post-tag" href="/tag/octopress"><i class="fa fa-tag">&nbsp;&nbsp;octopress</i></a>
+           <!--a class="post-tag" href="/tag/octopress">octopress</a-->
+         
+           <a class="post-tag" href="/tag/blog"><i class="fa fa-tag">&nbsp;&nbsp;blog</i></a>
+           <!--a class="post-tag" href="/tag/blog">blog</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>前面讲了<a href="/2012-04-08-%E6%AC%A2%E8%BF%8E%E4%BD%A0-octopress-2/">如何在heroku中部署octopress</a>，不过heroku毕竟不在自己的手上，对于用户来说是一个遗憾，贝多芬说了：要扼住命运的咽喉。因此自己的博客就要部署在自己的VPS上。下面讲一下如何在debian squeeze中部署git+ruby+nginx+octopress。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="git">git</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>git的安装很简单：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get update
+$ sudo apt-get install git-core
+$ sudo git config --global user.name "alfie chan"
+$ sudo git config --global user.email admin@linuxabc.net.cn</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ruby">ruby</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>ruby的版本众多，安装和管理比较复杂。另外，<a href="http://www.lucas-nussbaum.net/blog/?p=617">debian开发者对ruby的代码树管理很不满</a>，
+已经决定终止对ruby进行打包，这使得ruby在debian上的安装更为麻烦，目前squeeze中ruby的版本是1.9.1（用户通过<code>apt-cache search</code>会看到一个ruby 1.9.2，但那是虚拟包，不是真正的1.9.2），然而ocotpress对ruby的版本要求是1.9.2，因此我先是采用rvm，但是遇到一些问题，最后决定手工编译的方式进行安装。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># bash &lt; &lt;( curl http://rvm.beginrescueend.com/releases/rvm-install-head )
+...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  994k  100  994k    0     0  45792      0  0:00:22  0:00:22 --:--:-- 41842
+
+Installing RVM to /usr/local/rvm/
+    Creating RVM system user group 'rvm'
+
+# RVM:  Shell scripts enabling management of multiple ruby environments.
+# RTFM: https://rvm.io/
+# HELP: http://webchat.freenode.net/?channels=rvm (#rvm on irc.freenode.net)
+# Cheatsheet: http://cheat.errtheblog.com/s/rvm/
+# Screencast: http://screencasts.org/episodes/how-to-use-rvm
+
+# In case of any issues read output of 'rvm requirements' and/or 'rvm notes'
+
+Installation of RVM in /usr/local/rvm/ is almost complete:
+
+  * First you need to add all users that will be using rvm to 'rvm' group,
+    and logout - login again, anyone using rvm will be operating with `umask g+w`.
+
+  * To start using RVM you need to run `source /etc/profile.d/rvm.sh`
+    in all your open shell windows, in rare cases you need to reopen all shell windows.
+
+# root,
+#
+#   Thank you for using RVM!
+#   I sincerely hope that RVM helps to make your life easier and more enjoyable!!!
+#
+# ~Wayne
+
+
+rvm 1.13.0 (stable) by Wayne E. Seguin &lt;wayneeseguin@gmail.com&gt;, Michal Papis &lt;mpapis@gmail.com&gt; [h
+ttps://rvm.io/]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>根据上面的提示，执行：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo source /etc/profile.d/rvm.sh</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo rvm install 1.9.2</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>出现错误，根据`/usr/local/rvm/1.9.2/extract.log`的错误提示，原来安装的过程中还需要用到`make`和`bzip2`这两个工具。</p>
+</div>
+<div class="paragraph">
+<p>于是：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo aptitude install make bzip2</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo rvm install 1.9.2
+Fetching yaml-0.1.4.tar.gz to /usr/local/rvm/archives
+Extracting yaml-0.1.4.tar.gz to /usr/local/rvm/src
+Configuring yaml in /usr/local/rvm/src/yaml-0.1.4.
+Compiling yaml in /usr/local/rvm/src/yaml-0.1.4.
+Installing yaml to /usr/local/rvm/usr
+Installing Ruby from source to: /usr/local/rvm/rubies/ruby-1.9.2-p320, this may take a while depend
+ing on your cpu(s)...
+
+ruby-1.9.2-p320 - #fetching
+ruby-1.9.2-p320 - #extracting ruby-1.9.2-p320 to /usr/local/rvm/src/ruby-1.9.2-p320
+ruby-1.9.2-p320 - #extracted to /usr/local/rvm/src/ruby-1.9.2-p320
+ruby-1.9.2-p320 - #configuring
+ruby-1.9.2-p320 - #compiling
+ruby-1.9.2-p320 - #installing
+Retrieving rubygems-1.8.24
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  371k  100  371k    0     0  35412      0  0:00:10  0:00:10 --:--:-- 51058
+Extracting rubygems-1.8.24 ...
+Removing old Rubygems files...
+Installing rubygems-1.8.24 for ruby-1.9.2-p320 ...
+Installation of rubygems completed successfully.
+ruby-1.9.2-p320 - adjusting #shebangs for (gem irb erb ri rdoc testrb rake).
+ruby-1.9.2-p320 - #importing default gemsets (/usr/local/rvm/gemsets/)
+Install of ruby-1.9.2-p320 - #complete</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后通过git将octopress克隆到本地：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo git clone git://github.com/imathis/octopress.git octopress
+# cd octopress
+====================================================================================
+= NOTICE                                                                           =
+====================================================================================
+= RVM has encountered a new or modified .rvmrc file in the current directory       =
+= This is a shell script and therefore may contain any shell commands.             =
+=                                                                                  =
+= Examine the contents of this file carefully to be sure the contents are          =
+= safe before trusting it! ( Choose v[iew] below to view the contents )            =
+====================================================================================
+Do you wish to trust this .rvmrc file? (/home/chenr/octopress/.rvmrc)
+y[es], n[o], v[iew], c[ancel]&gt; y
+Using /usr/local/rvm/gems/ruby-1.9.2-p320</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo rake install
+rake aborted!
+You have already activated rake 0.9.2.2, but your Gemfile requires rake 0.9.2. Using bundle exec may solve this.
+
+(See full trace by running task with --trace)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>也就是说要用<code>bundle exec rake</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo bundle exec rake install
+## Copying classic theme into ./source and ./sass</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>创建第一篇博客</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo bundle exec rake new_post["hello-octopress"]
+$ sudo vim ./source/_post/2012-04-30-hello-octopress.markdown</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>生成静态网站</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo bundle exec rake generat
+(in /home/chenr/octopress)
+## Generating Site with Jekyll
+unchanged sass/screen.scss
+Configuration from /home/chenr/octopress/_config.yml
+/usr/local/rvm/rubies/ruby-1.9.2-p320/lib/ruby/1.9.1/net/https.rb:92:in `require': no such file to load -- openssl (LoadError)
+        from /usr/local/rvm/rubies/ruby-1.9.2-p320/lib/ruby/1.9.1/net/https.rb:92:in `&lt;top (required)&gt;'
+        from /home/chenr/octopress/plugins/gist_tag.rb:10:in `require'
+        from /home/chenr/octopress/plugins/gist_tag.rb:10:in `&lt;top (required)&gt;'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/lib/jekyll/site.rb:76:in `require'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/lib/jekyll/site.rb:76:in `block in setup'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/lib/jekyll/site.rb:75:in `each'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/lib/jekyll/site.rb:75:in `setup'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/lib/jekyll/site.rb:30:in `initialize'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/bin/jekyll:224:in `new'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/gems/jekyll-0.11.0/bin/jekyll:224:in `&lt;top (required)&gt;'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/bin/jekyll:23:in `load'
+        from /usr/local/rvm/gems/ruby-1.9.2-p320/bin/jekyll:23:in `&lt;main&gt;'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>google
+<code>/usr/local/rvm/rubies/ruby-1.9.2-p320/lib/ruby/1.9.1/net/https.rb:92:in `require': no such file to load&#8201;&#8212;&#8201;openssl (LoadError)</code></p>
+</div>
+<div class="paragraph">
+<p>依稀记得octopress推荐使用ruby-1.9.2-p290，于是</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo rvm install ruby-1.9.2-p290
+$ sudo rvm use ruby-1.9.2-p290
+$ sudo bundle exec rake generate</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>错误依旧，傻眼了，还得求助google，我换了一下关键字<code>require: no such file to load&#8201;&#8212;&#8201;openssl (LoadError)</code></p>
+</div>
+<div class="paragraph">
+<p>这次有结果了：<a href="http://blog.bigdinosaur.org/setting-up-octopress/">Setting Up Octopress</a></p>
+</div>
+<div class="paragraph">
+<p>原来是还缺`libssl-dev`这个软件包</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ sudo aptitude install libssl-dev
+$ sudo rvm reinstall ruby-1.9.2-p290</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>终于成功了！归根结底，rvm在安装ruby时，即便缺乏依赖包也没有提示，看来用rvm来安装ruby不怎么靠谱啊。即便用rbenv</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="nginx">nginx</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="编译和安装">编译和安装</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo ./configure --sbin-path=/usr/sbin --conf-path=/etc/nginx/nginx.conf \
+ --error-log-path=/var/log/nginx/error.log --pid-path=/var/run/nginx.pid \
+ --lock-path=/var/lock/nginx.lock --http-log-path=/var/log/nginx/access.log \
+ --http-client-body-temp-path=/var/lib/nginx/body \
+ --http-proxy-temp-path=/var/lib/nginx/proxy \
+ --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --with-debug \
+ --with-http_stub_status_module --with-http_flv_module --with-http_ssl_module \
+ --with-http_dav_module
+
+Configuration summary
+  + using system PCRE library
+  + using system OpenSSL library
+  + md5: using OpenSSL library
+  + sha1: using OpenSSL library
+  + using system zlib library
+
+  nginx path prefix: "/usr/local/nginx"
+  nginx binary file: "/usr/sbin"
+  nginx configuration prefix: "/etc/nginx"
+  nginx configuration file: "/etc/nginx/nginx.conf"
+  nginx pid file: "/var/run/nginx.pid"
+  nginx error log file: "/var/log/nginx/error.log"
+  nginx http access log file: "/var/log/nginx/access.log"
+  nginx http client request body temporary files: "/var/lib/nginx/body"
+  nginx http proxy temporary files: "/var/lib/nginx/proxy"
+  nginx http fastcgi temporary files: "/var/lib/nginx/fastcgi"
+  nginx http uwsgi temporary files: "uwsgi_temp"
+  nginx http scgi temporary files: "scgi_temp"
+
+$ sudo make &amp; make install
+$ sudo mkdir /var/log/nginx &amp;&amp; chown nginx:nignix /var/log/nginx
+$ sudo mkdir /var/lib/nginx &amp;&amp; chown nginx:nignix /var/lib/nginx
+$ sudo /etc/init.d/nginx</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>检测一下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ lynx localhost</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>TLDR: ruby就是一个大坑。</p>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

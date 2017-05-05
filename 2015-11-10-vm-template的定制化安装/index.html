@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>vm template的定制化安装</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-11-10-vm-template%E7%9A%84%E5%AE%9A%E5%88%B6%E5%8C%96%E5%AE%89%E8%A3%85/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">vm template的定制化安装</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-11-10&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/kvm"><i class="fa fa-tag">&nbsp;&nbsp;kvm</i></a>
+           <!--a class="post-tag" href="/tag/kvm">kvm</a-->
+         
+           <a class="post-tag" href="/tag/vm"><i class="fa fa-tag">&nbsp;&nbsp;vm</i></a>
+           <!--a class="post-tag" href="/tag/vm">vm</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>快速部署是虚拟化时代的重要特性，虚拟机镜像模板(简称vm template)是快速部署的基石，所以管理员如何安装和定制化vm template也是一门学问。</p>
+</div>
+<div class="paragraph">
+<p>目前有好多种vm template制作工具，比较流行的有：图形界面的virt-manager，来自libguestfs家族的virt-builder，还有openstack官方自己的diskimage-builder等。它们的工作原理大同小异，都是先通过libvirt调用kvm安装guest OS，然后进行定制化：包括安装额外的软件包，更改主机名，去除网卡mac地址和添加ssh密钥等。经过精心挑选和测试，我最终选择了link:[Oz]。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+各个linux发行版一般都会提供VM template，本文仅针对不满足于官方vm template的系统管理员
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="oz的安装">Oz的安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>我的host是一台centos6，官方repo自带了oz的软件包：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo yum install oz</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>不过如果需要安装最新的版本，需要自行编译安装：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo yum install git rpm-build
+$ cd /tmp
+$ git clone https://github.com/clalancette/oz.git
+$ cd oz
+$ sudo make rpm
+$ cd ~/rpmbuild/RPMS/noarch
+$ sudo rpm -ivh oz-*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>至此就完成了oz的安装，比较简单。接下来需要修改oz的配置文件：</p>
+</div>
+<div class="listingblock">
+<div class="title">/etc/oz/oz.cfg</div>
+<div class="content">
+<pre>[paths]
+output_dir = /var/lib/libvirt/images <i class="conum" data-value="1"></i><b>(1)</b>
+data_dir = /var/lib/oz
+screenshot_dir = /var/lib/oz/screenshots <i class="conum" data-value="2"></i><b>(2)</b>
+# sshprivkey = /etc/oz/id_rsa-icicle-gen
+
+[libvirt]
+uri = qemu:///system
+#image_type = qcow2 <i class="conum" data-value="3"></i><b>(3)</b>
+image_type = raw
+type = kvm
+bridge_name = br0 <i class="conum" data-value="4"></i><b>(4)</b>
+cpus = 1 <i class="conum" data-value="5"></i><b>(5)</b>
+memory = 1024 <i class="conum" data-value="6"></i><b>(6)</b>
+
+[cache]
+original_media = yes
+modified_media = no
+jeos = no
+
+[icicle]
+safe_generation = no</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>生成vm template镜像的存储位置</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>安装过程的截图目录</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>镜像的存储格式</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>guest OS跟外界桥接的网口，若该设置出错，则guest OS无法访问互联网</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>guest OS的cpu</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>guest OS的内存</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="如何使用oz-install创建一个vm-image">如何使用oz-install创建一个VM image?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>oz-install是xx推出的一个自动安装VM的工具，目前支持centos、debian、ubuntu等主流的操作系统，甚至包括windows 7、windows 2003、2008等，非常强大。</p>
+</div>
+<div class="paragraph">
+<p>oz-install -p -a ./Debian7.auto -x  debian7.tdl -d3 d7-32-tmplt.xml
+-a 指定auto文件
+-x 输出的xml文件
+-d 3 loglevel，最详细为4
+-p 清除之前所创建的vm，包括image
+	1. debian.auto详见"debian preseed"
+	2. centos.auto 详见“centos6 kickstart”</p>
+</div>
+<div class="paragraph">
+<p>配置文件
+/etc/oz/oz.cfg
+安装template后的镜像文件存放位置
+/var/lib/libvirt/images
+在安装template的过程中，oz-install会将镜像文件拷贝至
+/var/lib/oz/isos
+一段时间后要定时清理，否则会有大量的垃圾。</p>
+</div>
+<div class="paragraph">
+<p>oz-install的不足之处：oz-install每次vm template，都需要将iso解压，将安装文件拷贝至一个目录，然后方能安装，即便是同一个iso，也会重复这个动作，浪费时间。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="如何实时查看oz-install安装guest的过程">如何实时查看oz-install安装guest的过程</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>oz-install中的guest.py这个文件定义了kvm xml，我们知道可以通过
+来创建vnc，也就是说，如果oz-install利用kvm来安装guest的时候，如果打开了vnc，就可以通过vncviewer来实时查看guest的安装过程。</p>
+</div>
+<div class="paragraph">
+<p>定制模版：</p>
+</div>
+<div class="paragraph">
+<p>假如需要对这个模版进行定制，譬如说手工安装one-context-4.4.0.rpm，可以：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>guestmount -a debian7-32.img -i --rw /mnt/mountpoint
+cp one-context-4.4.0.rpm /mnt/mountpoint/var/tmp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后启动vm，</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>virsh create d7-32-kvm-raw.xml --console
+rpm -Uvh /var/tmp/one-context-4.4.0.rpm</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>参考：</p>
+</div>
+<div class="paragraph">
+<p><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux_OpenStack_Platform/2/html/Getting_Started_Guide/chap-Deploying_Image_Services.html#sect-Building_Images_using_Oz" class="bare">https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux_OpenStack_Platform/2/html/Getting_Started_Guide/chap-Deploying_Image_Services.html#sect-Building_Images_using_Oz</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装第一个vm-template">安装第一个vm template</h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
+<h2 id="定制化vm-template">定制化vm template</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Oz可以做三件事：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>安装操作系统；</p>
+</li>
+<li>
+<p>定制化操作系统；</p>
+</li>
+<li>
+<p>生成操作系统的元数据信息；</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装操作系统">安装操作系统</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Oz可以安装多种操作系统，它利用操作系统内置的自动安装功能实现vm template最小化安装，譬如redhat系的kickstart，debian系的preseed</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="定制化操作系统">定制化操作系统</h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
+<h2 id="生成操作系统的元数据">生成操作系统的元数据</h2>
+<div class="sectionbody">
+
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

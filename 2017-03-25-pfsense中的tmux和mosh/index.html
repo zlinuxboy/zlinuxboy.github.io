@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>pfsense中的tmux和mosh</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">pfsense中的tmux和mosh</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2017-03-25&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+           <a class="post-tag" href="/tag/pfsense"><i class="fa fa-tag">&nbsp;&nbsp;pfsense</i></a>
+           <!--a class="post-tag" href="/tag/pfsense">pfsense</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="paragraph">
+<p>webUI极大地降低了pfsense的使用门槛，但是它仅适合于初始化设置和日常维护，对于有排错或测试需求的用户来说，webUI远不如cli方便和快捷。譬如说想在ping的同时抓包<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>分析，由于两者在pfsense的Diagnostics菜单中是两个不同的功能项，所以需要在不同的界面中频繁切换，使用起来非常烦琐。这时候的cli就体现出它的优势，用户可以同时开两个窗口，一个用于ping，一个打开tcpdump，随心所欲。</p>
+</div>
+<div class="paragraph">
+<p>pfsense支持ssh，此外pfsense的软件仓库还提供cli中两大杀手级的应用：tmux和mosh。简直就是左青龙、右白虎，老牛在腰间。</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">tmux</dt>
+<dd>
+<p>openbsd的一个随手之作，旨在取代screen，结果一不小心又成为*nix的标配。</p>
+</dd>
+<dt class="hdlist1">mosh</dt>
+<dd>
+<p>MIT开发了一个旨在增强SSH的工具<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>，支持漫游、间断性连接、智能本地回显，我最喜欢它的一点是：笔记本从休眠中唤醒后，休眠前的mosh进程（与远程的连接）立刻恢复到可用状态，无需重新连接。</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>在pfsense中，可通过<code>pkg install</code>来安装这两个软件，不过pfsense(2.3.3)有个bug，导致这两个软件都无法正常使用。错误的现象就是：</p>
+</div>
+<div class="listingblock">
+<div class="title">tmux的错误提示</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>[root@pfs-gw1.jkfz.qmcc]/root: tmux
+tmux: need UTF-8 locale (LC_CTYPE) but have US-ASCII</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">mosh的错误提示(mobaxterm连接pfsense)</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>Starting MOSH server...
+      - Local charset   : zh_CN
+      - Remote charset  : zh_CN.UTF-8
+      - Remote Server   : 10.9.1.19
+      - Remote Username : chenrui
+      - SSH port        : 22
+
+Error starting mosh-server on remote server.
+Output of server 10.9.1.19:
+
+SSH Connection: 10.9.6.1 61405 192.168.111.19 22
+The locale requested by LC_ALL=zh_CN.UTF-8 isn't available here.
+Running `locale-gen zh_CN.UTF-8' may be necessary.
+
+mosh-server needs a UTF-8 native locale to run.
+
+Unfortunately, the local environment ([no charset variables]) specifies
+the character set "US-ASCII",
+
+The client-supplied environment (LC_ALL=zh_CN.UTF-8) specifies
+the character set "US-ASCII".
+
+LANG=zh_CN.UTF-8
+LC_CTYPE="C"
+LC_COLLATE="C"
+LC_TIME="C"
+LC_NUMERIC="C"
+LC_MONETARY="C"
+LC_MESSAGES="C"
+LC_ALL=zh_CN.UTF-8
+Connection to 10.9.1.19 closed.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>原因是一样的，缺少locale，不知为何，pfsense的<code>/usr/share/locale/</code>目录都是空的，解决的办法也很简单，那就是把freebsd10.3的locale分别拷贝到对应的pfsense目录中。</p>
+</div>
+<div class="paragraph">
+<p>首先在一台linux<sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnote_3" title="View footnote.">3</a>]</sup>中下载locale，并上传到pfsense中：</p>
+</div>
+<div class="listingblock">
+<div class="title">linux</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd ~
+$ axel -n 10 http://ftp.jaist.ac.jp/pub/FreeBSD/releases/i386/i386/10.3-RELEASE/base.txz <i class="conum" data-value="1"></i><b>(1)</b>
+$ xz -d &lt; base.txz | tar -xvf - <i class="conum" data-value="2"></i><b>(2)</b>
+$ tar -hcf en_US.UTF-8.tar ./en_US.UTF-8 <i class="conum" data-value="3"></i><b>(3)</b>
+$ tar -hcf zh_CN.UTF-8.tar ./zh_CN.UTF-8
+$ scp en_US.UTF-8.tar root@&lt;pfsense&gt;:/usr/share/locale/en_US.UTF-8/ <i class="conum" data-value="4"></i><b>(4)</b>
+$ scp zh_CN.UTF-8.tar root@&lt;pfsense&gt;:/usr/share/locale/zh_CN.UTF-8/</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>axel支持多线程下载，比wget快；</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>后缀<code>txz</code>的意思是使用tar打包后再用xz进行压缩，所以此处需要使用xz和tar两个工具结合方能解开txz文件；</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>tar中的<code>-h</code>表示将链接的源文件，而非链接本身；</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>&lt;pfsense&gt;为pfsense的主机名或ip地址。</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>接着在pfsense中将locale拷贝到相应的目录：</p>
+</div>
+<div class="listingblock">
+<div class="title">pfsense</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo tar -xvf /usr/share/locale/en_US.UTF-8/en_US.UTF-8.tar
+$ sudo tar -xvf /usr/share/locale/zh_CN.UTF-8/zh_CN.UTF-8.tar
+$ sudo chown root:wheel /usr/share/locale/*</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这时候pfsense的mosh和tmux就都可以正常工作了。</p>
+</div>
+<div class="paragraph">
+<p>参考：https://forum.pfsense.org/index.php?topic=126076.0</p>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. pfsense的Package Capture，该功能基于tcpdump实现
+</div>
+<div class="footnote" id="_footnote_2">
+<a href="#_footnoteref_2">2</a>. 官网上的表述是SSH的替代品，然而实际运行的时候还是需要SSH
+</div>
+<div class="footnote" id="_footnote_3">
+<a href="#_footnoteref_3">3</a>. pfsense中没有wget或axel命令，所以只好曲线救国。当然也可以使用windows，只是对我来说，linux更方便些。
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-15-%E4%B8%80%E6%AC%A1pfsense-icmp%E4%B8%8D%E5%8F%AF%E8%BE%BE%E7%9A%84%E6%8E%92%E9%9A%9C%E7%BB%8F%E5%8E%86/">
+            <span class="post-title">一次pfsense icmp不可达的排障经历</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-15
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-15-%E4%B8%80%E6%AC%A1pfsense-icmp%E4%B8%8D%E5%8F%AF%E8%BE%BE%E7%9A%84%E6%8E%92%E9%9A%9C%E7%BB%8F%E5%8E%86/">一次pfsense icmp不可达的排障经历</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-15
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

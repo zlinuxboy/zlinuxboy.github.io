@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何在VirtualBox中安装和克隆Debian VM</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-06-06-%E5%A6%82%E4%BD%95%E5%9C%A8VirtualBox%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E5%85%8B%E9%9A%86Debian-VM/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何在VirtualBox中安装和克隆Debian VM</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-06-06&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/virtualbox"><i class="fa fa-tag">&nbsp;&nbsp;virtualbox</i></a>
+           <!--a class="post-tag" href="/tag/virtualbox">virtualbox</a-->
+         
+           <a class="post-tag" href="/tag/debian"><i class="fa fa-tag">&nbsp;&nbsp;debian</i></a>
+           <!--a class="post-tag" href="/tag/debian">debian</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>上一回中讲了<a href="/2012-06-05-%E5%A6%82%E4%BD%95%E5%9C%A8openSUSE%E4%B8%AD%E5%AE%89%E8%A3%85VirtualBox/">如何在openSUSE中安装VirtualBox</a>，本回将讲如何安装和克隆Debian VM。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-环境">1. 环境</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>HOST  OS : openSUSE11.3</p>
+</li>
+<li>
+<p>Guest OS : Debian 6.0.5 netinstall</p>
+</li>
+<li>
+<p>VirtualBox : 4.1.16</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-创建虚拟机">2. 创建虚拟机</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="2-1-创建vm模版">2.1 创建vm模版</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo VBoxManage createvm --name "deb6-template" --register
+$ sudo VBoxManage modifyvm "deb6-template" --memory 512 --acpi on --boot1 dvd --nic1 bridged --nictype1 virtio --bridgeadapter1 eth0
+$ sudo VBoxManage createhd --filename /vbox.images/deb6-template/deb6-template.vdi --size 8000
+$ sudo VBoxManage storagectl "deb6-template" --name "SATA Controller" --add sata --controller IntelAhci
+$ sudo VBoxManage storageattach "deb6-template" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium /vbox.images/deb6-template/deb6-template.vdi
+$ sudo VBoxManage storageattach "deb6-template" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium /home/software/debian-6.0.5-i386-netinst.iso</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>有四种硬盘接口选择：IDE、SATA、SCSI和SAS，从性能上来说，IDE最弱，SATA、SCSI和SAS相差无几，从兼容性来讲IDE最好，不过实际上现在的操作系统基本都已内置了SATA驱动，因此兼容性已经不是问题。
+网卡类型有多种选择：AMD系列、intel系列和virtio，其中AMD系列对OS的兼容性最佳，而virtio的性能则最好的，不过对操作系统有一定的要求。</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Starting with version 3.1, VirtualBox provides support for the industry-standard “virtio” networking drivers, which are part of the open-source KVM project. The “virtio” networking drivers are available for the following guest operating systems:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Linux kernels version 2.6.25 or later can be configured to provide virtio support; some distributions also back-ported virtio to older kernels.</p>
+</li>
+<li>
+<p>For Windows 2000, XP and Vista, virtio drivers can be downloaded and installed from the KVM project web page.</p>
+</li>
+</ol>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect2">
+<h3 id="2-2-安装vm">2.2 安装vm</h3>
+<div class="paragraph">
+<p>启动vm：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vboxheadless --startvm "deb6-template"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后通过RDP客户端（windows中是“远程连接”，linux中可用“rdesktop”）连接该vm，并按照正常的步骤完成Debian 6.0.5的安装。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-安装常用工具">3. 安装常用工具</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo aptitude install tmux nmap tcpdump lsof htop git-core less iftop net-snmp
+$ sudo aptitude purge vim-tiny &amp;&amp; aptitude install vim</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-升级vboxguestaddition">4. 升级VBoxGuestAddition</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Debian6.0.5自带的VBoxGuestAddition为3.2.0版本，版本比较老，因此需要升级至4.1.16。</p>
+</div>
+<div class="sect2">
+<h3 id="4-1-确保安装相关软件包">4.1 确保安装相关软件包</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo aptitude install bzip2 dkms gcc make linux-header-2.6.32-5-686</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-2-插入vboxguestaddition光盘">4.2 插入VBoxGuestAddition光盘</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo VBoxManage storageattach "deb6-template" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium /usr/share/virtualbox/VBoxGuestAdditions.iso</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在openSUSE中安装完VirtualBox之后，VBoxGuestAddition光盘以iso文件方式保存在<code>/usr/share/virtualbox/VBoxGuestAddition.iso</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-3-升级">4.3 升级</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo mkdir /mnt/cdrom
+$ sudo mount -t iso9660 /mnt/cdrom /dev/sr0
+$ sudo sh ./VBoxLinuxAdditions.run
+Verifying archive integrity... All good.
+Uncompressing VirtualBox 4.1.16 Guest Additions for Linux.........
+VirtualBox Guest Additions installer
+Removing existing VirtualBox DKMS kernel modules ...done.
+Removing existing VirtualBox non-DKMS kernel modules ...done.
+Building the VirtualBox Guest Additions kernel modules ...done.
+Doing non-kernel setup of the Guest Additions ...done.
+You should restart your guest to make sure the new modules are actually used
+
+Installing the Window System drivers
+Installing X.Org Server 1.7 modules ...done.
+Setting up the Window System to use the Guest Additions ...done.
+You may need to restart the hal service and the Window System (or just restart
+the guest system) to enable the Guest Additions.
+
+Installing graphics libraries and desktop services components ...done.</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-4-检查版本">4.4 检查版本</h3>
+<div class="paragraph">
+<p>最后重启guest并检查VBoxGuestAddition版本</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vboxmanage showvminfo "deb6-template"
+-----8&lt;-----
+....
+Guest:
+
+Configured memory balloon size:      0 MB
+OS type:                             Linux26
+Additions run level:                 1
+Additions version:                   4.1.16r78094
+-----8&lt;-----</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明VBoxGuestAddition已经升级为4.1.16了。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="5-收尾">5. 收尾</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="5-1-弹出安装光盘">5.1 弹出安装光盘</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo VBoxManage storageattach "deb6-template" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium emptydrive</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>下次启动的时候，就不会从光盘启动了。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="5-2-解决eth1的问题">5.2 解决eth1的问题</h3>
+<div class="paragraph">
+<p>linux利用udev对硬件设备进行识别，当udev检测到新网卡时（新mac地址），将在<code>/etc/udev/rules.d/70-persistent-net.rules</code>文件中生成新的记录，为新网卡分配一个ethX这样的网卡id，X从0开始，依次是1，2&#8230;&#8203;</p>
+</div>
+<div class="paragraph">
+<p>克隆的时候，VirtualBox会为目标vm的网卡生成新的mac地址，而<code>70-persistent-net.rules</code>文件中已经含有源vm网卡的记录：eth0，因此，udev为目标vm的网卡重新分配网卡id：eth1，这导致IP地址失效，网卡id怪异等问题。</p>
+</div>
+<div class="paragraph">
+<p>解决该问题的方法是删掉源vm中的<code>/etc/udev/rules.d/70-persistent-net.rules</code>这个文件，目标vm启动后找不到该文件就会自行创建一个，永远都不会有eth0占用的问题。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="5-3-清空ip地址配置">5.3 清空IP地址配置</h3>
+<div class="paragraph">
+<p>修改<code>/etc/network/interfaces</code>，注释掉eth0的配置信息，避免与目标vm的IP冲突。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="5-4-调整系统时间">5.4 调整系统时间</h3>
+<div class="paragraph">
+<p>请参考“<a href="/2010-03-20-ntp%E6%9C%8D%E5%8A%A1/)">NTP服务</a>”</p>
+</div>
+<div class="paragraph">
+<p>至此，完成一个Debian VM模版的安装和配置。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="6-克隆">6. 克隆</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vboxmanage clonevm "&lt;source vm&gt;" --name="&lt;destination vm&gt;" --mode machine --register</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>源vm的config和vdi文件在同一个目录下，克隆后，目标vm的config和vdi文件也在同一个目录下。</p>
+</div>
+<div class="sect2">
+<h3 id="6-1-更改主机名">6.1 更改主机名</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo echo "&lt;destination vm&gt;" &gt; /etc/hostname
+$ sudo hostname -F /etc/hostname</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="6-2-更改ip地址">6.2 更改IP地址</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/network/interface</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="6-3-重启">6.3 重启</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo shutdown -r now</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>本回说的是Debian VM，那Windows VM呢，且听<a href="/2012-06-06-%E5%A6%82%E4%BD%95%E5%9C%A8VirtualBox%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E5%85%8B%E9%9A%86Windows-VM/">下回分解</a>。</p>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>netcat和它的亲戚们</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2014-07-09-netcat%E5%92%8C%E5%AE%83%E7%9A%84%E4%BA%B2%E6%88%9A%E4%BB%AC/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">netcat和它的亲戚们</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2014-07-09&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/tool"><i class="fa fa-tag">&nbsp;&nbsp;tool</i></a>
+           <!--a class="post-tag" href="/tag/tool">tool</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="sect1">
+<h2 id="netcat">netcat</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>传送一个真实文件，测试网络吞吐</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>server端</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo nc -l 2223 &gt; /dev/null</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>client端</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>生成一个大文件</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ dd if=/dev/zero of=./disk.img  oflag=direct bs=1M seek=1024 count=0</pre>
+</div>
+</div>
+</li>
+<li>
+<p>计算传送一个大文件所花的时间 </p>
+<div class="literalblock">
+<div class="content">
+<pre>$ time nc 221.182.254.190 2223 &lt; disk.img</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>通过ntopng的flow info可以看出实际的网络吞吐，经过与iftop进行对比，ntopng的数据非常精确。ntopng的运行参数为<code>-t 1 -d 1</code>，数据每秒更新一次。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="socat">socat</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>socat可以被用来做udp端口扫描，参考<a href="http://serverfault.com/questions/346481/echo-server-with-netcat-or-socat">下文</a></p>
+</div>
+<div class="paragraph">
+<p>譬如在idc机房中，运营商的公网IP位于防火墙上，内网服务器设置私网ip，用户根据需要向运营商提交端口开放申请。然后运营商在防火墙上再做端口映射。这种方式虽然提高了安全性，但是给用户调试带来很大的麻烦。譬如说在未正式部署应用之前，运营商是否真的将&lt;公网ip:udp:60002&gt;映射&lt;私网ip:udp:60002&gt;，socat就可以用来做此方面的验证工作。</p>
+</div>
+<div class="paragraph">
+<p>在<strong>内网服务器</strong>中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo socat -v udp-l:60002,fork exec:'/bin/cat'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>第二种写法更简洁：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo socat -v PIPE udp-l:60002,fork</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>第三种写法：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo socat - udp-l:60002</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明，该用法时，client端通过nc发送给server端后，server端返回的数据不会回显到client端，因而必须在server端查看才能确认是否有client端的数据传过来。另外，当client端使用<code>nmap -v -sU 10.8.0.193 -p U:60003</code>时，得到错误的结果，而且会导致server端的`socat`进程中止。因而建议结合nmap使用socat用于udp端口扫描。</p>
+</div>
+<div class="paragraph">
+<p>在<strong>客户端</strong>中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ nc -u 10.8.0.193 60002</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>登陆成功之后输入：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>hello</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果正常的话可以看到回显：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>hello</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在<strong>内网服务器</strong>中的显示如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>&gt; 2014/12/07 23:53:42.578116  length=6 from=0 to=5
+hello
+&lt; 2014/12/07 23:53:42.578934  length=6 from=0 to=5
+hello</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>客户端中，nc通过udp连接上了内网服务器的udp:60002；</p>
+</li>
+<li>
+<p>客户端输入的`hello`已被内网服务器接收，而且回显给客户机；</p>
+</li>
+<li>
+<p>socat用来测试udp端口非常有用。</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

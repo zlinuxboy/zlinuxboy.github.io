@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>OmniOS中的iSCSI-part2</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-10-16-omnios%E4%B8%AD%E7%9A%84iscsi-part2/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">OmniOS中的iSCSI-part2</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-10-16&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/OmniOS"><i class="fa fa-tag">&nbsp;&nbsp;OmniOS</i></a>
+           <!--a class="post-tag" href="/tag/OmniOS">OmniOS</a-->
+         
+           <a class="post-tag" href="/tag/iscsi"><i class="fa fa-tag">&nbsp;&nbsp;iscsi</i></a>
+           <!--a class="post-tag" href="/tag/iscsi">iscsi</a-->
+         
+           <a class="post-tag" href="/tag/storage"><i class="fa fa-tag">&nbsp;&nbsp;storage</i></a>
+           <!--a class="post-tag" href="/tag/storage">storage</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="sect1">
+<h2 id="硬件情况">硬件情况</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 1. 主机角色</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">角色</th>
+<th class="tableblock halign-left valign-top">主机名</th>
+<th class="tableblock halign-left valign-top">ip地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">iscsi target</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">storage1.jklab.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.55.120</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.56.120</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.57.120</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="6"><p class="tableblock">iscsi initiator</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">pmx2.jklab.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.55.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.56.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.57.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">pmx3.jklab.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.55.233</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.56.233</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.57.233</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="术语">术语</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">iscsi</dt>
+<dd>
+<p>iscsi是Internet SCSI的缩写，是一种存储通信协议。它将SCSI协议封装在传统的TCP/IP协议中。可以实现一台主机通过IP网络远程访问另一台主机所提供的存储设备，就像访问本地块设备一样。</p>
+</dd>
+<dt class="hdlist1">COMSTAR</dt>
+<dd>
+<p>COmmon Multiprotocol SCSI TARget的缩写。是solaris中的一个软件框架，它可以将solaris*转换成一个SCSI target设备。initiator可通过存储网络访问SCSI target设备。支持的存储协议为 iSCSI、FC、iSER 和 SRP，本文仅涉及iSCSI。</p>
+</dd>
+<dt class="hdlist1">iscsi target</dt>
+<dd>
+<p>iscsi target设备，可以看作是具备网络通信功能的硬盘驱动器；</p>
+</dd>
+<dt class="hdlist1">iscsi initator</dt>
+<dd>
+<p>iscsi启动器，向iscsi target设备发起scsi请求，可以看作是客户端。</p>
+</dd>
+<dt class="hdlist1">iqn</dt>
+<dd>
+<p>iqn是iscsi网络中的设备的唯一标识符。当初始化iscsi target或initiator时，系统将自动为它们分配一个唯一是iqn。</p>
+</dd>
+<dt class="hdlist1">LU</dt>
+<dd>
+<p>Logical Unit的缩写，逻辑单元，是iscsi存储系统中实际被读写的实体。每个LU都有一个唯一的Logical Unit Number(LUN)。</p>
+</dd>
+<dt class="hdlist1">host group</dt>
+<dd>
+<p>指的是被允许访问相同LUs的一组initiators的名称。</p>
+</dd>
+<dt class="hdlist1">target group</dt>
+<dd>
+<p>指的是将同一组LU导出到同一组host group的一组target的名称。</p>
+</dd>
+<dt class="hdlist1">view</dt>
+<dd>
+<p>view是粘合剂，负责将LU、initiator/host group、target/target group关联起来。当来自host group的initiator登录到包含在target group中的target端口时，LU可被访问。</p>
+</dd>
+<dt class="hdlist1">target portal group</dt>
+<dd>
+<p>确定一组iSCSI targets将侦听哪些接口的`IP地址:TCP端口`(又名network portal)列表。换句话说，它是network portals的集合，通过与view的配合可以灵活的控制target和initiator的关系。</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>iscsi各组件关系图如下：</p>
+</div>
+<div class="paragraph">
+<p>LU是initiator最终读写数据的地方，然而initiator连接的是target，那么LU和target是如何关联的呢？</p>
+</div>
+<div class="paragraph">
+<p>首先创建一个LU，然后创建一个target和target group，接着将target添加到该target group中，随后创建一个view，将target group和LU关联起来，实现LU和target的结合。</p>
+</div>
+<div class="paragraph">
+<p>在生产环境中建议每个LU、Target、Target Group、View是一一对应关系，便于管理，减少数据冲突风险。当然，如果是构建cluster的话请参考OmniOS中的iscsi-part2。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="iscsi-target-server-的配置">iscsi target(server)的配置</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="iscsi-multipath">iscsi multipath</h3>
+<div class="paragraph">
+<p>当iscsi target主机有超过一块网卡的时候，可以通过iscsi multipath功能来提升性能和可用性。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>假如要启用multipath，则还需要创建第二个tpg</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec itadm create-tpg igb1 192.168.57.120:3260</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>将iscsi target添加到第二个tpg中</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec modify-target -t igb0,igb1 iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查状态</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec itadm list-target -v
+
+TARGET NAME                                                  STATE    SESSIONS
+iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 online   3  <i class="conum" data-value="1"></i><b>(1)</b>
+        alias:                  -
+        auth:                   none (defaults)
+        targetchapuser:         -
+        targetchapsecret:       unset
+        tpg-tags:               igb1 = 3,igb0 = 2 <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>`sessions`为3，这是因为omnios默认有一个`default`的tpg，之前由于没有手工创建新的tpg，所以iscsi target被自动添加到`default`这个tpg中。default tpg的系统设定是在全部的网卡上启用。而pmx2的3张网卡跟storage1的3张网卡处于同一个网段，路由可达，因而pmx2在，所以它通过这iscsi initiator可以看到这这分别是。</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>从`tpg-tags`中可以看出，该iscsi target目前存在于两个tpg中。</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>这个时候在pmx2.jklab.qmcc中执行`$ sudo iscsiadm --mode session`将自动找到该iscsi target了。随后可以使用磁盘管理工具对该块设备进行格式化、创建文件系统等操作。</p>
+</div>
+</li>
+<li>
+<p>启用静态发现模式(static mode discovery)</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec devfsadm -i iscsi</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>至此完成了iscsi target服务的配置，接下来轮到iscsi initator。</p>
+</div>
+<div class="paragraph">
+<p>At this point once you have configured your iSCSI initiator on the client side then you should be able to see your iSCSI block device.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="iscsi-initator的配置">iscsi initator的配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>iscsi initator可以理解为客户端，主流OS都有各自的实现。</p>
+</div>
+<div class="sect2">
+<h3 id="linux">linux</h3>
+<div class="paragraph">
+<p>本文中所用的linux OS为proxmox，基于debian的虚拟化平台。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="windows">windows</h3>
+<div class="paragraph">
+<p>参考：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://www.highlnk.com/2015/01/zfs-iscsi-lun-mpio-setup-windows-server/" class="bare">https://www.highlnk.com/2015/01/zfs-iscsi-lun-mpio-setup-windows-server/</a></p>
+</li>
+<li>
+<p><a href="http://docs.oracle.com/cd/E26502_01/html/E29006/toc.html">Oracle Solaris 11.1 Administration: Devices and File Systems</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

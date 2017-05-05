@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>远程升级OpenBSD</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-09-13-%E8%BF%9C%E7%A8%8B%E5%8D%87%E7%BA%A7openbsd/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">远程升级OpenBSD</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-09-13&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openbsd"><i class="fa fa-tag">&nbsp;&nbsp;openbsd</i></a>
+           <!--a class="post-tag" href="/tag/openbsd">openbsd</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="paragraph">
+<p>在openbsd的官方文档中，建议在console的模式下升级，但是大部分人都不想下机房，或者服务器没有ipmi带外管理口，远程升级成为唯一的选择。</p>
+</div>
+<div class="paragraph">
+<p>在升级之前，需要找一个版本全的镜像站点，推荐：http://ftp3.usa.openbsd.org/pub/OpenBSD/</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+在升级的过程中，以下步骤需要在root权限下操作
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>备份</p>
+<div class="paragraph">
+<p>每次远程升级的时候，都会在/usr/rel中创建一个新版本的目录，譬如从5.6升级到5.7的时候，就创建了/usr/rel/57，所以本次升级时，/usr/rel/57就已经存在，而且/usr/rel/57里面已经包含了上次升级时所下载的file set，譬如base57.tgz、bsd、bsd.rd等文件。所以不需要备份bsd和bsd.rd，但是需要备份/sbin/reboot</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cp /sbin/reboot /sbin/57reboot</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>下载</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /usr/rel
+mkdir 58 &amp;&amp; cd 58
+http://ftp3.usa.openbsd.org/pub/OpenBSD/5.8/i386/{SHA256.sig,bsd,bsd.rd,base58.tgz,comp58.tgz,man58.tgz,xbase58.tgz,xfont58.tgz,xserv58.tgz,xshare58.tgz}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>升级</p>
+<div class="paragraph">
+<p>首先将新内核拷贝至根目录下：</p>
+</div>
+<div class="paragraph">
+<p><strong>多核版本</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /usr/rel    # where you put the release files
+ln -f /bsd /obsd &amp;&amp; cp bsd.mp /nbsd &amp;&amp; mv /nbsd /bsd
+cp bsd.rd /
+cp bsd /bsd.sp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>单核版本</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /usr/rel    # where you put the release files
+ln -f /bsd /obsd &amp;&amp; cp bsd /nbsd &amp;&amp; mv /nbsd /bsd
+cp bsd.rd bsd.mp /    # may give a harmless warning</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着执行下面的操作：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cp /sbin/reboot /sbin/57reboot
+tar -C / -xzphf xserv58.tgz
+tar -C / -xzphf xfont58.tgz
+tar -C / -xzphf xshare58.tgz
+tar -C / -xzphf xbase58.tgz
+tar -C / -xzphf comp58.tgz
+tar -C / -xzphf man58.tgz
+tar -C / -xzphf base58.tgz # Install last!
+/sbin/57reboot</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>重启后</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /dev
+./MAKEDEV all
+installboot -v wd0    # wd0为第一块启动硬盘</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>合并配置文件</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>sysmerge</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着根据提示做出相应的应答。</p>
+</div>
+</li>
+<li>
+<p>删除过期文件</p>
+<div class="paragraph">
+<p>每个版本均不相同，详见 <a href="http://www.openbsd.org/faq/upgrade58.html#upgrade" class="bare">http://www.openbsd.org/faq/upgrade58.html#upgrade</a></p>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+官方不建议跨版本升级，但是我曾成功地将两台openbsd4.9升至5.7，不过当时为了保险起见，还是通过小步跑跨版本的方式升级：4.9&#8594;5.1&#8594;5.3&#8594;5.5&#8594;5.7。
+</td>
+</tr>
+</table>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

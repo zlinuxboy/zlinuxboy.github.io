@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>strongswan on pfsense</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-06-01-strongswan-on-pfsense/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">strongswan on pfsense</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-06-01&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/pfsense"><i class="fa fa-tag">&nbsp;&nbsp;pfsense</i></a>
+           <!--a class="post-tag" href="/tag/pfsense">pfsense</a-->
+         
+           <a class="post-tag" href="/tag/strongswan"><i class="fa fa-tag">&nbsp;&nbsp;strongswan</i></a>
+           <!--a class="post-tag" href="/tag/strongswan">strongswan</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>一个大型的信息化系统往往由多个第三方厂家的软硬件产品集成而成，包括网络设备、安全设备、服务器、业务系统、网管系统等，那么在维护这个系统的时候势必需要多个第三方厂家的售后远程访问系统，如何管理众多的远程账户权限是一个严肃的问题。</p>
+</div>
+<div class="paragraph">
+<p>目前市面上有不少厂家有专门的解决方案，譬如h3c的<a href="http://www.h3c.com.cn/Products___Technology/Products/IP_Security/Audit/SecPath/">secpath运维审计系统</a>，它们统称为<a href="https://www.zhihu.com/question/21036511?sort=created">堡垒机</a>，然而对于中小企业而言，信息化系统投资预算有限，堡垒机的价值不菲。所以只能另寻其它解决方案，本文讨论的就是利用pfsense<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>自带的strongswan+freeradius+pf，构建一个容易管理的，受控的ipsec/ikev2 vpn，实现堡垒机的部分功能。</p>
+</div>
+<div class="paragraph">
+<p>思路很简单：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>第三方维护单位将获得独立的账号，允许系统管理员通过webUI快速创建和管理这些账号；</p>
+</li>
+<li>
+<p>允许系统管理员限定每个账号可访问的资源；</p>
+</li>
+<li>
+<p>对于图新界面的维护，譬如windows服务器，通过部署Active Directory来控制系统管理员的操作权限；</p>
+</li>
+<li>
+<p>对于字符界面的维护，譬如linux服务器、网络设备，通过日志系统来记录系统管理员的操作行为；</p>
+</li>
+<li>
+<p>对于web界面的维护，无解；</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>pfsense的pf+strongswan+freeradius仅实现前面两项需求。</p>
+</div>
+<div class="paragraph">
+<p>strongswan支持l2tp、ikev1、ikev2多种vpn类型，ikev2特别适合于移动网络环境，具备快速重连的功能特性，而且安全性最高，所以本文采用的就是ikev2这种vpn类型。另外，eap-freeradius的认证配置稍显复杂，为了提高成功率，我决定先尝试配置eap-mschapv2，成功之后再配置eap-freeradius。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ikev2-eap-mschapv2">ikev2/EAP-MSCHAPv2</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="生成ca和服务器证书">生成CA和服务器证书</h3>
+<div class="paragraph">
+<p>由于windows7对证书有一些特殊的需求，而pfsense webUI的证书生成器缺乏一些参数，所以需要在命令行下创建证书：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /home/
+ipsec pki --gen --type rsa --size 4096 --outform pem &gt; qmcc.key.pem <i class="conum" data-value="1"></i><b>(1)</b>
+chmod 600 qmcc.key.pem
+ipsec pki --self --ca --lifetime 3650 --in qmcc.key.pem --type rsa --dn "OU=jike, CN=qmcc CA" --outform pem &gt; qmcc.cacert.pem <i class="conum" data-value="2"></i><b>(2)</b>
+ipsec pki --gen --type rsa --size 4096 --outform pem &gt; private/pfs-gw1.syxy.key.pem <i class="conum" data-value="3"></i><b>(3)</b>
+chmod 600 private/pfs-gw1.syxy.key.pem
+ipsec pki --pub --in private/pfs-gw1.syxy.key.pem --type rsa | ipsec pki --issue --lifetime 3650 --cacert cacerts/qmcc.cacert.pem --cakey private/qmcc.key.pem --dn "OU=syxy, CN=pfs-gw1.syxy.qmcc" --san pfs-gw1.syxy.qmcc --san @221.xx.xx.44 --flag serverAuth --flag ikeIntermediate --outform pem &gt; certs/pfs-gw1.syxy.cert.pem <i class="conum" data-value="4"></i><b>(4)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>创建ca key</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>创建ca 证书</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>创建服务器（pfs-gw1） key</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>创建服务器（pfs-gw1） 证书</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="将证书导入pfsense">将证书导入pfsense</h3>
+<div class="paragraph">
+<p>进入<span class="menuseq"><span class="menu">system</span>&#160;&#9656; <span class="menuitem">Cert. Manager标签页</span></span></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://www.zlinuxboy.com" alt="图1、pfsense证书管理界面">
+</div>
+</div>
+<div class="paragraph">
+<p>点击<b class="button">add</b>按钮，出现“图2、pfsense CAs创建界面”，method选择“Import an existing Certificate Authority”。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://www.zlinuxboy.com" alt="图2、pfsense CAs创建界面">
+</div>
+</div>
+<div class="paragraph">
+<p>接着在命令行下使用vi命令查看证书：</p>
+</div>
+<div class="listingblock">
+<div class="title">/home/qmcc.cert.pem</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>-----BEGIN CERTIFICATE-----
+MIIFJzCCAw+gAwIBAgIIOqC4fSsDMIEwDQYJKoZIhvcNAQEFBQAwITENMAsGA1UE
+CxMEamlrZTEQMA4GA1UEAxMHcW1jYyBDQTAeFw0xNTEyMzAwODE5MTJaFw0yNTEy
+MjcwODE5MTJaMCExDTALBgNVBAsTBGppa2UxEDAOBgNVBAMTB3FtY2MgQ0EwggIi
+MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDAD+6TWuAoy/gDE/z4pT2T/nOr
+isBB8F7eavBx2Jppwc889v94I1w9mEB43lLo+nsXnEfp3b1fYPafVjLOBqAFwt3s
+9uDQA9JOmOn1AuaoohVtyui9RvUAONldsHLxrgyBk/BwnnUYn/vcHG9lzC+hf4rY
+.....
+p4+7Qu/ZEfRllg9F2p8L81N7pPEwi3wEKZnTfW3LgKwXW9Hz431pEVd1pRxR39v5
+TAmZS6JN7mnAYH2eT4esps4tJKiOajj3n+kGArQily14HPvVGN/gPJ1qgLWEfnQA
+voTgzB6vNJDSjHILeDy2Z7uAOXxSgl342DCpi0GSUjEwyuby5iEGnE4XZwPWm05G
+C4x8YfbziozcDcpVR7frXHI6lxiJW+uRI5mugYnb+UXNZdDfxrP96w8U/57kw0wk
+qIKczV3buz3hhXN6bU0FroKhwSvGCdy0IUgTdc02O9ow6BiQaIj9qnNXWef6yhsJ
+rmW7QxRnfOwri2g1TYmlhNV2herAo5gnNouhfHQL9gy8fDyCZsjSo0mCSnQoA+bK
+0nmzY21vl6v/Bgo4PKIVwnYVRE1bYDIXbp/QWRhhnN65MXONXgoDtIU+Az7o3ks8
+8ZrR8Foe4R3/g2VP2g17ZN/ccUc8TRhMXome
+-----END CERTIFICATE-----</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>将上述文本粘贴到“图2、pfsense CAs创建界面”的“Certificate data”框中。</p>
+</div>
+<div class="paragraph">
+<p>随后参考上面的步骤导入服务器（pfs-gw1）证书和服务器（pfs-gw1）key。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ikev2-eap-mschapv2-2">ikev2/EAP-MSCHAPv2</h3>
+<div class="paragraph">
+<p>在创建ikev2/EAP-Radius之前，先实现简单的ikev2/eap-mschapv2，确认cert、ipsec、eap-mschapv2各个组件均可正常工作之后，再叠加freeradius和eap-radius功能。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Mobile Clients</p>
+<div class="paragraph">
+<p>导航至<span class="menuseq"><span class="menu">VPN</span>&#160;&#9656; <span class="submenu">IPsec</span>&#160;&#9656; <span class="menuitem">Mobile Clients标签页</span></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>选中 Enable IPsec Mobile Client Support</p>
+</li>
+<li>
+<p>在User Authentication 选择Local Database</p>
+</li>
+<li>
+<p>选中 Provide a virtual IP address to clients</p>
+</li>
+<li>
+<p>输入一个未使用的私网子网和掩码，本例是“192.168.110.0/24”</p>
+</li>
+<li>
+<p>选中“Provide a list of accessible networks to clients”</p>
+</li>
+<li>
+<p>点击<b class="button">Save</b>按钮</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Phase 1</p>
+<div class="paragraph">
+<p>导航至<span class="menu">Tunnels标签页</span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>点击<b class="button">Create Phase1</b>按钮</p>
+</li>
+<li>
+<p>“Key Exchange version”选择“v2”</p>
+</li>
+<li>
+<p>Authentication method选择“EAP-MSChapv2”</p>
+</li>
+<li>
+<p>My Identifier 选择“Distinguished name”，在右边框输入防火墙的名称</p>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+防火墙名称必须严格匹配前面的服务器证书中的Common Name，本项目中所用的是“pfs-gw1”
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Peer Identifier选择“any”</p>
+</li>
+<li>
+<p>My Certificate选择刚才所导入的服务器证书，本例中是“pfs-gw1 cert”</p>
+</li>
+<li>
+<p>Encryption algorithm设为“AES”和“256 bits”</p>
+</li>
+<li>
+<p>Hash algorithm 选择“SHA1”，假如没有iOS/OS X的用户，则可以选择“SHA256”</p>
+</li>
+<li>
+<p>DH key group选择“2 (1024 bit) ”</p>
+</li>
+<li>
+<p>Lifetime选择“28800 ”</p>
+</li>
+<li>
+<p>取消“Disable Rekey”</p>
+</li>
+<li>
+<p>取消“Disable Reauth”</p>
+</li>
+<li>
+<p>选中“Enable DPD”, 设为“10 seconds”和“5 retries”</p>
+</li>
+<li>
+<p>点击<b class="button">Save</b>按钮</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Phase 2</p>
+<div class="paragraph">
+<p>用户通过ikev2拨号进来之后，允许访问哪些网段将在这里进行设置。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>展开“show Phase 2 Entries”</p>
+</li>
+<li>
+<p>点击“add P2”, 或者修改一个以存在的entry。</p>
+</li>
+<li>
+<p>Mode选择“Tunnel IPv4 ”</p>
+</li>
+<li>
+<p>Local Network建议选择“Network”，更细粒度的控制可在Firewall&gt;Rules&gt;IPsec中实现,本例中，ipsec客户端将访问“192.168.111.0/24”和“10.10.0.0/24”这两个子网中的网元。</p>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>假如设为0.0.0.0/0，那么客户端访问互联网的数据也将通过vpn，在本项目中并不需要。</p>
+</li>
+<li>
+<p>因为无法在一个entry中设置两个网段，所以需要创建两个entry，每个entry对应一个子网</p>
+</li>
+</ol>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Description可填可不填</p>
+</li>
+<li>
+<p>Protocol设置为“ESP ”</p>
+</li>
+<li>
+<p>Encryption algorithms勾选“ AES+Auto” 假如没有iOS/OS X的用户，还可以额外选择“3DES”</p>
+</li>
+<li>
+<p>Hash algorithms勾选“SHA1”和“SHA256”</p>
+</li>
+<li>
+<p>PFS Key Group设为“off”</p>
+</li>
+<li>
+<p>Lifetime设为“3600”</p>
+</li>
+<li>
+<p>点击<b class="button">Save</b></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>创建用户</p>
+<div class="paragraph">
+<p>导航至<span class="menuseq"><span class="menu">VPN</span>&#160;&#9656; <span class="submenu">IPsec</span>&#160;&#9656; <span class="menuitem">Pre-Shared Keys标签页</span></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>点击“”</p>
+</li>
+<li>
+<p>输入用户名，类似邮箱样式，譬如“<a href="mailto:user@example.com">user@example.com</a>”</p>
+</li>
+<li>
+<p>Secret Type选择“EAP”</p>
+</li>
+<li>
+<p>在Pre-Shared Key输入密码</p>
+</li>
+<li>
+<p>点击<b class="button">Save</b>按钮</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>该方式所创建的用户，其密码是明文且可见，并不安全，仅供测试只用。生产环境中应使用下面介绍的EAP-RADIUS或EAP-TLS认证方式。</p>
+</div>
+<div class="sect3">
+<h4 id="防火墙">防火墙</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>策略</p>
+<div class="paragraph">
+<p>ipsec在pfsense中是等同于物理接口的存在，可以通过防火墙策略来精细控制源和目标。eap-mschapv2认证方式仅用作测试连通性，所以先配置一条大颗粒度的rule</p>
+</div>
+<div class="paragraph">
+<p>导航至<span class="menuseq"><span class="menu">Firewall</span>&#160;&#9656; <span class="submenu">Rules</span>&#160;&#9656; <span class="menuitem">IPsec</span></span>标签页</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>点击<b class="button">add</b>按钮</p>
+</li>
+<li>
+<p>Protocol、Source和Destination全部设为“any”</p>
+</li>
+<li>
+<p>点击<b class="button">Save</b>按钮</p>
+</li>
+<li>
+<p>点击<b class="button">Apply Changes</b>按钮</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>NAT</p>
+<div class="paragraph">
+<p>ipsec客户端拨号至pfs-gw1后，获得的是192.168.110.0/24的ip地址，这个ip段尚未添加至h3c 5800中，所以通过ipsec隧道进来的数据包，在离开pfs-gw1之前，需要映射成pfs-gw1的接口ip地址，分别是10.10.0.17和192.168.111.60，才能正常访问10.10.0.0/24和192.168.111.0/24子网的网元。</p>
+</div>
+<div class="paragraph">
+<p>导航至<span class="menuseq"><span class="menu">Firewall</span>&#160;&#9656; <span class="submenu">NAT</span>&#160;&#9656; <span class="menuitem">Outbound标签页</span></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Mode选择Manual Outbound NAT rule generation</p>
+</li>
+<li>
+<p>Interface选择<code>LAN</code></p>
+</li>
+<li>
+<p>Source选择<code>Network</code>，网段为<code>192.168.110.0/24</code></p>
+</li>
+<li>
+<p>Destination选择<code>Any</code></p>
+</li>
+<li>
+<p>Translation Address选择<code>Interface Address</code></p>
+</li>
+<li>
+<p>点击<b class="button">save</b>和<b class="button">apply change</b>按钮</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>上面的步骤创建的是192.168.110/24至10.10.0.17（WAN网卡IP）的映射，还需要遵循同样的步骤创建一条192.168.110.0/24至192.168.111.60（LAN网卡IP）的映射。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>至此完成ikev2/eap-mschapv2的部署，可在windows7中创建一个ipsec/ikev2拨号连接进行测试。</p>
+</div>
+<div class="paragraph">
+<p>如果一切正常的话，客户端将获得一个192.168.110.0/24的ip地址，可以ping通192.168.111.0/24和10.10.0.0/24这两个子网中的网元。</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ikev2-eap-radius">ikev2/eap-radius</h3>
+<div class="paragraph">
+<p>前面完成了ikev2/eap-mschapv2的热身，下面正式配置freeradius作为ipsec的认证后端，其好处是：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>特定的用户将获得固定的ip地址，便于在防火墙策略中限定其访问的特定网元；</p>
+</li>
+<li>
+<p>用户密码以密文方式存储，提高安全性。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>其它功能特性，包括数据库支持、记账、审计等有待进一步挖掘，本期未涉及。</p>
+</div>
+<div class="paragraph">
+<p>pfsense提供了一个官方的freeradius2包，版本比较低，但是足以应付本项目需求。如何安装软件包详见官方文档。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>在ikev2/eap-mschapv2配置的基础上，做一些简单的修改：</p>
+<div class="ulist">
+<ul>
+<li>
+<p>在<span class="menuseq"><span class="menu">System</span>&#160;&#9656; <span class="submenu">User Manager</span>&#160;&#9656; <span class="menuitem">Authentication Servers标签页</span></span> 中定义radius服务器</p>
+</li>
+<li>
+<p>点击<b class="button">添加</b>按钮</p>
+</li>
+<li>
+<p>Type选择<code>RADIUS</code></p>
+</li>
+<li>
+<p>Hostname of IP address填入<code>pfs-gw1</code>，注意该名称并不需要存在dns记录，只需要在pfs-gw1本机的命令行界面中ping得通即可。</p>
+</li>
+<li>
+<p>Shared Secret填入<code>syxy</code></p>
+</li>
+<li>
+<p>Service offered选择<code>Authentication and Accounting</code></p>
+</li>
+<li>
+<p>Authentication port和Accounting port保持<code>1812</code>和<code>1813</code>不变</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>更改ipsec/mobile clients中的配置</p>
+<div class="ulist">
+<ul>
+<li>
+<p>导航至<span class="menuseq"><span class="menu">VPN</span>&#160;&#9656; <span class="submenu">IPsec</span>&#160;&#9656; <span class="menuitem">Mobile Clients标签页</span></span></p>
+</li>
+<li>
+<p>User Authentication选择<code>freeradius on pfs-gw1</code>，该名称是前面所定义的radius服务器中的<code>Descriptive name</code></p>
+</li>
+<li>
+<p>取消<code>Provide a virtual IP address to clients</code></p>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+改由freeradius/user将特定ip下发给客户端。
+</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>更改ipsec/Phase 1中的Authentication method</p>
+<div class="ulist">
+<ul>
+<li>
+<p>导航至<span class="menuseq"><span class="menu">VPN</span>&#160;&#9656; <span class="submenu">IPsec</span>&#160;&#9656; <span class="menuitem">Tunnel标签页</span></span></p>
+</li>
+<li>
+<p>编辑<code>road warrior ikev2 p1</code>，Authentication method选择<code>EAP-RADIUS</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="freeradius">freeradius</h3>
+<div class="paragraph">
+<p>导航至<span class="menuseq"><span class="menu">services</span>&#160;&#9656; <span class="menuitem">FreeRADIUS</span></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>添加Users</p>
+<div class="ulist">
+<ul>
+<li>
+<p>在Users标签页，点击“add”按钮</p>
+</li>
+<li>
+<p>填入Username和Password</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+username建议采用邮箱形式，譬如“<a href="mailto:xxx@rad.syxy.qmcc">xxx@rad.syxy.qmcc</a>”
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Password Encryption选择“Cleartext-Password”</p>
+</li>
+<li>
+<p>IP address填入该用户的特定ip，后续将在防火墙策略中针对该ip做精细控制</p>
+</li>
+<li>
+<p>subnet mask和gateway留空</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>添加NAS/Clients</p>
+<div class="ulist">
+<ul>
+<li>
+<p>在NAS/Clients标签页，点击<b class="button">add</b>按钮</p>
+</li>
+<li>
+<p>Client IP Address填入“192.168.111.60”</p>
+</li>
+<li>
+<p>Client IP Version选择“IPv4”</p>
+</li>
+<li>
+<p>Client Shortname填入“pfs-gw1”</p>
+</li>
+<li>
+<p>Client Shared Secret填入“syxy”</p>
+</li>
+<li>
+<p>点击<b class="button">保存</b>按钮</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>添加Interfaces</p>
+<div class="ulist">
+<ul>
+<li>
+<p>在Interfaces标签页，点击<b class="button">add</b>按钮</p>
+</li>
+<li>
+<p>Interface IP address填入“192.168.111.60”</p>
+</li>
+<li>
+<p>Port默认“1812”</p>
+</li>
+<li>
+<p>Interface Type选择“Authentication”</p>
+</li>
+<li>
+<p>IP Version选择“IPv4”</p>
+</li>
+<li>
+<p>点击<b class="button">保存</b>按钮</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>遵照上列步骤添加再一条Accounting Interface，端口是1813</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>其它</p>
+<div class="ulist">
+<ul>
+<li>
+<p>EAP保持默认值即可，Default EAP Type的默认值为“MD5”，无需修改。</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>至此，ikev2/eap-radius配置完成，每个用户将获得一个固定的ip地址，再通过防火墙策略实现精细控制。</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">关于split-tunnel</div>
+<div class="paragraph">
+<p>The Windows 7 client will always allow access to the host&#8217;s LAN. So to access, for instance, a local printer nothing special has to be done. Since the client always proposes 0.0.0.0/0 as remote TS, the gateway is free to narrow it to a subset. But to make split-tunneling actually work on the client the Use default gateway on remote network option in the Advanced TCP/IP settings of the VPN connection has to be disabled. Also, because a classful route is installed the virtual IP address has to belong to the remote subnet, otherwise, the Disable class based route addition option has to be enabled and routes have to be installed manually.
+With Windows 8.1 (and in Windows Server 2012 R2) Microsoft introduced PowerShell cmdlets to configure VPN connections. These provide more options and also allow to configure split tunneling directly (-SplitTunneling option).</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考文档">参考文档</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://doc.pfsense.org/index.php/IKEv2_with_EAP-MSCHAPv2#Import_the_CA_to_the_Client_PC0" class="bare">https://doc.pfsense.org/index.php/IKEv2_with_EAP-MSCHAPv2#Import_the_CA_to_the_Client_PC0</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. pfsense是一款优秀的软路由软件，自带了pf、carp、open-bgpd、strongswan等功能强大的组件，加上精美的webUI，深受运维人员的喜爱。
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何修改linux网卡ID</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2008-08-04-%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9linux%E7%BD%91%E5%8D%A1ID/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何修改linux网卡ID</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2008-08-04&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/debian"><i class="fa fa-tag">&nbsp;&nbsp;debian</i></a>
+           <!--a class="post-tag" href="/tag/debian">debian</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="paragraph">
+<p>在使用VMware的时候，往往需要创建多个虚拟机，为此，VMware提供了一个便利的功能：clone（克隆）。用户只需要装好一台虚拟机，然后使用clone功能就可以复制出多个虚拟机了，省时省事。</p>
+</div>
+<div class="paragraph">
+<p>然而VMware为了避免目标和源这两台虚拟机之间的网卡冲突，在复制的过程中，自动修改了目标虚拟机网卡的MAC地址。于是当目标虚拟机启动的时候，系统就会赋予这些网卡新的id，譬如源虚拟机装了3张网卡，那么目标虚拟机的网卡id就是eth3、eth4和eth5，这是因为udev这个服务进程检测到有新的网卡（新的mac地址），于是重新加载驱动，赋予该网卡新的id（因为旧网卡id尚未删除）。假如在目标虚拟机上再重新clone，网卡id还会继续增长，这样的网卡id看起来很碍眼，解决办法是修改<code>/etc/udev/rules.d/zNN_persistent-net.rules</code>文件。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>修改前的<code>zNN_persistent-net.rules</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># This file was automatically generated by the /lib/udev/write_net_rules
+# program, probably run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single line.
+# MAC addresses must be written in lowercase.
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:a8:e8:91", NAME="eth0"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:a8:e8:9b", NAME="eth1"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:a8:e8:a5", NAME="eth2"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:2e:e1:61", NAME="eth4"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:2e:e1:6b", NAME="eth3"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:2e:e1:57", NAME="eth5"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置文件中有6张网卡，实际在用的只有三张，其mac地址末尾分别是61，6b和57，eth0、eth1和eth2已经失效，我们只需将e旧的th0、eth1、eth2注释掉，然后再将这几个网卡id赋予新的网卡即可。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>修改后的<code>zNN_persistent-net.rules</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># This file was automatically generated by the /lib/udev/write_net_rules
+# program, probably run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single line.
+# MAC addresses must be written in lowercase.
+
+# PCI device 0x1022:0x2000 (pcnet32)
+# SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:a8:e8:91", NAME="eth0"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+# SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:a8:e8:9b", NAME="eth1"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+# SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:a8:e8:a5", NAME="eth2"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:2e:e1:61", NAME="eth1"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:2e:e1:6b", NAME="eth2"
+
+# PCI device 0x1022:0x2000 (pcnet32)
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:0c:29:2e:e1:57", NAME="eth0"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>重启虚拟机后，网卡id又会变回<code>eth0</code>、<code>eth1</code>、<code>eth2</code>。</p>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>seafile服务</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-02-21-seafile%E6%9C%8D%E5%8A%A1/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">seafile服务</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-02-21&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/seafile"><i class="fa fa-tag">&nbsp;&nbsp;seafile</i></a>
+           <!--a class="post-tag" href="/tag/seafile">seafile</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>seafile是一个非常好用的，适合于小团队的文件共享服务软件。同时，它还是一款国内的开源软件，难得可贵。这两天我花了一些时间架设seafile服务，记录下来备用。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="seafile介绍">seafile介绍</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>组件</p>
+<div class="ulist">
+<ul>
+<li>
+<p>ccnet：网络服务</p>
+</li>
+<li>
+<p>seafile server：负责数据访问</p>
+</li>
+<li>
+<p>seahub：网站界面，供用户管理自己在服务器上的数据和账户信息</p>
+</li>
+<li>
+<p>HttpServer: 负责直接从网站上下载和上传文件</p>
+</li>
+<li>
+<p>controller: 负责监控和重启上述部件</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>seafile环境</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://dl.dropbox.com/u/74911209/octopress/2013-02-26_seafile-topology.jpg" alt="seafile组网示意图">
+</div>
+</div>
+<div class="paragraph">
+<p>如图示，seafile服务器位于防火墙之后，需要在防火墙做好端口映射。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+我用的是中国移动的宽带，无法通过官网的下载链接直接下载。必须fanqiang到<code><a href="https://code.google.com/p/seafile/downloads/list" class="bare">https://code.google.com/p/seafile/downloads/list</a></code>手工下载，然后再通过winscp传送到linux服务器上，颇为费劲。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装">安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>服务端支持linux和windows两种操作系统，本文的选择是debian 6 32bit。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>准备存储</p>
+<div class="paragraph">
+<p>事先安装好nfs client，然后挂载NFS</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo mkdir -p /mnt/seafile
+$ sudo echo "192.168.55.120:/tank/documents/seafile  /mnt/seafile  nfs  defaults  0 1" &gt;&gt; /etc/fstab
+$ sudo mount /mnt/seafile</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>准备运行环境</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude update
+$ sudo aptitude install python2.6 python-setuptools python-simplejson python-imaging sqlite3</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>安装</p>
+<div class="paragraph">
+<p>查看系统架构，32bit or 64bit</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo uname -m</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>创建seafile根目录，源文件将解压到该根目录下</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo mkdir /usr/local/src/seafile
+$ sudo tar -C /usr/local/src/seafile -zxvf seafile-server_1.7.0_i386.tar.gz</pre>
+</div>
+</div>
+</li>
+<li>
+<p>配置</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd /usr/local/src/seafile-server-*
+$ sudo ./setup-seafile.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置参数如下：</p>
+</div>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">参数</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">说明</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile server name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile服务器的名字，3~15 个字符，可用英文字母，数字，下划线</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile server ip or domain</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile服务器的IP地址或者域名。客户端将通过这个IP或者域名来访问Seafile服务。需要注意的是，在本例中，该IP地址应设为防火墙的互联网IP</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ccnet server port</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">默认：10001</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile data dir</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile数据存放目录，默认是./seafile/seafile-data，建议放在一个NFS服务器中，方便日后的扩容和维护。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile server port</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile服务器使用的TCP端口，默认为12001</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile httpserver port</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seafile httpserver使用的TCP端口，默认为8082</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seahub admin email</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sehaub管理员的帐户。该帐号仅是管理员帐号，用于发送邮件通知的email帐号需在seafile.conf中进行配置。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seahub admin password</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seahub管理员的密码</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>seafile的配置文件是分布式的，不同组件的配置文件单独分开，不利于维护。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>启动</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ./seafile.sh start
+$ sudo ./seahub.sh start</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>假如seahub的端口不是默认的8000，则</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ./seahub.sh start &lt;new_port&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>停止</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ./seafile.sh stop
+$ sudo ./seahub.sh stop</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>重启</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ./seafile.sh restart
+$ sudo ./seahub.sh restart</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>假如seahub的端口不是默认的8000，则</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ./seahub.sh restart &lt;new_port&gt;</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="升级">升级</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>由于seafile的开发非常活跃，新版本层出不穷，因而经常需要升级。</p>
+</div>
+<div class="paragraph">
+<p>升级前需先中止seahub和seafile进程：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ./seahub.sh stop
+$ sudo ./seafile.sh stop</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>新下载的版本也一并解压到seafile的根目录下，在本文中指的是`/usr/local/src/seafile`，读者也可以自行选择其它目录。最终的目录结构如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>/usr/local/src
+   -- seafile-server-1.7.0
+   -- seafile-server-1.4.5
+   -- ccnet
+   -- seafile-data</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>小版本升级</p>
+<div class="paragraph">
+<p>指的是从1.6.0升级到1.6.1。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd /usr/local/src/seafile/seafile-server-1.3.1/seahub/media
+$ cp -rf avatars/* ../../../seahub-data/avatars/
+$ sudo rm -rf avatars
+$ sudo ln -s ../../../seahub-data/avatars</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>连续版本升级</p>
+<div class="paragraph">
+<p>指的是从1.6.0升级到1.7.0。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd /usr/local/src/seafile-server1.7.0/upgrade
+$ sudo ./update_1.6_1.7.sh</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>非连续版本升级</p>
+<div class="paragraph">
+<p>现在的版本为1.4，最新版本为1.7，需连续执行</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>cd /usr/local/src/seafile-server1.7.0/upgrade
+$ sudo ./update_1.4_1.5.sh
+$ sudo ./update_1.5_1.6.sh
+$ sudo ./update_1.6_1.7.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>升级完毕后启动seahub和seafile进程。</p>
+</div>
+</li>
+<li>
+<p>随机启动</p>
+<div class="paragraph">
+<p>seafile服务由多个进程共同协作而成，首先创建一个<code>seafile-server</code>配置文件：</p>
+</div>
+<div class="listingblock">
+<div class="title">/etc/init.d/seafile-server</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>#!/bin/sh
+### BEGIN INIT INFO
+# Provides:		seafile-server
+# Required-Start:	$all
+# Required-Stop:	$all
+# Should-Start:		$local_fs
+# Should-Stop:		$local_fs
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+### END INIT INFO
+
+# Change the value of "user" to your user name
+user=root
+
+# Change the value of "script_path" to your path of seafile installation
+script_path=/usr/local/src/seafile/seafile-server-1.7.0
+
+sudo -u ${user} ${script_path}/seafile.sh start &gt; /tmp/seafile.init.log 2&gt;&amp;1
+sudo -u ${user} ${script_path}/seahub.sh start &gt; /tmp/seahub.init.log 2&gt;&amp;1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>以上脚本仅用于start，缺乏stop和restart的功能。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>更新</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo chmod +x /etc/init.d/seafile-server
+$ sudo update-rc.d seafile-server defaults</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tips">tips</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>变更默认端口后，seafile可能会出现问题，这种情况下建议直接重装了事，包括服务端和客户端。</p>
+</li>
+<li>
+<p>客户端的删除</p>
+<div class="ulist">
+<ul>
+<li>
+<p>删除客户端之前请确保ccnet进程已杀掉，否则无法正常卸载。</p>
+</li>
+<li>
+<p>卸载完后，手工删除客户端的配置文件夹<code>C:\用户\&lt;用户名&gt;\ccnet</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>客户端的配置</p>
+<div class="paragraph">
+<p>客户端的配置文件为<code>C:\用户\&lt;用户名&gt;\ccnet\ccnet.conf</code>，假如服务端的变更了默认端口号，需在此进行变更。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

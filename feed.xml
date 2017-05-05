@@ -1,0 +1,1795 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>zlinuxboy的博客</title>
+    <description>人若无志，与鲍鱼何异</description>
+    <link>https://blog.zlinuxboy.com/</link>
+    <atom:link href="https://blog.zlinuxboy.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Fri, 05 May 2017 09:46:41 +0000</pubDate>
+    <lastBuildDate>Fri, 05 May 2017 09:46:41 +0000</lastBuildDate>
+    <generator>Jekyll v3.3.1</generator>
+    
+      <item>
+        <title>pfsense2.4和2.5的roadmap</title>
+        <description>&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;netgate今天放出了pfSense最新的&lt;a href=&quot;https://www.netgate.com/blog/pfsense-2-5-and-aes-ni.html&quot;&gt;roadmap&lt;/a&gt;，提到了很快发布的2.3.4，正在
+开发的2.4和未来的2.5这几个版本的一些信息。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;2.4还是挺振奋人心的，基于freebsd11，支持zfs，带来openvpn2.4，不过从这个版本开始，pfSense将抛弃32bit，抛弃nanobsd，对于抛弃nanobsd，我有话说，毕竟现实中很多运 行环境是需要read only文件系统的，并非所有的办公环境都具备UPS和发电机。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;2.5的情况就比较复杂了。2.5将基于freebsd12，提供route base ipsec，并且可以跟netgate的nrdm结合，我一看到这个信息，内心猛地往下一沉，估计要分化了。果不其然，在下文中看到pfSense community edition 2.5 blahblah，这说明netgate将会推出收费版，就跟大多数的开源软件一样，终究逃脱不了变现的宿命，只是时间的早跟晚罢了。另外一个不好的消息是，由于2.5版本异常热衷于ipsec，所以要求cpu要带aes-ni功能，可能是为了提高用户的使用感知。只是给用户选择权有何不好，没必要一刀切。hacker news上面也是一片&lt;a href=&quot;https://news.ycombinator.com/item?id=14239580&quot;&gt;哀鸿遍野&lt;/a&gt;。阴谋论者认为之所以变化那么大，是为了提升netgate的硬件销售，但是gonzo&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;反驳道：“如果是为了提升硬件销售，我们完全可以在2.4就直接放弃没有aes-ni的cpu。因为freebsd12的到来还遥遥无期”。实际上，2011年之后intel和amd所生产的cpu大都带有aes-ni指令集了，我更担忧的是现有的功能会不会被收纳到收费版中，一切都是未知数。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. netgate的co-founder
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Tue, 02 May 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/</guid>
+        
+        <category>pfsense</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+      <item>
+        <title>pfsense中的tmux和mosh</title>
+        <description>&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;webUI极大地降低了pfsense的使用门槛，但是它仅适合于初始化设置和日常维护，对于有排错或测试需求的用户来说，webUI远不如cli方便和快捷。譬如说想在ping的同时抓包&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;分析，由于两者在pfsense的Diagnostics菜单中是两个不同的功能项，所以需要在不同的界面中频繁切换，使用起来非常烦琐。这时候的cli就体现出它的优势，用户可以同时开两个窗口，一个用于ping，一个打开tcpdump，随心所欲。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;pfsense支持ssh，此外pfsense的软件仓库还提供cli中两大杀手级的应用：tmux和mosh。简直就是左青龙、右白虎，老牛在腰间。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;dlist&quot;&gt;
+&lt;dl&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;tmux&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;openbsd的一个随手之作，旨在取代screen，结果一不小心又成为*nix的标配。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;mosh&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;MIT开发了一个旨在增强SSH的工具&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_2&quot; class=&quot;footnote&quot; href=&quot;#_footnote_2&quot; title=&quot;View footnote.&quot;&gt;2&lt;/a&gt;]&lt;/sup&gt;，支持漫游、间断性连接、智能本地回显，我最喜欢它的一点是：笔记本从休眠中唤醒后，休眠前的mosh进程（与远程的连接）立刻恢复到可用状态，无需重新连接。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在pfsense中，可通过&lt;code&gt;pkg install&lt;/code&gt;来安装这两个软件，不过pfsense(2.3.3)有个bug，导致这两个软件都无法正常使用。错误的现象就是：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;tmux的错误提示&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;[root@pfs-gw1.jkfz.qmcc]/root: tmux
+tmux: need UTF-8 locale (LC_CTYPE) but have US-ASCII&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;mosh的错误提示(mobaxterm连接pfsense)&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;Starting MOSH server...
+      - Local charset   : zh_CN
+      - Remote charset  : zh_CN.UTF-8
+      - Remote Server   : 10.9.1.19
+      - Remote Username : chenrui
+      - SSH port        : 22
+
+Error starting mosh-server on remote server.
+Output of server 10.9.1.19:
+
+SSH Connection: 10.9.6.1 61405 192.168.111.19 22
+The locale requested by LC_ALL=zh_CN.UTF-8 isn't available here.
+Running `locale-gen zh_CN.UTF-8' may be necessary.
+
+mosh-server needs a UTF-8 native locale to run.
+
+Unfortunately, the local environment ([no charset variables]) specifies
+the character set &quot;US-ASCII&quot;,
+
+The client-supplied environment (LC_ALL=zh_CN.UTF-8) specifies
+the character set &quot;US-ASCII&quot;.
+
+LANG=zh_CN.UTF-8
+LC_CTYPE=&quot;C&quot;
+LC_COLLATE=&quot;C&quot;
+LC_TIME=&quot;C&quot;
+LC_NUMERIC=&quot;C&quot;
+LC_MONETARY=&quot;C&quot;
+LC_MESSAGES=&quot;C&quot;
+LC_ALL=zh_CN.UTF-8
+Connection to 10.9.1.19 closed.&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;原因是一样的，缺少locale，不知为何，pfsense的&lt;code&gt;/usr/share/locale/&lt;/code&gt;目录都是空的，解决的办法也很简单，那就是把freebsd10.3的locale分别拷贝到对应的pfsense目录中。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;首先在一台linux&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_3&quot; class=&quot;footnote&quot; href=&quot;#_footnote_3&quot; title=&quot;View footnote.&quot;&gt;3&lt;/a&gt;]&lt;/sup&gt;中下载locale，并上传到pfsense中：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;linux&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ cd ~
+$ axel -n 10 http://ftp.jaist.ac.jp/pub/FreeBSD/releases/i386/i386/10.3-RELEASE/base.txz &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+$ xz -d &amp;lt; base.txz | tar -xvf - &lt;i class=&quot;conum&quot; data-value=&quot;2&quot;&gt;&lt;/i&gt;&lt;b&gt;(2)&lt;/b&gt;
+$ tar -hcf en_US.UTF-8.tar ./en_US.UTF-8 &lt;i class=&quot;conum&quot; data-value=&quot;3&quot;&gt;&lt;/i&gt;&lt;b&gt;(3)&lt;/b&gt;
+$ tar -hcf zh_CN.UTF-8.tar ./zh_CN.UTF-8
+$ scp en_US.UTF-8.tar root@&amp;lt;pfsense&amp;gt;:/usr/share/locale/en_US.UTF-8/ &lt;i class=&quot;conum&quot; data-value=&quot;4&quot;&gt;&lt;/i&gt;&lt;b&gt;(4)&lt;/b&gt;
+$ scp zh_CN.UTF-8.tar root@&amp;lt;pfsense&amp;gt;:/usr/share/locale/zh_CN.UTF-8/&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;axel支持多线程下载，比wget快；&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;2&quot;&gt;&lt;/i&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;后缀&lt;code&gt;txz&lt;/code&gt;的意思是使用tar打包后再用xz进行压缩，所以此处需要使用xz和tar两个工具结合方能解开txz文件；&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;3&quot;&gt;&lt;/i&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;tar中的&lt;code&gt;-h&lt;/code&gt;表示将链接的源文件，而非链接本身；&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;4&quot;&gt;&lt;/i&gt;&lt;b&gt;4&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;&amp;lt;pfsense&amp;gt;为pfsense的主机名或ip地址。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;接着在pfsense中将locale拷贝到相应的目录：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;pfsense&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo tar -xvf /usr/share/locale/en_US.UTF-8/en_US.UTF-8.tar
+$ sudo tar -xvf /usr/share/locale/zh_CN.UTF-8/zh_CN.UTF-8.tar
+$ sudo chown root:wheel /usr/share/locale/*&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这时候pfsense的mosh和tmux就都可以正常工作了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;参考：https://forum.pfsense.org/index.php?topic=126076.0&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. pfsense的Package Capture，该功能基于tcpdump实现
+&lt;/div&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_2&quot;&gt;
+&lt;a href=&quot;#_footnoteref_2&quot;&gt;2&lt;/a&gt;. 官网上的表述是SSH的替代品，然而实际运行的时候还是需要SSH
+&lt;/div&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_3&quot;&gt;
+&lt;a href=&quot;#_footnoteref_3&quot;&gt;3&lt;/a&gt;. pfsense中没有wget或axel命令，所以只好曲线救国。当然也可以使用windows，只是对我来说，linux更方便些。
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Sat, 25 Mar 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/</guid>
+        
+        <category>network</category>
+        
+        <category>pfsense</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+      <item>
+        <title>babun更新慢的问题</title>
+        <description>&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;粗略试用了几个windows下的shell：cmder、babun、git-bash，最终还是觉得babun更强大一些，虽然它的界面没有cmder那么漂亮。不过好在可以在cmder的新建窗口中启动babun，所以它俩也算是绝配了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;babun基于cygwin，所以cygwin的软件都能通过pact这个工具安装，譬如mosh和tmux。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;不过我在babun-1.2中安装tmux之后，无法正常运行，退出代码为127。网友的&lt;a href=&quot;https://github.com/babun/babun/issues/720&quot;&gt;答案&lt;/a&gt;是通过运行babun附带的update.bat来更新cygwin&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;，我尝试后发现实在是太慢了，整整跑了15个小时都毫无进展，百无聊赖中使用笔记本打开update.bat，发现默认的mirrors是http://mirrors.kernel.org/sourceware/cygwin/，会不会是这个源太慢导致更新失败呢，于是我尝试了国内的http://mirrors.ustc.edu.cn/cygwin/，提示getUrlToStream failed，原因未明，那就再换日本的http://ftp.jaist.ac.jp/pub/cygwin/，快到飞起，不到10分钟便完成了更新。更新结束后自动打开babun窗口，再尝试一下tmux，wow！终于可以用了！&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-03-21-babun-tmux.jpg&quot; alt=&quot;babun tmux&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;&lt;strong&gt;BONUS-1&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;上面只是更改了cygwin的mirrors，还有pact的mirrors也要改一下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;$install_dir\.babun\cygwin\home\$username\.pact\pact.repo&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;PACT_REPO=http://ftp.jaist.ac.jp/pub/cygwin/&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;&lt;strong&gt;BONUS-2&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;我对这个jaist.ac.jp这个软件源&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_2&quot; class=&quot;footnote&quot; href=&quot;#_footnote_2&quot; title=&quot;View footnote.&quot;&gt;2&lt;/a&gt;]&lt;/sup&gt;很是喜欢，之前在使用linux(centos、debian和ubuntu)的过程中都用这个源，速度快又稳定，简直就是专为移动专线/宽带用户而设。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;&lt;strong&gt;BONUS-3&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;babun自作聪明，每次启动都要去查找更新，浪费时间，可以通过以下option关闭：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;babun\cygwin\home\$username\.zshrc&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;DISABLE_AUTO_UPDATE=&quot;true&quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sidebarblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;cygwin的版本不一致问&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;&lt;code&gt;uname -a&lt;/code&gt;和&lt;code&gt;babun update&lt;/code&gt;的版本不一致&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;{ ~ }  &amp;gt;&amp;gt; babun update                                                                               ~
+Executing babun update
+  upstream  [release]
+  installed [1.2.0]
+  newest    [1.2.0]
+Babun is up to date
+Checking Cygwin version:
+  installed [1.7.35]
+  newest    [1.7.35]
+Cygwin is up to date&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;但是使用uname -a则提示cygwin版本为2.7&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;{ ~ }  &amp;gt;&amp;gt; uname -a                                                                                 ~ 1
+CYGWIN_NT-6.1-WOW tpl450-62008 2.7.0(0.306/5/3) 2017-02-12 13:13 i686 Cygwin&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. 批处理文件位于&lt;code&gt;$instal_dir\.babun\update.bat&lt;/code&gt;，需要&lt;strong&gt;以管理员身份运行&lt;/strong&gt;。
+&lt;/div&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_2&quot;&gt;
+&lt;a href=&quot;#_footnoteref_2&quot;&gt;2&lt;/a&gt;. 也叫仓库(repo)或镜像(mirrors)
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Tue, 21 Mar 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/</guid>
+        
+        <category>software</category>
+        
+        <category>shell</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+      <item>
+        <title>一次pfsense icmp不可达的排障经历</title>
+        <description>&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在某个项目中，pfsense和tinc是分开部署的，管理员可以通过tinc访问到pfsense，最近pfsense 2.3.3又把tinc纳入了官方repo，所以打算直接将tinc部署在pfsense中。然而部署完毕后发现，pfsense的tinc可以正常启动，并且能够ping通其它tinc节点，但是其它tinc节点ping不通pfsense。原拓扑结构如下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-03-15-tinc-top.jpg&quot; alt=&quot;tinc topology&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo tcpdump -nvi tun0
+tcpdump: listening on tun0, link-type NULL (BSD loopback), capture size 65535 bytes
+18:16:22.266476 IP (tos 0x0, ttl 64, id 27429, offset 0, flags [none], proto ICMP (1), length 84)
+    10.9.1.1 &amp;gt; 10.9.4.1: ICMP echo request, id 42611, seq 442, length 64
+18:16:23.276482 IP (tos 0x0, ttl 64, id 32258, offset 0, flags [none], proto ICMP (1), length 84)
+    10.9.1.1 &amp;gt; 10.9.4.1: ICMP echo request, id 42611, seq 443, length 64
+18:16:24.286223 IP (tos 0x0, ttl 64, id 12784, offset 0, flags [none], proto ICMP (1), length 84)
+    10.9.1.1 &amp;gt; 10.9.4.1: ICMP echo request, id 42611, seq 444, length 64&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;发现只有icmp echo，没有icmp reply。难道是被某条策略阻挡了？我已经在Firewall-Rules-Floating标签页中里面添加了一条icmp全放开的策略：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-03-15-floating-rule-item.jpg&quot; alt=&quot;floating-rule-item&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;没问题啊。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;用&lt;code&gt;pfctl -sr | grep icmp&lt;/code&gt;检查发现&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;pass quick on bce0 inet proto icmp all keep state label &quot;USER_RULE&quot;
+pass quick on bce1 inet proto icmp all keep state label &quot;USER_RULE&quot;
+pass quick on bge0 inet proto icmp all keep state label &quot;USER_RULE&quot;
+pass quick on bge0_vlan9 inet proto icmp all keep state label &quot;USER_RULE&quot;
+pass quick on bge0_vlan10 inet proto icmp all keep state label &quot;USER_RULE&quot;
+pass quick on bge0_vlan11 inet proto icmp all keep state label &quot;USER_RULE&quot;
+pass quick on bge1 inet proto icmp all keep state label &quot;USER_RULE&quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;嗯，为何限定了网卡？再检查webUI，发现还真是：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-03-15-floating-setting-real.jpg&quot; alt=&quot;floating-setting-real&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;理想的情况下应该是：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-03-15-floating-setting-expect.jpg&quot; alt=&quot;floating-setting-expect&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;通过&lt;code&gt;pfctl -sr&lt;/code&gt;查看到的应该是：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;pass quick inet proto icmp all keep state label &quot;USER_RULE&quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;因为pfsense默认情况下在图形界面中显示不了tun&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;接口，因而无法通过图形界面针对该接口创建策略。所以在floating的icmp全放开这条策略中无法选择tun0这个接口，接着我尝试着全部取消所有接口的选择，发现不行！必须得保留一个，这绝对是一个bug，咋办，只好删掉整条策略新建一条。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;终于解决了策略的问题，可是从其它节点仍然ping不通此节点的tun0接口。经检查发现，原来之前已经有一条静态路由指向了原tinc节点：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo netstat -rn4
+...
+10.9.0.0/16         192.168.8.100      UGS        bce1&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这个是导致没有回程路由的原因，于是我在webUI删掉这一条静态路由，然而仍然无法ping通，这就奇怪了。再用&lt;code&gt;netstat -rn4&lt;/code&gt;，仍然看到该路由，难道又是pfsense的bug？我决定在命令行下试一下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo route delete -net 10.9.0.0/16 192.168.8.100
+route: writing to routing socket: Address already in use
+delete network 10.9.0.0 fib 0: gateway uses the same route&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;what?耍了一番google fu，发现原来tinc启动后创建了tun0端口，该端口的ip地址为10.9.4.0/24，于是pfsense自动生成了直连路由。之前的静态路由包含了10.9.4.0/24这个网段，所以无法直接删除这条静态路由，原因是：无法删除直连路由。解决的办法也很简单，杀掉tincd进程，然后手工删掉静态路由，接着再启动tincd进程。简言之，重启pfsense即可。至此，解决pfsense的icmp不可达问题。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;小结一下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;the book of pf应成为每一个pfsense高阶用户的案头书&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense的webUI在使用方面提供了便利性的同时，也掩盖了很多细节，命令行才是排错最好的工具，pftop、tcpdump、pfctl -sr都是你的良师益友；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在pfsense的floating中创建策略有一个bug：一旦选择了网卡，后续如果修改该策略的时候，无法全部取消网卡选择，至少要保留一块。假如需要实现真正的&lt;code&gt;pass quick in any&lt;/code&gt;只能删掉整条策略，然后新建；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;无法删除直连路由；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. tinc启动的时候会自动创建该接口
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Wed, 15 Mar 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-03-15-%E4%B8%80%E6%AC%A1pfsense-icmp%E4%B8%8D%E5%8F%AF%E8%BE%BE%E7%9A%84%E6%8E%92%E9%9A%9C%E7%BB%8F%E5%8E%86/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-03-15-%E4%B8%80%E6%AC%A1pfsense-icmp%E4%B8%8D%E5%8F%AF%E8%BE%BE%E7%9A%84%E6%8E%92%E9%9A%9C%E7%BB%8F%E5%8E%86/</guid>
+        
+        <category>network</category>
+        
+        <category>pfsense</category>
+        
+        <category>tinc</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+      <item>
+        <title>tinc and custome firewall rules on pfsense</title>
+        <description>&lt;div id=&quot;preamble&quot;&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;自从进入了pfsense 2.2时代，tinc就从pfsense的官方repo中消失了一段时间。前段时间发布的pfsense2.3.3又把tinc给带回来了。不过官方自带的GUI功能实在有限，无法满足我的要求：具备在firewall中提供接口功能；因为我需要在firewall webUI中设置多个1:1的NAT。so，hack it。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;tinc&quot;&gt;tinc&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;安装&quot;&gt;安装&lt;/h3&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;不要通过webUI来安装tinc，要通过命令行：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;pkg install tinc&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;配置&quot;&gt;配置&lt;/h3&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;tinc的配置文件位置为：&lt;code&gt;/usr/local/etc/tinc&lt;/code&gt;，在命令行中安装tinc，是不会自动创建该目录的，需要手工创建：&lt;code&gt;mkdir /usr/local/etc/tinc&lt;/code&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;然后创建相应的文件&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;└── mgmt
+     ├── hosts
+     │   ├── e40
+     │   ├── home
+     │   ├── guangdong
+     │   ├── corp
+     │   └── tpl450
+     ├── rsa_key.priv
+     ├── tinc.conf
+     ├── tinc-down
+     └── tinc-up&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;跟linux不同，freebsd没有iproute这个软件包，只能通过ifconfig来配置tun这个接口。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;tinc-up&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;#!/bin/sh
+syxy_VIP=&quot;10.9.1.1&quot;
+/sbin/ifconfig $INTERFACE up
+/sbin/ifconfig $INTERFACE inet ${syxy_VIP}/16&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;tinc-donw&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;#!/bin/sh
+/sbin/ifconfig $INTERFACE down&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;其它的没有什么差别。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;启动-停止tincd&quot;&gt;启动/停止tincd&lt;/h3&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;/usr/local/sbin/tincd -n $netname $flags &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt; &lt;i class=&quot;conum&quot; data-value=&quot;2&quot;&gt;&lt;/i&gt;&lt;b&gt;(2)&lt;/b&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;netname 可以运行多个tincd进程，每个进程通过netname进行区分，不同netname可以创建不同的mesh vpn。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;2&quot;&gt;&lt;/i&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;flags tincd运行参数，譬如&quot;-d 1 --log-files /var/log/tincd.log&quot;，也可以是&quot;-k&quot;，即杀掉$netname的tincd进程&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;至此，暂时搞定了pfsense中的tincd，但是还没完，因为还没有实现自启动功能，不过先放一下，先看看如何添加防火墙策略。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;手工添加防火墙策略&quot;&gt;手工添加防火墙策略&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在pfsense中，添加防火墙策略都要通过webUI，但是由于tincd是动态启停的，相关的防火墙策略需要根据tincd的状态来增加和删除，而pfsense官方是不支持这种做法，hack again：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;有个网友找到了一个办法：将动态变化的防火墙策略放到&lt;code&gt;/usr/local/pkg/CUSTOM_rules.inc&lt;/code&gt;这个文件中，随着&lt;code&gt;/etc/rc.filter_configure&lt;/code&gt;的执行而自动添加。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;/usr/local/pkg/CUSTON_rules.inc&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;&amp;lt;?php
+
+// Add this file as:  /usr/local/pkg/CUSTOM_rules.inc
+// pfSense will automatically add the rules defined here into the rules it loads in pf
+
+require_once(&quot;util.inc&quot;);
+
+        function CUSTOM_rules_generate_rules($type) { // called by filter.inc when pfSense rules generation happens
+        $rules = &quot;&quot;;
+        switch($type) {
+        case 'nat':
+                $rules .= &quot;# CUSTOM NAT RULES \n&quot;;
+                $rules .= &quot;binat on tun0 from 192.xx.xx.154 to any -&amp;gt; 10.x.x.154\n&quot;; // esxi4
+                $rules .= &quot;# END CUSTOM NAT RULES \n&quot;;
+                break;
+        case 'filter':
+                $rules .= &quot;# CUSTOM FILTER RULES \n&quot;;
+                $rules .= &quot;pass in quick on tun0 inet proto { tcp udp } from any to any\n&quot;;
+                $rules .= &quot;# END CUSTOM FILTER RULES \n&quot;;
+                break;
+        }
+        return $rules;
+}
+?&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;然后手工reload防火墙&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;/etc/rc.filter_configure&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;查看这些策略是否已经生效（两种方式）：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;olist arabic&quot;&gt;
+&lt;ol class=&quot;arabic&quot;&gt;
+&lt;li&gt;
+&lt;p&gt;vim /tmp/rules.debug&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;pfctl -sr&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;组合起来并自动化之&quot;&gt;组合起来并自动化之&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;接下来考虑如何自动启动tinc和自动添加/删除这些策略，由于我们的pfsense是HA的，所以可以使用devd根据carp的状态来触发脚本：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;/etc/devd.conf&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;options {
+        directory &quot;/etc/devd&quot;;
+        directory &quot;/usr/local/etc/devd&quot;;
+        pid-file &quot;/var/run/devd.pid&quot;;
+        set scsi-controller-regex
+                &quot;(aac|adv|adw|aha|ahb|ahc|ahd|aic|amd|amr|asr|bt|ciss|ct|dpt|\
+                esp|ida|iir|ips|isp|mlx|mly|mpt|ncr|ncv|nsp|stg|sym|trm|wds)\
+                [0-9]+&quot;;
+};
+
+# CARP notify hooks. This will call carpup/carpdown with the
+# interface (carp0, carp1) as the first parameter.
+notify 100 {
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;MASTER&quot;;
+    action &quot;/usr/local/sbin/pfSctl -c 'interface carpmaster $subsystem'&quot;;
+};
+
+notify 100 {
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;BACKUP&quot;;
+    action &quot;/usr/local/sbin/pfSctl -c 'interface carpbackup $subsystem'&quot;;
+};
+
+notify 100 {
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;INIT&quot;;
+    action &quot;/usr/local/sbin/pfSctl -c 'interface carpbackup $subsystem'&quot;;
+};&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;依葫芦画瓢，在下面添加了两个section：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;notify 150 {  &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;MASTER&quot;;
+    action &quot;/usr/local/etc/tinc/change_tincState.sh up&quot;;
+};
+
+notify 150 {
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;BACKUP&quot;;
+    action &quot;/usr/local/etc/tinc/change_tincState.sh down&quot;;
+};&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;notify的优先级要低于系统默认的carp section的优先级（此处为150，默认为100），假如这里仍然保留100，则不会触发该section&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;然后重启一下devd&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;/etc/rc.d/devd restart&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;接着写个change_tincState.sh的启动脚本&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;/usr/local/etc/tinc/change_tincState.sh&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;#!/bin/sh
+
+STATE=$1
+command=&quot;/usr/local/sbin/tincd&quot;
+tinc_cfg=&quot;mgmt&quot;
+tinc_flags=&quot;-d 1 --logfile /var/log/tincd.log&quot;
+custom_rules_file=&quot;CUSTOM_rules.inc&quot;
+src_path=&quot;/usr/local/etc/tinc/&quot;
+dst_path=&quot;/usr/local/pkg/&quot;
+reload_fw_rules=&quot;/etc/rc.filter_configure&quot;
+
+case $STATE in
+        &quot;up&quot;)   /bin/echo &quot;start tinc for carp:master&quot; | /usr/bin/logger -p local6.notice -t change_tincState
+                $command -n $tinc_cfg $tinc_flags
+                cp -f ${src_path}${custom_rules_file} $dst_path
+                $reload_fw_rules
+                exit 0
+                ;;
+        &quot;down&quot;) /bin/echo &quot;stop tinc for carp:backup&quot; | /usr/bin/logger -p local6.notice -t change_tincState
+                $command -n $tinc_cfg -k
+                rm -rf ${dst}${custom_rules_file}
+                $reload_fw_rules
+                exit 0
+                ;;
+        *)      echo &quot;Unknown state of CARP&quot;
+                exit 1
+                ;;
+esac&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;现在让我们来转换两台pfsense中的master/backup角色，确认一下devd能否正常工作：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense-1:master/pfsense-2:backup&amp;#8594;pfsense-1:backup/pfsense-2:master&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在pfsense-1中&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;sysctl net.inet.carp.demotion=240&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;此时，pfsense-1和pfsense-2的master/backup角色发生了互换，devd检测到carp的状态变化，于是&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense-1的tinc进程被杀掉，之前添加的防火墙策略也被删除；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense-2的tinc进程启动，添加新的防火墙策略；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense-1:backup/pfsense-2:master&amp;#8594;pfsense-1:master/pfsense-2:backup&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在pfsense-1中&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;sysctl net.inet.carp.demotion=-240&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;此时，pfsense-1和pfsense-2的backup/master角色发生了互换，devd检测到carp的状态变化，于是&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense-1的tinc进程启动，添加新的防火墙策略；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;pfsense-2的tinc进程被杀掉，之前添加的防火墙策略也被删除；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;It&amp;#8217;s awesome!&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;其它&quot;&gt;其它&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;为了方便维护，建议将/etc/devd.conf的新增的两段section单独放在一个配置文件中：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;/usr/local/etc/devd/tincd.conf&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;notify 150 {
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;MASTER&quot;;
+    action &quot;/usr/local/etc/tinc/change_tincState.sh up&quot;;
+};
+
+notify 150 {
+    match &quot;system&quot;          &quot;CARP&quot;;
+    match &quot;type&quot;            &quot;BACKUP&quot;;
+    action &quot;/usr/local/etc/tinc/change_tincState.sh down&quot;;
+};&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;admonitionblock caution&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td class=&quot;icon&quot;&gt;
+&lt;i class=&quot;fa icon-caution&quot; title=&quot;Caution&quot;&gt;&lt;/i&gt;
+&lt;/td&gt;
+&lt;td class=&quot;content&quot;&gt;
+切记，不能放在&lt;code&gt;/etc/devd/&lt;/code&gt;这个目录中，经过测试，该目录的conf不起作用。
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Fri, 10 Mar 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-03-10-tinc-and-custom-firewall-rules-on-pfsense/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-03-10-tinc-and-custom-firewall-rules-on-pfsense/</guid>
+        
+        <category>network</category>
+        
+        <category>tutor</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+      <item>
+        <title>关于carp和vrrp的触发外部脚本功能</title>
+        <description>&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在遥远的年代，为了实现路由器的高可用性，cisco开发了hsrp，因为hsrp是私有协议，所以开源社区就自己出了一个vrrp。openbsd向来看不起linux，另辟蹊径推出了一个carp，而freebsd在9版本之前的carp移植自openbsd，可不知道为何到了10，freebsd又重新实现了一遍carp。开源社区真是精力旺盛到无以复加的地步。哦对了，pure-ftpd的作者还开发了一个ucarp，linux下的carp实现，不过已经好久没更新了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这些协议工作原理都是类似的，都有一个浮动的虚拟IP（简称vip），在master和backup中漂移，然而有不少软件是无法监听一个未知的IP的，譬如openvpn、ipsec、tinc等vpn软件，那么有没有可能当vip漂移到某一台主机的时候，再启动vpn的进程？答案是肯定的，不过bsd和linux是两种不同的实现方式：freebsd和openbsd的carp不具备触发外界程序/脚本的能力，只能依靠第三方的链路状态检测工具来触发，freebsd中是devd，openbsd中是ifstated，而linux要方便一些，keepalived在实现vrrp的同时，还顺带提供了触发外界程序/脚本的能力。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;下面举例说明如何利用keepalived来实现tinc的（部分）高可用性&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;keepalived/notify配置&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;/etc/keepalived/keepalived.conf&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;...
+vrrp_instance VI_eth0{
+	...
+	notify /path/to/script.sh
+	...
+}
+…&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;/path/to/script.sh&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;#!/bin/bash
+
+TYPE=$1
+NAME=$2
+STATE=$3 &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+
+case $STATE in
+	&quot;MASTER&quot;) /bin/echo &quot;start tinc for ${STATE}&quot; | /usr/bin/logger -p local6.notice -t change_tincState
+			  exit 0
+			  ;;
+	&quot;BACKUP&quot;) /bin/echo &quot;stop tinc for ${STATE}&quot; | /usr/bin/logger -p local6.notice -t change_tincState
+			  /etc/init.d/tinc stop
+			  exit 0
+			  ;;
+	&quot;FAULT&quot;)  /etc/init.d/tinc stop
+			  exit 0
+			  ;;
+	*)        echo &quot;Unknown state ${STATE} for VRRP ${TYPE} ${NAME}&quot;
+			  exit 1
+			  ;;
+esac&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;一共有3种状态：MASTER、BACKUP和FAULT，notify会将状态通过参数$3传给该脚本，实现了tinc在MASTER中start，在BACKUP/FAULT中stop的功能&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;tinc是一个mesh vpn，可惜跟大多数vpn一样，自身都不支持high availability&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;。不过利用keepalived可以部分实现ha，为什么说是部分实现，因为keepalived也无法同步状态，只是能简单的确保两个tinc进程之间，永远有一个处于在线状态，工作原理是：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;olist arabic&quot;&gt;
+&lt;ol class=&quot;arabic&quot;&gt;
+&lt;li&gt;
+&lt;p&gt;远端网关（ext gw）安装了一个tinc（ext tinc），本端网关（loc gw1）安装了一个tinc（loc tinc1），两个tinc之间构建了一条加密隧道，里面跑着一些关键性应用；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;它们存在单点故障，先不考虑远端，先在本端新增一个网关（loc gw2），并安装一个tinc（loc tinc2），它跟loc tinc1使用相同的配置；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;当loc gw1的vrrp状态是master的时候，keepalived通过notify启动loc tinc1，监听vip。此时，因为loc gw2的vrrp状态为backup，所以loc tinc2处于stop状态（即便之前处于start状态，也会被keepalived的notify给stop掉），keepalived的notify确保了tinc1和tinc2两者中只有一个处于start状态，避免了冲突；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ext tinc和loc tinc{1|2}通过心跳包来检测各自的状态，一旦发现中断后将重新发起连接请求；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;当loc tinc{1|2} stop，loc tinc{2|1} start，由于它们两者之间的状态无法同步，所以ext tinc和loc tinc{1|2}的隧道丢失，跑在隧道里面的stateful connection（对，说的就是你，tcp）也丢失，不过由于ext tinc和loc tinc{1|2}会立刻新建一个新的隧道，所以应用程序尝试重连又可以正常工作。所以说，对于tcp而言，keepalived能实现部分HA；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;对于udp而言，则是另外一个场景：由于udp是stateless connection，因而一般由上层应用程序来维护状态，所以这类程序对tinc隧道的状态切换不敏感，keepalived能为这类程序实现传统意义上的HA；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这就是keepalived/devd/ifstated这类程序的价值所在。也许有一天freebsd/openbsd能在carp协议里面添加触发外界程序/脚本的功能，只是不管是学院派freebsd，还是固执的openbsd，修改一个协议的可能性微乎其微。所以，还是安心的用devd/ifstated吧。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. vpn实现ha非常困难，详见&lt;a href=&quot;https://wiki.strongswan.org/projects/strongswan/wiki/HighAvailability#Kernel-Implementation&quot;&gt;strongswan ha&lt;/a&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Thu, 23 Feb 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-02-23-%E5%85%B3%E4%BA%8Ecarp%E5%92%8Cvrrp%E7%9A%84%E8%A7%A6%E5%8F%91%E5%A4%96%E9%83%A8%E8%84%9A%E6%9C%AC%E5%8A%9F%E8%83%BD/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-02-23-%E5%85%B3%E4%BA%8Ecarp%E5%92%8Cvrrp%E7%9A%84%E8%A7%A6%E5%8F%91%E5%A4%96%E9%83%A8%E8%84%9A%E6%9C%AC%E5%8A%9F%E8%83%BD/</guid>
+        
+        <category>HA</category>
+        
+        <category>network</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+      <item>
+        <title>如何在kvm中为linux guest热添加/删除设备</title>
+        <description>&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;网卡&quot;&gt;网卡&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;热添加&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;linux guest需要加载&lt;code&gt;acpiphp&lt;/code&gt;和&lt;code&gt;pci_hotplug&lt;/code&gt;这两个模块方能支持pci hotplug，对应的kernel options&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;为&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;GUEST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;CONFIG_HOTPLUG_PCI=y
+CONFIG_HOTPLUG_PCI_ACPI=y&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;现有redhat/centos6+，ubuntu14.04+、debian8+都已经默认将这两个模块编译到内核中了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;方法一、配置文件&lt;/p&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;host $ sudo vim /etc/libvirt/qemu/$domain-2nd-nic.xml
+-------8&amp;lt;--------
+&amp;lt;interface type='network'&amp;gt; &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+    &amp;lt;mac address='52:54:00:d8:11:22'/&amp;gt;
+    &amp;lt;source network='ovs-network' portgroup='vlan-112'/&amp;gt;
+    &amp;lt;model type='virtio'/&amp;gt;
+    &amp;lt;address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/&amp;gt; &lt;i class=&quot;conum&quot; data-value=&quot;2&quot;&gt;&lt;/i&gt;&lt;b&gt;(2)&lt;/b&gt;
+&amp;lt;/interface&amp;gt;
+-------&amp;gt;8--------&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;此处的network影响到后续detach-interface的操作，详见下文。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;2&quot;&gt;&lt;/i&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;slot值必须唯一，可使用&lt;code&gt;virsh dumpxml&lt;/code&gt;来查看所有设备的slot值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo virsh attach-device $domain-2nd-nic.xml --persistent &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;--persistent&lt;/code&gt;表示vm重启后该网卡依然存在。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;方法二、命令行&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo virsh attach-interface --domain d8-64-tester1 --type network \
+  --source ovs-network --model virtio --mac 52:54:00:d8:11:22 \
+  --target d8Test1-112 --config
+Interface attached successfully&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;+
+.GUEST&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo dmesg
+-------&amp;gt;8--------
+[ 1262.177937] virtio-pci 0000:00:07.0: no hotplug settings from platform
+[ 1262.181735] virtio-pci 0000:00:07.0: using default PCI settings
+-------&amp;gt;8--------&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;+
+说明已经成功地将一块网卡热添加到guest中了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;热删除&lt;/p&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo virsh detach-interface $domain --type network --mac 52:54:00:d8:11:22
+error: No found interface whose type is network&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;oops!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo virsh dumpxml $domain | less
+--------&amp;gt;8--------
+    &amp;lt;interface type='bridge'&amp;gt;  &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+      &amp;lt;mac address='52:54:00:d8:11:22'/&amp;gt;
+      &amp;lt;source bridge='ovsbr1'/&amp;gt;
+      &amp;lt;virtualport type='openvswitch'&amp;gt;
+        &amp;lt;parameters interfaceid='bc1ca6e5-7c99-7607-1b32-fdac7e2346be'/&amp;gt;
+      &amp;lt;/virtualport&amp;gt;
+      &amp;lt;target dev='d8Test1-112'/&amp;gt;
+      &amp;lt;model type='virtio'/&amp;gt;
+      &amp;lt;alias name='net2'/&amp;gt;
+      &amp;lt;address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/&amp;gt;
+    &amp;lt;/interface&amp;gt;
+--------8&amp;lt;--------&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;原来libvirt已经自动将type从network转换成了bridge&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;将type换成bridge再试一下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo virsh detach-interface d8-64-tester1 --type bridge --mac 52:54:00:d8:11:22
+Interface detached successfully&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这里还有个尾巴没有处理干净，由于detach-interface没有&amp;#8212;&amp;#8203;config选项，所以libvirt并未删除$domain配置文件中的&amp;lt;interface&amp;gt;，因而下次重启后该网卡仍然存在于vm中。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;硬盘&quot;&gt;硬盘&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;添加和卸载的流程跟网卡类似&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;热添加&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;创建新硬盘的配置文件&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;cat /etc/libvirt/qemu/new-hd.xml
+&amp;lt;disk type='file' device='disk'&amp;gt;
+    &amp;lt;driver name='qemu' type='qcow2' cache='none'/&amp;gt;
+    &amp;lt;source file='/mnt/kvm/vm/d8Tester1-test.qcow2'/&amp;gt;
+    &amp;lt;target dev='vdb' bus='virtio'/&amp;gt; &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+    &amp;lt;alias name='virtio-disk1'/&amp;gt;
+    &amp;lt;address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/&amp;gt;
+&amp;lt;/disk&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;因为第一块硬盘占用了vda，所以第二块硬盘需从vdb开始。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo virsh attach-disk $domain $file --persistent&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在guest中使用&lt;code&gt;dmesg&lt;/code&gt;验证一下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;GUEST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo dmesg
+[ 7455.322914] pci 0000:00:08.0: no hotplug settings from platform
+[ 7455.326497] pci 0000:00:08.0: using default PCI settings
+[ 7455.330247] virtio-pci 0000:00:08.0: enabling device (0000 -&amp;gt; 0003)
+[ 7455.366755] virtio-pci 0000:00:08.0: irq 51 for MSI/MSI-X
+[ 7455.366806] virtio-pci 0000:00:08.0: irq 52 for MSI/MSI-X
+[ 7455.391041]  vdb: unknown partition table&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;热删除&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;当然，卸载该硬盘也不在话下，不过需要确保guest已经成功umount了该硬盘的文件系统&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;HOST&lt;/div&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ virsh detach-disk $domain $target --config &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;此处的$target为vdb。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sidebarblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;vm配置文件之间的关系&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;virsh dumpxml $domain
+输出的是vm运行态的配置文件，热添加/卸载设备会影响到该配置文件，而无论是否使用了&amp;#8212;&amp;#8203;persistent或&amp;#8212;&amp;#8203;config这两个参数。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;virsh edit $domain
+这时看到是vm在libvirtd里的配置文件。热添加/卸载设备时，仅当使用了&amp;#8212;&amp;#8203;persistent或&amp;#8212;&amp;#8203;config这两个参数时才会影响到该文件。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;内存&quot;&gt;内存&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;热添加、卸载内容是最近才实现的功能，对host中的qemu、libvirt以及guest kernel都有一定的要求。网上已有文档&lt;a href=&quot;https://medium.com/@juergen_thomann/memory-hotplug-with-qemu-kvm-and-libvirt-558f1c635972#.pa9kmia0s&quot;&gt;1&lt;/a&gt;，&lt;a href=&quot;https://medium.com/@juergen_thomann/memory-hot-unplug-with-qemu-and-libvirt-6011777f0d48#.4zz3f039k&quot;&gt;2&lt;/a&gt;，我尚无相应环境测试。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;proxmox支持&lt;a href=&quot;https://pve.proxmox.com/wiki/Hotplug_%28qemu_disk,nic,cpu,memory%29&quot;&gt;热添加/删除cpu、ram、disk和nic&lt;/a&gt;，非常方便。如果没有特别的需求的话，还是建议用proxmox来取代centos+kvm这个组合。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;参考&quot;&gt;参考&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;http://serverfault.com/questions/457250/kvm-and-libvirt-how-do-i-hotplug-a-new-virtio-disk&quot; class=&quot;bare&quot;&gt;http://serverfault.com/questions/457250/kvm-and-libvirt-how-do-i-hotplug-a-new-virtio-disk&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https://kashyapc.fedorapeople.org/virt/add-network-card-in-guest.txt&quot; class=&quot;bare&quot;&gt;https://kashyapc.fedorapeople.org/virt/add-network-card-in-guest.txt&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https://bugzilla.redhat.com/show_bug.cgi?format=multiple&amp;amp;id=840344&quot; class=&quot;bare&quot;&gt;https://bugzilla.redhat.com/show_bug.cgi?format=multiple&amp;amp;id=840344&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.unixarena.com/2015/12/linux-kvm-how-to-add-remove-memory-to-guest-on-fly.html&quot; class=&quot;bare&quot;&gt;http://www.unixarena.com/2015/12/linux-kvm-how-to-add-remove-memory-to-guest-on-fly.html&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.thegeekstuff.com/2015/02/add-memory-cpu-disk-to-kvm-vm/&quot; class=&quot;bare&quot;&gt;http://www.thegeekstuff.com/2015/02/add-memory-cpu-disk-to-kvm-vm/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. 可通过/boot/config-$version查看
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Mon, 20 Feb 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-02-20-%E5%A6%82%E4%BD%95%E5%9C%A8kvm%E4%B8%AD%E4%B8%BAlinux-guest%E7%83%AD%E6%B7%BB%E5%8A%A0%E5%8F%8A%E5%88%A0%E9%99%A4%E8%AE%BE%E5%A4%87/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-02-20-%E5%A6%82%E4%BD%95%E5%9C%A8kvm%E4%B8%AD%E4%B8%BAlinux-guest%E7%83%AD%E6%B7%BB%E5%8A%A0%E5%8F%8A%E5%88%A0%E9%99%A4%E8%AE%BE%E5%A4%87/</guid>
+        
+        <category>kvm</category>
+        
+        <category>virtualization</category>
+        
+        
+        <category>技术</category>
+        
+        <category>系统</category>
+        
+      </item>
+    
+      <item>
+        <title>如何修复一个域控制器失效的hyper-v server群集环境</title>
+        <description>&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;相关缩写和术语&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#相关缩写和术语&quot;&gt;&lt;/a&gt;相关缩写和术语&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;dlist&quot;&gt;
+&lt;dl&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;RSAT&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;微软为了方便用户远程管理windows server，专门推出了远程服务器管理工具，以下简称&lt;strong&gt;RSAT&lt;/strong&gt;，通过RSAT，用户可以方便地在一台管理机来管理剩余的windows server服务器，RSAT是一个工具集，包括了Server Manager、Hyper-V Manager、Failover Cluster Manager、Computer Management、Windows Powershell等重要的管理工具。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;FOCM&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;微软的“故障迁移群集管理器”（Failover cluster manager，简称&lt;strong&gt;FOCM&lt;/strong&gt;）可用于管理windows系列群集，包括windows群集、hyper-v群集和sqlserver群集，非常方便。每个群集都有一个群集的名称，FOCM就是通过群集名称来管理各个群集的。另外，只要是windows系列的群集，都必须跟域绑定在一起，所以创建群集的前提条件是有一个域环境。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;Hyper-V Manager&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;微软推出的用于管理Hyper-V的管理工具，可以管理hv主机中的本地vm。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;host OS&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;物理服务器操作系统，在本项目中安装的是hyper-v server 2012 r2(以下简写为&lt;strong&gt;hv12r2&lt;/strong&gt;)，一个windows server 2012 r2精简版本，没有GUI，只有命令行。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;host&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;物理服务器，因为安装了hv12r2，所以称之为&lt;strong&gt;hv主机&lt;/strong&gt;&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;Windows Boot Manager&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;windows启动管理器，简称&lt;strong&gt;wbm&lt;/strong&gt;，wbm提供了多个启动模式，包括安全模式、带网络连接的安全模式，只要你启动了相应的&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;directory services restore mode&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;目录服务恢复模式，简称dsrm&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;domain contorller&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;域控制器，简称dc&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;additional domain controller&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;额外域控制器，简称adc&lt;/p&gt;
+&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;背景和故障描述&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#背景和故障描述&quot;&gt;&lt;/a&gt;背景和故障描述&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在某个项目中部署了hyper-v群集，网络拓扑如下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-01-06-hyv-cluster-top.jpg&quot; alt=&quot;hyv-cluster-top&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;三台host安装了hv12r2，通过iscsi协议访问共享存储；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;安装了两台本地vm：dc2(域林中的第一台域控制器，运行在hyv4主机中)和dc1(额外域控制器，运行在hyv3主机中)，分别担任域控制器和额外域控制器角色。三台hv主机加入域并构建了一个故障迁移群集；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;另外一台本地vm：ws12r2-mgmt-1担任管理机，安装了rsat，包括hyper-v manager和focm，平时系统管理员通过远程桌面登陆该管理机，利用hyper-v manager来管理hv主机中的本地vm，利用focm来管理hyper-v群集中的高可用性vm。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;但是机房的电力环境堪忧，经常停电，dc1在半年前的一次停电事故中就崩溃了，但是dc2还能正常工作，所以也没太在意，也未备份。终于在最近一次停电事故中，dc2也崩溃了，两个域控制器全部失效！所有跟域控制器有关的操作都无法进行，包括最重要的netlogon。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;修复过程&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#修复过程&quot;&gt;&lt;/a&gt;修复过程&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;目标：修复这两台域控制器。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;因为域控制器已经失效，所以无法通过远程桌面访问，于是遇到第一个问题：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;问题1-如何访问已崩溃的域控制器vm的控制台&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#问题1-如何访问已崩溃的域控制器vm的控制台&quot;&gt;&lt;/a&gt;问题1、如何访问已崩溃的域控制器vm的控制台&lt;/h3&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;因为域控制器失效，就无法使用域账号登陆ws12r2-mgmt-1，也就无法使用hyper-v manager连接hv主机，那就打不开域控制器的控制台。打不开控制台就获取不到更多的错误信息，也就无法修复域控制器。陷入了死循环！son of a &amp;#8230;&amp;#8203;！这个问题进一步演变成了：&lt;strong&gt;如何使用hyper-v manager访问一台加入了域，但是域控制器全部失效的hv主机&lt;/strong&gt;。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;有人说，那何不直接使用本地管理员账号登陆hv主机的控制台，然后使用host os自带的hyper-v manager来管理打开dc的控制台？前面说过，hv主机的host OS是hv2012r2，没有图形界面，也就没有hyper-v manager。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;怎么办？这都是活动目录的netlogon失效引起的，那我们能否可以使用一台工作组服务器的hyper-v manager来管理hv主机呢？答案也是否定的，因为hyper-v manager在连接远程hv主机的时候，同样需要域账号进行认证。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;那就只能使出终极杀招：将hv主机强制脱离域&lt;sup class=&quot;footnote&quot;&gt;[&lt;a id=&quot;_footnoteref_1&quot; class=&quot;footnote&quot; href=&quot;#_footnote_1&quot; title=&quot;View footnote.&quot;&gt;1&lt;/a&gt;]&lt;/sup&gt;，变成一台工作组服务器，然后使用另外一台工作组服务器的hyper-v manager去连接该hv主机，两台工作组服务器的本地administrator密码设为一样。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;事实证明该思路是可行的，首先将hyv4&lt;a href=&quot;http://www.dell.com/support/article/cn/zh/cndhs1/SLN163702&quot;&gt;强制脱离域&lt;/a&gt;，然后在esxi6的一台win8.1 vm中安装rsat，最后通过hyper-v manager打开hyv4中的dc2这台域控制器的控制台。至此&lt;strong&gt;解决了问题1&lt;/strong&gt;。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这，仅仅只是开始，打开控制台只是为了获取到更多的错误信息，以便定位和解决故障。dc2启动后不久就遇到了蓝屏，于是碰到第二个问题：&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;问题2-c00002e2-0xc0000001-directory-services-restore-mode&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#问题2-c00002e2-0xc0000001-directory-services-restore-mode&quot;&gt;&lt;/a&gt;问题2、 c00002e2 0xc0000001 directory services restore mode&lt;/h3&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;STOP: c00002e2 Directory Services could not start because of the following error: A device attached to the system is not functioning.
+
+Error Status: 0xc0000001. Please shutdown this system and reboot into Directory Services Restore Mode, check the event log for more detailed information.&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;该错误信息提示需重启至Directory Services Restore Mode，然而重启后在控制台中按&lt;kbd&gt;F8&lt;/kbd&gt;无反应。即便是激活了笔记本的&lt;kbd&gt;Fn&lt;/kbd&gt;，再按&lt;kbd&gt;F8&lt;/kbd&gt;也没有效果，又需要解决另外一个问题：&lt;a href=&quot;#q3&quot;&gt;如何进入已损坏windows VM的dsrm&lt;/a&gt;。解决完该问题后继续回到问题2，估计是ntds数据库损坏，需要修复：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;C:\Windows\system32\&amp;gt;cd \windows\system32
+C:\Windows\system32&amp;gt;ntdsutil
+C:\Windows\system32\ntdsutil.exe: activate instance NTDS
+Active instance set to &quot;ntds&quot;.
+C:\Windows\system32\ntdsutil.exe: files&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;将弹出以下错误：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;Could not initialize the Jet engine: Jet Error -501. Failed to open DIT for AD DS/LDS instance NTDS. Error -2147418113&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;需要先退出ntdsutil，对数据库进行修复&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;C:\Windows\system32\ntdsutil.exe: quit
+C:\Windows\system32\md backupad
+C:\Windows\system32&amp;gt;copy ntds.dit backupad
+C:\Windows\system32&amp;gt;esentutl /g c:\windows\ntds\ntds.dit &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;
+C:\Windows\system32&amp;gt;esentutl /p c:\windows\ntds\ntds.dit
+C:\Windows\system32&amp;gt;cd \windows\ntds
+C:\Windows\NTDS\&amp;gt;move *.log backupad&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;该命令执行ntds.dit数据库的校验检测.不出意外的话将以失败告终，所以还需要执行后面的修复操作&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;自此完成了ntds数据库的修复工作，下面检查一下：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;C:\windows\system32&amp;gt;ntdsutil
+C:\Windows\system32\ntdsutil.exe: activate instance ntds
+Active instance set to &quot;ntds&quot;.
+C:\Windows\system32\ntdsutil.exe: files
+file maintenance: info
+
+Drive Information:
+
+        C:\ NTFS (Fixed Drive  ) free(46.6 Gb) total(59.9 Gb)
+
+DS Path Information:
+
+        Database   : C:\Windows\NTDS\ntds.dit - 22.1 Mb
+        Backup dir : C:\Windows\NTDS\dsadata.bak
+        Working dir: C:\Windows\NTDS
+        Log dir    : C:\Windows\NTDS - 50.0 Mb total
+                        edbres00002.jrs - 10.0 Mb
+                        edbres00001.jrs - 10.0 Mb
+                        edb00006.log - 10.0 Mb
+                        edb00005.log - 10.0 Mb
+                        edb.log - 10.0 Mb&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;当然，也可以用&lt;code&gt;esentutl /g&lt;/code&gt;进行检查&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;C:\&amp;gt; esentutl /g c:\windows\ntds\ntds.dit
+
+Extensible Storage Engine Utilities for Microsoft(R) Windows(R)
+Version 6.1
+Copyright (C) Microsoft Corporation. All Rights Reserved.
+
+Initiating INTEGRITY mode...
+        Database: c:\windows\ntds\ntds.dit
+  Temp. Database: TEMPINTEG2684.EDB
+
+Checking database integrity.
+
+                     Scanning Status (% complete)
+
+          0    10   20   30   40   50   60   70   80   90  100
+          |----|----|----|----|----|----|----|----|----|----|
+          ...................................................
+
+Integrity check successful.
+
+Operation completed successfully in 1.482 seconds.&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;大功告成，终于修复了一台域控制器，最后重启至正常模式，使用其它域成员服务器进行netlogon测试均正常。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;q3&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#q3&quot;&gt;&lt;/a&gt;问题3、如何进入已损坏windows VM的dsrm&lt;/h3&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;原来自vista开始，微软为了提高开机速度，更改了boot manager默认设置，F8菜单被隐藏了起来。需要用户手工打开这个选项，如何打开呢？&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;因为这是一台损坏的VM，所以只能启动到以下界面：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.system-recovery-options.jpg&quot; alt=&quot;system-recovery-options&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;没有GUI，只有命令行可用。由于在hyper-v控制台中，&lt;kbd&gt;F8&lt;/kbd&gt;的失效意味着需要将dsrm设置为默认启动项。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;c:\&amp;gt;bcdedit /copy {default} /d &quot;DSRM Mode&quot;
+The entry was successfully copied to {d1caf19e-4976-11e5-8432-9492d15296bf}.
+c:\&amp;gt;bcdedit /set {d1caf19e-4976-11e5-8432-9492d15296bf} safeboot dsrepair
+The Operation completed successfully
+c:\&amp;gt;bcdedit /timeout 5
+c:\&amp;gt;bcdedit
+Windows Boot Manager
+--------------------
+identifier              {bootmgr}
+device                  partition=\Device\HarddiskVolume1
+description             Windows Boot Manager
+locale                  en-US
+inherit                 {globalsettings}
+default                 {current}
+resumeobject            {d1caf198-4976-11e5-8432-9492d15296bf}
+displayorder            {current}
+                        {d1caf19e-4976-11e5-8432-9492d15296bf}
+toolsdisplayorder       {memdiag}
+timeout                 30
+displaybootmenu         Yes
+
+Windows Boot Loader
+-------------------
+identifier              {current}
+device                  partition=C:
+path                    \Windows\system32\winload.exe
+description             Windows Server 2008 R2
+locale                  en-US
+inherit                 {bootloadersettings}
+recoverysequence        {d1caf19c-4976-11e5-8432-9492d15296bf}
+recoveryenabled         Yes
+osdevice                partition=C:
+systemroot              \Windows
+resumeobject            {d1caf198-4976-11e5-8432-9492d15296bf}
+nx                      OptOut
+
+Windows Boot Loader
+-------------------
+identifier              {d1caf19e-4976-11e5-8432-9492d15296bf}
+device                  partition=C:
+path                    \Windows\system32\winload.exe
+description             DSRM mode
+locale                  en-US
+inherit                 {bootloadersettings}
+recoverysequence        {d1caf19c-4976-11e5-8432-9492d15296bf}
+recoveryenabled         Yes
+osdevice                partition=C:
+systemroot              \Windows
+resumeobject            {d1caf198-4976-11e5-8432-9492d15296bf}
+nx                      OptOut
+safeboot                DsRepair &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;dsrm安全模式&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;退出命令行，然后点击&lt;b class=&quot;button&quot;&gt;重启计算机&lt;/b&gt;选项。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;重启之后，出现如下画面：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.wbm-dsrm-options.jpg&quot; alt=&quot;wbm-dsrm-options&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;通过键盘的上下键终于可以选择&lt;span class=&quot;menu&quot;&gt;DSRM mode&lt;/span&gt;进入了dsrm登陆界面，然而好事多磨，在登陆界面又遇到了一个问题：administrator密码丢失，没有道理啊，我记录下所有administrator的密码，不会记错，百思不得其解，兜兜转转了半个小时，最后无意中发现原来在dcpromo过程中将会创建一个dsrm的administrator账号，如下图所示：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.dsrm-password-setting.jpg&quot; alt=&quot;dsrm-password-setting&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;该账号不同于本地管理员或域管理员，是专门在dsrm下使用的，而且登陆账号应是&lt;code&gt;.\Administrator&lt;/code&gt;，既不是&lt;code&gt;Administrator&lt;/code&gt;，也不是&lt;code&gt;local\Administrator&lt;/code&gt;。最终通过穷举法顺利地进入了dsrm。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;imageblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;img src=&quot;http://ofugtm1dt.bkt.clouddn.com/2017-01-06-dc.rcvr.saftmode-dsrm-GUI.jpg&quot; alt=&quot;saftmode-dsrm-GUI&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sidebarblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;几种不同的administrator账号&lt;/div&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;local 初始化安装一台windows服务器后，默认的administrator密码，&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;domain 顾名思义，就是域管理员账号，具有最高的权限。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;dsrm 在将一台域成员提升为域控制器时，将设置dsrm的administrator密码，仅限于dsrm下登陆系统，账号格式为&lt;code&gt;.\Administrator&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;tips&quot;&gt;&lt;a class=&quot;anchor&quot; href=&quot;#tips&quot;&gt;&lt;/a&gt;tips&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;在安全模式-命令行下，可以使用&lt;code&gt;start notepad&lt;/code&gt;来查看和编辑文本文件。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;购买HP服务器的时候，可以同时采购OEM版本的windows server 2008 r2操作系统的安装媒介和授权，在安装媒介中将提供两种安装序列号：physical key和virtual key，其中physical key既可以用于激活物理计算机操作系统(Host OS)，也可以用于激活一台虚拟计算机操作系统(guest OS)。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;div class=&quot;footnote&quot; id=&quot;_footnote_1&quot;&gt;
+&lt;a href=&quot;#_footnoteref_1&quot;&gt;1&lt;/a&gt;. 因为域控制器已失效，所以只能强制脱离域。
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Fri, 06 Jan 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-01-06-%E5%A6%82%E4%BD%95%E4%BF%AE%E5%A4%8D%E4%B8%80%E4%B8%AA%E5%9F%9F%E6%8E%A7%E5%88%B6%E5%99%A8%E5%A4%B1%E6%95%88%E7%9A%84hyper-v-server%E7%BE%A4%E9%9B%86%E7%8E%AF%E5%A2%83/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-01-06-%E5%A6%82%E4%BD%95%E4%BF%AE%E5%A4%8D%E4%B8%80%E4%B8%AA%E5%9F%9F%E6%8E%A7%E5%88%B6%E5%99%A8%E5%A4%B1%E6%95%88%E7%9A%84hyper-v-server%E7%BE%A4%E9%9B%86%E7%8E%AF%E5%A2%83/</guid>
+        
+        <category>windows</category>
+        
+        <category>ad</category>
+        
+        
+        <category>技术</category>
+        
+        <category>系统</category>
+        
+      </item>
+    
+      <item>
+        <title>hyper-v中活动目录架构的时间同步</title>
+        <description>&lt;div id=&quot;preamble&quot;&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在虚拟化环境中，时间同步是一个老大难问题，而在微软的活动目录架构中，时间同步又很重要，所以在虚拟化环境中运行域控制器，时间同步将是一个大问题。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;术语&quot;&gt;术语&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;dlist&quot;&gt;
+&lt;dl&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;domain controller&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;域控制器，简称dc，本项目中有两台dc，一台为ad2，另一台为dc3，其中5个fsmo角色均在ad2中。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;integrated service&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;hyper-v的集成服务，简称ic，类似vmware tools，用于同步时间，提供易用性驱动等功能。&lt;/p&gt;
+&lt;/dd&gt;
+&lt;dt class=&quot;hdlist1&quot;&gt;hv节点&lt;/dt&gt;
+&lt;dd&gt;
+&lt;p&gt;安装了hyper-v功能的物理主机，可以是hyper-v server 2012 r2，也可以是windows 2012 server with hyper-v feature installed&lt;/p&gt;
+&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;最佳实践&quot;&gt;最佳实践&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;olist arabic&quot;&gt;
+&lt;ol class=&quot;arabic&quot;&gt;
+&lt;li&gt;
+&lt;p&gt;dc安装ic，在hyper-v中启用ic的“时间同步”选项；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;dc中，在以管理员权限运行的命令行中执行&lt;/p&gt;
+&lt;div class=&quot;literalblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;reg add HKLM\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\VMICTimeProvider /v Enabled /t reg_dword /d 0&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;hv节点通过ntp跟dc同步；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;域服务器通过ic的“时间同步”跟hv节点进行同步；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        <pubDate>Fri, 06 Jan 2017 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2017-01-06-hyper-v%E4%B8%AD%E6%B4%BB%E5%8A%A8%E7%9B%AE%E5%BD%95%E6%9E%B6%E6%9E%84%E7%9A%84%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2017-01-06-hyper-v%E4%B8%AD%E6%B4%BB%E5%8A%A8%E7%9B%AE%E5%BD%95%E6%9E%B6%E6%9E%84%E7%9A%84%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5/</guid>
+        
+        <category>windows</category>
+        
+        <category>ad</category>
+        
+        
+        <category>技术</category>
+        
+        <category>系统</category>
+        
+      </item>
+    
+      <item>
+        <title>lvm的日常</title>
+        <description>&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;更改vg名称&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;一台debian 6，启用了lvm，root也在lvm上，由于名字起的不规范，因而需要修改。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre class=&quot;highlightjs highlight&quot;&gt;&lt;code&gt;$ sudo vgrename $oldhostname $newhostname
+$ sudo sed -i “s/$oldhostname/$newhostname/g” /etc/fstab
+$ sudo sed -i “s/\/$oldhostname/\/$newhostname/g” /boot/grub/grub.cfg
+$ sudo update-initramfs -c -k all &lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;(1)&lt;/b&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;colist arabic&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;i class=&quot;conum&quot; data-value=&quot;1&quot;&gt;&lt;/i&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;update-initramfs的作用是重新生成一个initrd，否则下次重启的话会提示找不到原来的volume group错误提示，虽然不影响系统正常启动。建议将原来的initrd挪个位置，然后使用-c，虽然-u也可以更新，但是似乎不起作用，错误提示依然存在。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;可以在线改名，也可以使用systemrescuecd然后挂载lvm中的分区改名。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;删除lv(open状态)&lt;/p&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;在xen中删除了一个VM，但是它的镜像还处于open状态，无法使用lvremove删除：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;literalblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;$ sudo lvremove /dev/domU/VMs
+lvremove Can't remove open logical volume&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;这时需要使用dmsetup来删除mapper：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;literalblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;$ sudo ll /dev/mapper/
+$ sudo dmsetup remove /dev/mapper/VMs11
+$ sudo dmsetup remove /dev/mapper/VMs15&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;最后再执行lvremove就可以了：&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;literalblock&quot;&gt;
+&lt;div class=&quot;content&quot;&gt;
+&lt;pre&gt;$ sudo lvremove /dev/domU/VMs&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;缩小LV的大小&lt;/p&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;umount filesystem&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;e2fsck -f /dev/lvm/test&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;resize2fs /dev/lvm/test size&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;lvreduce -L size /dev/lvm/test&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;mount filesystem&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如何扩大lv的大小&lt;/p&gt;
+&lt;div class=&quot;ulist&quot;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;umount /mnt/stuff&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;lvextend -L +10G /dev/loc/stuff&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;e2fsck -f /dev/loc/stuff&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;resize2fs /dev/loc/stuff&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;mount /dev/loc/stuff /mnt/stuff&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class=&quot;admonitionblock note&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td class=&quot;icon&quot;&gt;
+&lt;i class=&quot;fa icon-note&quot; title=&quot;Note&quot;&gt;&lt;/i&gt;
+&lt;/td&gt;
+&lt;td class=&quot;content&quot;&gt;
+如果想对根分区进行操作，需要先用光盘引导，譬如system rescue cd。
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;</description>
+        <pubDate>Fri, 09 Dec 2016 00:00:00 +0000</pubDate>
+        <link>https://blog.zlinuxboy.com/2016-12-09-lvm%E7%9A%84%E6%97%A5%E5%B8%B8/</link>
+        <guid isPermaLink="true">https://blog.zlinuxboy.com/2016-12-09-lvm%E7%9A%84%E6%97%A5%E5%B8%B8/</guid>
+        
+        <category>lvm</category>
+        
+        <category>storage</category>
+        
+        
+        <category>技术</category>
+        
+      </item>
+    
+  </channel>
+</rss>

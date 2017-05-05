@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>fail2ban on OpenBSD</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-04-11-fail2ban-on-OpenBSD/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">fail2ban on OpenBSD</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-04-11&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openbsd"><i class="fa fa-tag">&nbsp;&nbsp;openbsd</i></a>
+           <!--a class="post-tag" href="/tag/openbsd">openbsd</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>自部署OpenBSD以来，经常发现有script kid使用暴力破解的方式试探SSH的密码，一直以来都不以为然，最近总部下发的通报让我痛下决心，非解决这个问题不可。</p>
+</div>
+<div class="paragraph">
+<p>解决方式有两种：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>将密码验证更改为证书认证；</p>
+</li>
+<li>
+<p>实时监控`/var/log/authlog`，一旦发现非法IP，就列入黑名单，使用pf对黑名单进行过滤。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>考虑到证书方式有些麻烦，所以我选择了第二种，经过一番研究，决定采用pf+fail2ban来实现。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-工作原理">1. 工作原理</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenBSD使用<code>/var/log/authlog</code>来中记录每一次SSH访问，包括访问IP、用户名，以及认证结果（失败或成功），如下所示：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Mar  7 18:04:31 openbsd-2 sshd[21329]: Failed password for root from 114.251.14.194 port 36813 ssh2
+Mar  7 18:04:31 openbsd-2 sshd[2578]: Received disconnect from 114.251.14.194: 11: Bye Bye
+Mar  7 18:04:32 openbsd-2 sshd[17077]: Failed password for root from 114.251.14.194 port 38940 ssh2
+Mar  7 18:04:33 openbsd-2 sshd[12636]: Received disconnect from 114.251.14.194: 11: Bye Bye
+Mar  7 18:04:34 openbsd-2 sshd[5435]: Failed password for root from 114.251.14.194 port 40996 ssh2
+Mar  7 18:04:34 openbsd-2 sshd[10562]: Received disconnect from 114.251.14.194: 11: Bye Bye
+Mar  7 18:04:36 openbsd-2 sshd[13110]: Failed password for root from 114.251.14.194 port 43031 ssh2
+Mar  7 18:04:36 openbsd-2 sshd[1946]: Received disconnect from 114.251.14.194: 11: Bye Bye
+Mar  7 21:37:25 openbsd-2 sshd[3059]: Accepted password for root from 221.182.194.246 port 56502 ssh2
+Mar  7 21:40:09 openbsd-2 sshd[32191]: Invalid user a from 211.137.70.139
+Mar  7 21:40:09 openbsd-2 sshd[25000]: input_userauthj_request: invalid user a
+Mar  7 21:40:09 openbsd-2 sshd[32191]: Failed password for invalid user a from 211.137.70.139 port 26429 ssh2
+Mar  7 21:40:09 openbsd-2 sshd[25000]: Received disconnect from 211.137.70.139: 11: Bye Bye
+Mar  7 21:40:10 openbsd-2 sshd[30727]: Invalid user aabdulka from 211.137.70.139
+Mar  7 21:40:10 openbsd-2 sshd[7248]: input_userauth_request: invalid user aabdulka
+Mar  7 21:40:10 openbsd-2 sshd[30727]: Failed password for invalid user aabdulka from 211.137.70.139 port 26572 ssh2
+Mar  7 21:40:10 openbsd-2 sshd[7248]: Received disconnect from 211.137.70.139: 11: Bye Bye</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>从上面的记录可以看出，除了`221.182.194.246`这个用户输入了正确的帐号/密码外，<code>211.137.70.139`则一直在尝试不同的用户名和密码，这个用户的异常行为是：短时间内重复尝试登录失败。从这可以判断该IP是一个非法IP，这时候我们可以使用一个定时执行的脚本，扫描</code>/var/log/authlog`，统计IP的访问失败次数，当达到一定阀值的时候就将结果添加到pf的&lt;blacklist&gt;这个table中，再利用block语句就可以将恶意IP过滤掉。</p>
+</div>
+<div class="paragraph">
+<p>fail2ban就是这个定时脚本。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-安装">2. 安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>fail2ban最新版本为0.9，OpenBSD 4.9的port中版本比较低，因此我采用了编译源码方式安装fail2ban最新版本。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># pkg_add -iv python
+# pkg_add -iv gamin
+# cd /usr/src
+# wget http://www.fail2ban.org/nightly/fail2ban-trunk.tar.bz2
+# tar xjf fail2ban-trunk.tar.bz2
+# cd fail2ban-0.9-SVN
+# python2.6 setup.py install</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-配置">3. 配置</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="3-1-pf">3.1 pf</h3>
+<div class="paragraph">
+<p>pf的配置非常简单，只要在<code>pf.conf</code>配置文件靠前的位置添加<code>anchor fail2ban</code>这一条语句即可。这就在<code>pf.conf</code>中创建了一个临时锚，同时创建了一个同名的table，fail2ban将对该table进行增、删IP的操作。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-2-fail2ban">3.2 fail2ban</h3>
+<div class="paragraph">
+<p>在配置fail2ban之前，需说明fail2ban是如何工作的，先来看看它的配置文件目录：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>root@openbsd-2/etc/fail2ban:# tree ./
+./
+|-- action.d
+|   |-- hostsdeny.conf
+|   |-- ipfw.conf
+|   |-- iptables-allports.conf
+|   |-- iptables-multiport-log.conf
+|   |-- iptables-multiport.conf
+|   |-- iptables-new.conf
+|   |-- iptables.conf
+|   |-- pf-drop-all.conf
+.....
+|   `-- shorewall.conf
+|-- fail2ban.conf
+|-- filter.d
+|   |-- apache-auth.conf
+|   |-- apache-badbots.conf
+|   |-- apache-noscript.conf
+|   |-- apache-overflows.conf
+.....
+|   |-- qmail.conf
+|   |-- sasl.conf
+|   |-- sshd-ddos.conf
+|   |-- sshd.conf
+|   `-- xinetd-fail.conf
+|-- jail.conf
+`-- pf-anchor.conf</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>fail2ban是一个python脚本，将通过<code>fixme</code>启动，随后一直在后台运行，实时监控<code>/var/log/authlog</code>这个文件；</p>
+</li>
+<li>
+<p>一旦<code>/var/log/authlog</code>发生变化，fail2ban将根据<code>fail2ban.conf</code>和<code>filter.d/</code>的定义，使用<code>sshd-pf.conf</code>和<code>sshd-ddos-pf.conf</code>这两个过滤器对变化日志进行比对；</p>
+</li>
+<li>
+<p>若变化日志符合规则，而且数量超出定义的阀值，fail2ban将触发<code>action.d/</code>中相对应的的指令，将非法IP添加到pf的fail2ban这个黑名单中；</p>
+</li>
+<li>
+<p>该非法IP再次访问访问OpenBSD SSHd时候将被block语句拒绝掉；</p>
+</li>
+<li>
+<p>fail2ban脚本会定时对pf黑名单进行清理，也就是过一段时间后，该IP又可以重新访问OpenBSD的SSHd服务。之所以这么设计是有原因的，因为黑客往往通过僵尸网络对目标进行攻击，非法IP是动态变化的，所以不能永久把它列入黑名单。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>下面将对配置文件进行分别说明：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>fail2ban.conf</code>该文件配置fail2ban的log级别、log文件路径和socket。</p>
+</li>
+<li>
+<p><code>jail.conf</code>,jail是监牢的意思，该文件相当于一个监狱，建了很多个单间，每个单间针对一个单独的服务，在本例中就启用了<strong>ssh-pf</strong>和<strong>ssd-ddos-pf</strong>这两个jail，相对应的，<code>filter.d/</code>目录里面也必须包含同名的配置文件。</p>
+</li>
+<li>
+<p><code>filter.d/</code>，该目录中包含了<code>sshd-pf.conf</code>和<code>ssh-ddos-pf.conf</code>这两个文件，相当于过滤器，<code>sshd-pf.conf</code>文件的内容如下：</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># Fail2Ban configuration file
+#
+# Author: Cyril Jaquier
+#
+# $Revision: 695 $
+#
+
+[Definition]
+
+# Option:  failregex
+# Notes.:  regex to match the password failures messages in the logfile. The
+#          host must be matched by a group named "host". The tag "&lt;HOST&gt;" can
+#          be used for standard IP/hostname matching and is only an alias for
+#          (?:::f{4,6}:)?(?P&lt;host&gt;\S+)
+# Values:  TEXT
+#
+failregex = &lt;TIME&gt; &lt;PREFIX&gt; (?:error: PAM: )?Authentication failure for .* from &lt;HOST&gt;\s*$
+            &lt;TIME&gt; &lt;PREFIX&gt; Failed [-/\w]+ for .* from &lt;HOST&gt;(?: port \d*)?(?: ssh\d*)?$
+            &lt;TIME&gt; &lt;PREFIX&gt; ROOT LOGIN REFUSED.* FROM &lt;HOST&gt;\s*$
+            &lt;TIME&gt; &lt;PREFIX&gt; [iI](?:llegal|nvalid) user .* from &lt;HOST&gt;\s*$
+            &lt;TIME&gt; &lt;PREFIX&gt; User \S+ from &lt;HOST&gt; not allowed because not listed in AllowUsers$
+            &lt;TIME&gt; &lt;PREFIX&gt; authentication failure; logname=\S* uid=\S* euid=\S* tty=\S* ruser=\S* rhost=&lt;HOST&gt;(?:\s+user=.*)?\s
+*$
+            &lt;TIME&gt; &lt;PREFIX&gt; refused connect from \S+ \(&lt;HOST&gt;\)\s*$
+            &lt;TIME&gt; &lt;PREFIX&gt; Address &lt;HOST&gt; .* POSSIBLE BREAK-IN ATTEMPT\s*$
+
+# Option:  ignoreregex
+# Notes.:  regex to ignore. If this regex matches, the line is ignored.
+# Values:  TEXT
+#
+ignoreregex =</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这些配置文件中最重要的是<code>failregex</code>，这个语句由一组正则表达式组成，将被用于与非法入侵日志进行比较。看起来像火星文，不过读者大可放心，fail2ban已经提供了丰富的过滤器，无需担心。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>action.d/</code>，fail2ban根据该目录的文件向防火墙发出指令。譬如iptables.conf，
+由于fail2ban并不支持pf，所以需用户自行创建<code>pf-drop-all.conf</code>这个文件，内容如下：</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[Definition]
+actionstart = /sbin/pfctl -a fail2ban -t fail2ban -Ts || /sbin/pfctl -a fail2ban -f /etc/fail2ban/pf-anchor.conf
+actionstop = /sbin/pfctl -a fail2ban -F rules
+actioncheck = /sbin/pfctl -s info | grep Enabled
+actionban = /sbin/pfctl -a fail2ban -t fail2ban -T add &lt;ip&gt; &amp;&amp; /sbin/pfctl -k &lt;ip&gt;
+actionunban = /sbin/pfctl -a fail2ban -t fail2ban -T delete &lt;ip&gt;
+[Init]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这样就完成了整个fail2ban的配置，实际需要配置的内容很少，主要是要创建<code>pf-drop-all.conf</code>这个文件。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-排错">4. 排错</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>查看状态</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># fail2ban-client status
+Status
+|- Number of jail:      2
+`- Jail list:           ssh-ddos-pf, ssh-pf
+# fail2ban-client status ssh-ddos-pf
+Status for the jail: ssh-ddos-pf
+|- filter
+|  |- File list:        /var/log/authlog
+|  |- Currently failed: 0
+|  `- Total failed:     7
+`- action
+   |- Currently banned: 0
+   |  `- IP list:
+   `- Total banned:     0</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看log</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>tail -f /var/log/fail2ban.log</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果发现异常，fail2ban会显示非法IP信息。</p>
+</div>
+</li>
+<li>
+<p>查看pf黑名单</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>/sbin/pfctl -a fail2ban -t fail2ban -T show</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

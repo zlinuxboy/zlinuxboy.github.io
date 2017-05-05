@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>intermapper和netflow</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-02-13-intermapper/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">intermapper和netflow</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-02-13&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openbsd"><i class="fa fa-tag">&nbsp;&nbsp;openbsd</i></a>
+           <!--a class="post-tag" href="/tag/openbsd">openbsd</a-->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>intermapper(以下简称im)是一款网管工具，它大部分的功能跟其它网管软件并无二致，唯一让我动心的是它集成了ProQuesys公司的flowtraq这个netflow/sflow分析工具<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>，利用该组件，网管可以通过交互方式迅速定位带宽滥用者。</p>
+</div>
+<div class="paragraph">
+<p>intermapper的架构如下所示：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2012-02-13-im-arch.png" alt="intermapper-arch">
+</div>
+</div>
+<div class="paragraph">
+<p>其中flow用于收集netflow&amp;sflow的信息，并进行分析，它必须依托于im，也就是说须先安装im，才能安装flow组件。remoteaccess允许网管员从远程访问intermapper，即便不在现场也能远程访问控制。</p>
+</div>
+<div class="paragraph">
+<p>有一个真实的案例，某客户租用了运营商的100M专线，经常投诉上网慢，利用传统的cacti发现该专线的带宽利用率高达100%，那究竟是谁，使用了什么应用将带宽全部用完呢，im flow能够解答这个问题。</p>
+</div>
+<div class="paragraph">
+<p>netflow分析工具的简易测试报告</p>
+</div>
+<div class="paragraph">
+<p>通过snmp可以获取到端口流量，但是snmp无法知道这些流量的具体组成，因此在实际的排错中还需要用到netflow/sflow这些工具，netflow是一个捕获和分析session<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>的工具。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="netflow架构">netflow架构</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2012-02-13-netflow-arch.png" alt="netflow-arch">
+</div>
+</div>
+<div class="paragraph">
+<p>我借用了Intermapper中的一张图片进行说明，其中cisco Router/Switch、nProbe/nTop这些都是exporter，假如你的交换机不支持netflow协议，那么可以通过端口镜像到一台服务器，再利用该服务器上面的软exporter输出到Collector，大家可以将InterMapper Server看做是一个Collector。我对比了几个软exporter，觉得最好用的还是ProQuesys公司提供的免费工具：flowexport，它支持windows和Linux/unix，只有一个可执行文件，不需要另行编译。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="netflow分析工具">netflow分析工具</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>我测试了几款netflow分析工具，它们分别是：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Intermapper flower 1.2.1</p>
+</li>
+<li>
+<p>ManageEngine Netflow Analyzer 8</p>
+</li>
+<li>
+<p>PRTG network monitor 8</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="易用性的对比">易用性的对比</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>im flow</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>易用性以Intermapper flow 1.2.1最佳，它使用了客户端的方式，如下图所示</p>
+</div>
+<div class="paragraph">
+<p>image::{pic-im-flow-gui}[im flow gui]</p>
+</div>
+<div class="paragraph">
+<p>屏幕中分为过滤条件、堆叠图、饼图和图表四大区域，管理员可以很方便从任一地方选择特定PC来查看它的全部流量，譬如双机堆叠图中的某一个颜色。这中交互模式是网页所无法提供的，因此Intermapper flow是网管排错的一个高效工具。唯一可惜的是Intermapper Remote Access这个工具是要收费的，因此网管员只能远程登录到该服务器来使用。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ManageEngine Neflow Analyzer 8</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2012-02-13-me-netflow-analyzer.png" alt="me-netflow-analyzer">
+</div>
+</div>
+<div class="paragraph">
+<p>Netflow Analyzer 8也提供了丰富的过滤选项，支持IP段分组，设备分组、Group by src/dst ip，时间段，流量方向等，只是在交互上的操作流畅性方面还是比不上Intermapper flow。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>PRTG Network monitor 8</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2012-02-13-prtg-8.png" alt="prtg-8">
+</div>
+</div>
+<div class="paragraph">
+<p>它的易用性最差，网页上未能提供太多的可选项，需要用户预先定制模板，但是复杂的用户上网行为而言，根本无法满足网管员对灵活性的要求。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="软硬件要求的对比">软硬件要求的对比</h3>
+<div class="paragraph">
+<p>Intermapper flow和ManageEngine Neflow Analyzer 8均采用java，其内存占用方面比PRTG要高，大约需要700多M，但是速度方面倒没有太大差异，700多M对于现在的白菜价硬件而言并无太大负担。PRTG仅支持windows，Neflow Analyzer和Intermapper flow支持多种操作系统。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="免费版的限制对比">免费版的限制对比</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Intermapper flow最为慷慨，它提供了1个无限期的export，只需要在互联网网关之前的核心交换机上启用netflow export就可以看到整个企业的session。</p>
+</li>
+<li>
+<p>Netflow Analyzer8的试用版仅支持2个interface，我使用的是flowexport这个工具，它有31个interface，因此在测试的过程中所捕获的数据并不精确。</p>
+</li>
+<li>
+<p>PRTG的trial版本支持2个Netflow/sflow sensor，它不以interface作为计数单位，因此能够支持2个collector，但是free版本就不支持了。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>总的来说，作为一款Netflow分析工具而言，im flow是最好的选择。</p>
+</div>
+<div class="paragraph">
+<p>Intermapper的使用</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2012-02-13-im-gui.png" alt="intermapper-gui">
+</div>
+</div>
+<div class="paragraph">
+<p>在上图中，用得最多的是<b class="button">仅发送</b>按钮，数据过滤框。其中选择“仅接送”按钮后，在主窗口显示的是所有主机发送的数据，譬如，在10.168.1.15这台主机上，使用QQdownloader下载一个文件，在顶部的IP地址列表中，所有的主机都与10.168.1.15发生关系，他们都发送文件的一部分给10.168.1.15，那为什么10.168.1.15也有发送的数据包呢？因为根据tcp/ip工作原理，当其他主机给本机发送数据的时候，本机需要回复一个确认，因此10.168.1.15也有少量的发送流量。
+在“top sessions”页面会看得更明白：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2012-02-13-im-top-sessions.png" alt="im-top-sessions">
+</div>
+</div>
+<div class="paragraph">
+<p>testsrv-win2k3作为客户机，其它均作为服务器存在，服务器发送数据给客户机。</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 该工具在intermapper中以flow组件方式存在
+</div>
+<div class="footnote" id="_footnote_2">
+<a href="#_footnoteref_2">2</a>. 一个session由两个不同方向的数据流（flow）组成：一个从PC到服务器，一个从服务器到PC。
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

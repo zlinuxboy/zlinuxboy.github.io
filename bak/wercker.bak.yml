@@ -1,0 +1,24 @@
+box: ruby
+build:
+  steps:
+    - bundle-install
+    - script:
+        name: checkout source branch
+        code: if [ -d _posts ]; then git checkout source; fi;
+    - script:
+        name: generate site
+        code: if [ -d _posts ]; then bundle exec jekyll build --trace; fi;
+deploy:
+  steps:
+    - bundle-install
+    - williamli/add-deploy-ssh-key:
+       keyname: GITHUB
+    - script:
+        name: set git config email
+        code: git config --global user.email "zlinuxboy@outlook.com"
+    - script:
+        name: set git config name
+        code: git config --global user.name "zlinuxboy"
+    - script:
+        name: publish rake task
+        code: bundle exec rake publish

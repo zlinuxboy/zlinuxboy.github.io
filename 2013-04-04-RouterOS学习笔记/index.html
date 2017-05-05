@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>RouterOS学习笔记</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-04-04-RouterOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">RouterOS学习笔记</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-04-04&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/RouterOS"><i class="fa fa-tag">&nbsp;&nbsp;RouterOS</i></a>
+           <!--a class="post-tag" href="/tag/RouterOS">RouterOS</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>2年前买了个RB493G，它是MikroTik当年出品的一款高性能企业级无线路由器，一直闲置着，落了不少灰。最近恰好要将大量数据从笔记本备份至ZFS存储，实在忍受不了LinkSYS WRT54G的无线速率，于是这两天把RB493G翻出来好好地玩了一把。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="interface">interface</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>RouterBOARD中的接口类型挺丰富，之前用得最多的就是千兆口和无线网卡，最近新出的RouterBOARD也带有SFP口了。当然，在RouterOS中接触最多的概念则是物理口和逻辑口。</p>
+</div>
+<div class="sect2">
+<h3 id="pppoe-client">PPPoE client</h3>
+<div class="paragraph">
+<p>逻辑口，也就是拨号上网。注意哦，平时经常说ADSL拨号上网，实际上是两个概念，ADSL是物理层链路，拨号上网是通过PPPoE协议实现拨号、认证和计费。现在我用的是中国移动的家庭宽带，入户的直接就是一根网线，已经不再需要ADSL modern。</p>
+</div>
+<div class="paragraph">
+<p>我将入户网线插入到RB493G的ether1中。Oracle的两根网线分别插入ether2和ether3，另外一根ether7置空，留作测试只用。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] &gt; interface pppoe-client print
+Flags: X - disabled, R - running
+ 0  R name="pppoe-out1" max-mtu=1480 max-mru=1480 mrru=disabled
+      interface=ether1 user="15904701233" password="123123"
+      profile=pppoe-client-default service-name="" ac-name=""
+      add-default-route=yes dial-on-demand=no use-peer-dns=yes
+      allow=pap,chap,mschap1,mschap2</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ethernet">ethernet</h3>
+<div class="paragraph">
+<p>物理口</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] &gt; interface ethernet print
+Flags: X - disabled, R - running, S - slave
+ #    NAME        MTU MAC-ADDRESS       ARP        MASTER-PORT     SWITCH
+ 0 R  ether1     1500 00:0C:42:A9:AB:87 enabled    none            switch1
+ 1 RS ether2     1500 00:05:5D:72:A5:0D enabled    none            switch2
+ 2 RS ether3     1500 00:0C:42:A9:AB:89 enabled    none            switch2
+ 3    ether4     1500 00:0C:42:A9:AB:8A enabled    none            switch2
+ 4    ether5     1500 00:0C:42:A9:AB:8B enabled    none            switch2
+ 5    ether6     1500 00:0C:42:A9:AB:8C enabled    none            switch1
+ 6 R  ether7     1500 00:0C:42:A9:AB:8D enabled    none            switch1
+ 7    ether8     1500 00:0C:42:A9:AB:8E enabled    none            switch1
+ 8    ether9     1500 00:0C:42:A9:AB:8F enabled    none            switch1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>比较特别的地方是ether2和ether3均有一个<code>S</code>的标识，这是由于创建了一个bonding逻辑接口，下属口就是ether2和ether3。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="bonding">bonding</h3>
+<div class="paragraph">
+<p>逻辑口，包含了ether2和ether3，这两个口通过两根网线与solaris 11的两个网口相连，构建Link Aggregation。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] &gt; interface bonding print
+Flags: X - disabled, R - running
+ 0  R name="bonding1" mtu=1500 mac-address=00:05:5D:72:A5:0D arp=enabled
+      slaves=ether2,ether3 mode=802.3ad primary=none link-monitoring=none
+      arp-interval=100ms arp-ip-targets=192.168.172.20 mii-interval=100ms
+      down-delay=0ms up-delay=0ms lacp-rate=30secs
+      transmit-hash-policy=layer-2-and-3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>RouterOS中对802.3ad的实现并不完整，尚未兼容layer-3-and-4这种策略，因此对端也只能设置成L2，L3或L2+L3。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wireless">wireless</h3>
+<div class="paragraph">
+<p>物理口。此处用的无线网卡是R52n，可以实现2.4G和5G的802.11n。关键在于笔记本的无线网卡，很多仅支持2.4G的802.11n。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] /interface&gt; wireless print
+Flags: X - disabled, R - running
+ 0  R name="wlan1" mtu=1500 mac-address=00:0C:42:66:45:56 arp=enabled
+      interface-type=Atheros 11N mode=ap-bridge ssid="RB493G"
+      frequency=2412 band=2ghz-b/g/n channel-width=20mhz scan-list=default
+      wireless-protocol=802.11 wds-mode=disabled wds-default-bridge=none
+      wds-ignore-ssid=no bridge-mode=enabled default-authentication=yes
+      default-forwarding=yes default-ap-tx-limit=0
+      default-client-tx-limit=0 hide-ssid=no security-profile=default
+      compression=no</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置很复杂，还是通过winbox方便一些。即便是再忠诚的命令行拥护者也不能阻挡GUI的诱惑。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ip-address">IP address</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] /ip&gt; address print
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0   192.168.22.254/24  192.168.22.0    wlan1
+ 1   192.168.172.254/24 192.168.172.0   bonding1
+ 2 D 183.254.43.236/32  183.254.0.1     pppoe-out1
+ 3   192.168.44.254/24  192.168.44.0    ether7</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>RouterOS跟其它的网络设备配置有些区别，IP地址跟物理口的设置分别在两个不同的菜单中，最终在IP地址菜单中实现两者的捆绑。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="dhcp-server">DHCP server</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>此处仅针对wireless提供DHCP服务。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] /ip&gt; dhcp-server print
+Flags: X - disabled, I - invalid
+ #   NAME        INTERFACE     RELAY     ADDRESS-POOL        LEASE-TIME ADD-ARP
+ 0   dhcpServer   wlan1                     dhcp                  3d
+[admin@MikroTik] /ip&gt; pool print
+ # NAME         RANGES
+ 0 dhcp         192.168.22.1-192.168.22.10</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="nat">NAT</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>显然，需要为RouterOS中所有网段提供NAT才能正常访问互联网。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[admin@MikroTik] /ip firewall&gt; nat print
+Flags: X - disabled, I - invalid, D - dynamic
+ 0   chain=srcnat action=masquerade to-addresses=0.0.0.0 out-interface=pppoe-out1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>NAT配置位于firewall菜单中，其的选项也很复杂，此处的关键是out-interface需要选择`pppoe-out1`。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="link-aggregation">Link Aggregation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Oracle的文档非常详尽，MikroTik的RouterOS也很简单，因此创建Link Aggregation倒是很容易。</p>
+</div>
+<div class="paragraph">
+<p>然而，两者通过两根网线连接后，死活ping不通，我尝试着更换了各种组合，譬如solaris侧分别设置了Policy: L2、L3和L2/L3，LACPactivity: active、passive和off等各种组合，RouterOS中的link monitor也尝试了arp、mii-1等，均未成功。实在没办法，于是只能采用终极大法：升级固件。</p>
+</div>
+<div class="paragraph">
+<p>升级之后，终于实现Link Aggregation。手工模拟故障，先在RouterOS上ping solaris11的IP地址，拔掉任意一条网线均不影响两者之间的互联，顶多掉一个包。问题得到解决，solaris 11.1最终设置成了：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># dladm show-aggr aggr0</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="固件升级">固件升级</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>我所买的RB493G的license是Level5，因此可以升级到后续的两个大版本号，比如说现在的RouterOS是V4.16，则最高可以升级到V6。</p>
+</div>
+<div class="paragraph">
+<p>RouterBOARD的升级非常简单，在winbox界面中，打开file，然后将最新的firmware拖进winbox中，最后在terminal中<code>system reboot</code>重启即可。</p>
+</div>
+<div class="paragraph">
+<p>自从将Linksys WRT54G换成了RB493G后，一个明显的感觉就是，笔记本通过无线浏览网页的速度比以前快多了，难道是心理作用？</p>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

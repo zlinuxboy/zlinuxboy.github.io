@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>一次业务迁移的经验小结</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-04-01-%E4%B8%80%E6%AC%A1%E4%B8%9A%E5%8A%A1%E8%BF%81%E7%A7%BB%E7%9A%84%E7%BB%8F%E9%AA%8C%E5%B0%8F%E7%BB%93/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">一次业务迁移的经验小结</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-04-01&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="sect1">
+<h2 id="移动介质的fs要足够普通">移动介质的FS要足够普通</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>我准备了一块160G的移动硬盘，由于容量比较大，因此格式化为exFAT格式，然而生产环境的OS分别是windows 2003和OpenSUSE11.3，都无法识别，而移动硬盘中还有其它数据，不能直接格式化，因此费了一番心思。</p>
+</div>
+<div class="paragraph">
+<p>所以，移动介质一定要采用最普通的文件系统，譬如FAT32，windows2003和较老的linux都无法识别exFAT。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="如何实现快速拷贝">如何实现快速拷贝</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>windows ntfs文件系统对付小文件力不从心，因此假如有大量小文件需要备份，有两种解决办法：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>压缩-传输-解压</p>
+<div class="paragraph">
+<p>用winzip、winrar这样的压缩软件采用zip方式打包（不压缩，选择最快速度）小文件后，作为一个打文件传送到另外一个服务器，然后在目的地解压；</p>
+</div>
+</li>
+<li>
+<p>使用第三方拷贝软件</p>
+<div class="paragraph">
+<p>譬如fastcopy和ultracopier，千万别用teracopy，在cmoa业务数据备份的过程中发现它有两个问题：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>拷贝速度不稳定，下跌厉害；</p>
+</li>
+<li>
+<p>拷贝文件出现错误。而fastcopy就非常稳定，而且不会出错。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>经测试，采用CIFS/SMB共享方式，fastcopy的拷贝速度可达15MB/s，基本上是千兆网络速率的极限。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="尽量使用域名">尽量使用域名</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>基于B/S架构的业务系统尽量用域名访问，否则IP地址变更后，如何通知几百个客户是非常痛苦的一件事情，尤其是政府客户。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="基础服务和业务应用分开部署">基础服务和业务应用分开部署</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>2009年部署业务应用的时缺乏经验，将一些基础服务，譬如DNS、radius、AD和OpenVPN等基础服务连同业务应用全部部署在同一台物理服务器上，导致业务应用迁移前需先做好基础服务的迁移。当然，假如物理服务器数量足够的话，没有人愿意将多个服务部署在一台服务器。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="vmware中修改guest-os的mac地址">VMware中修改guest OS的MAC地址</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>很多业务应用的license都跟服务器的MAC地址进行绑定，因此需要提前了解VMware环境中的MAC地址修改技巧。</p>
+</div>
+<div class="paragraph">
+<p>有两种方式</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>修改VMware的VMX文件</p>
+</li>
+<li>
+<p>修改guest OS中的AMC地址，windows中我经常用的是K-mac，linux则直接在网卡的配置文件中设定即可。</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="新不如旧">新不如旧</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>前面的文件系统是这样，接下来的无线路由器也是这样，在本次迁移的过程中，顺手用一个D-link DIR600M换掉一台古老的linksys WRT54G。</p>
+</div>
+<div class="paragraph">
+<p>DIR600M支持AP和无线路由两种无线工作方式，AP方式指的是WAN、LAN和wifi处于同一个网段：192.168.0.0/24，而且这个网段还不能手工改，无线路由方式指的是WAN连接互联网，LAN和wifi处于同一个网段。好在LAN可以自行设置IP地址。因此最终选择了“无线路由”方式。DIR600M仅有4M rom和32M ram，刷OpenWRT就不必了，还比不上两年前买的LinkSYS WRT54G mod，至少还有8M rom和64M ram呢。</p>
+</div>
+<div class="paragraph">
+<p>所以说，并不是越新就越好，成本的下降往往意味着偷工减料。</p>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

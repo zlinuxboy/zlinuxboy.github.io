@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>OpenNTPd on OpenBSD</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-04-12-OpenNTPd-on-OpenBSD/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">OpenNTPd on OpenBSD</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-04-12&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openbsd"><i class="fa fa-tag">&nbsp;&nbsp;openbsd</i></a>
+           <!--a class="post-tag" href="/tag/openbsd">openbsd</a-->
+         
+           <a class="post-tag" href="/tag/ntp"><i class="fa fa-tag">&nbsp;&nbsp;ntp</i></a>
+           <!--a class="post-tag" href="/tag/ntp">ntp</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>计算机时间是否同步是一个简单但很重要的命题，因为很多应用都要求计算机之间的时间一致，譬如VPN的构建、AD域的认证，log日志的排错等均需要时间同步，因此，早在1985年就诞生了NTP协议，它的全称是network time protocol（网络时间协议），被广泛用于计算机时间同步。它是一个协议，任何人都可以根据这个协议开发时间同步的软件，最著名的实现是ntp.org维护的同名套件，然而OpenBSD的开发人员对这个套件并不感冒，于是他们另起炉灶，重新开发了OpenNTPd，它旨在实现：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>合理地保证时间的精确性；</p>
+</li>
+<li>
+<p>安全；</p>
+</li>
+<li>
+<p>配置简单；</p>
+</li>
+<li>
+<p>遵循BSD协议；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>读者可能会对第一条产生困惑，什么叫合理地保证时间的精确性，OpenBSD的开发人员认为，没有必要尽最大的可能保证时间的精确性，只要做到一般精确（+-0.25秒）就可以了，但必须保证代码的简洁和安全。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装">安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenBSD4.9默认安装就已包含了OpenNTPD，因此OpenBSD的用户可以省略安装这个步骤。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置">配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenNTPd的配置文件只有一个<code>/etc/ntpd.conf</code>，配置也非常简单</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>listen on *
+# listen on后面跟的是提供时间同步的IP地址，假如需要在所有IP地址上提供服务，
+# 则用“*”代替；假如不需要向外提供时间同步则注释掉该选项。
+
+server time-a.nist.org
+server time-b.nist.org
+
+servers asia.pool.ntp.org
+
+# server
+# server后面跟的是时间服务器域名或IP地址，OpenNTPD将调用dns client解析该域名，
+# 假如在该域名解析出多个IP地址，OpenNTPD会优先跟第一个进行同步，万一第一个失效，
+# 则OpenNTPD会再尝试跟第二个进行同步，至此最后一个。
+
+# 假如有多个时间服务器，可以写多条server语句，譬如上面的time-a.nist.org
+# 和time-b.nist.org，OpenNTPD将同这两个时间服务器进行同步；
+
+# servers
+# 它的作用跟多条server语句的作用相似，譬如asia.pool.ntp.org，
+# 这是一个ntp.org维护的时间服务器群，连续执行
+# hostname asia.pool.ntp.org就会解析出多个不同的IP地址，
+# OpenNTPD将同所有解析出来的时间服务器进行同步。</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>为了方面说明，上面的例子过于冗余，实际上只用一条`servers asia.pool.ntp.org`足以满足大部分用户的需求。</p>
+</div>
+<div class="paragraph">
+<p>中国科学院国家授时中心的公共服务意识很差劲，我google了整个Internet都找不到一个官方的时间服务器地址，倒是看到有推销其生产的时间同步设备。相反，美国这方面就做得很好。因此在本例中就选用美国的两个时间服务器。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="自启动配置">自启动配置</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">/etc/rc.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>ntpd_flags="-s" <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>-s的意思当开机后，ntpd进程立刻将系统时间变更为正确的时间，而不是通过drift慢慢的将系统时间更新至正确的时间。</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="启动">启动</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre>$ doas /usr/sbin/ntpd -s</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="验证">验证</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>查看端口</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas netstat -an | grep 123
+udp          0      0  10.168.1.11.20808      158.108.7.157.123
+udp          0      0  10.168.1.11.1328       59.106.180.168.123
+udp          0      0  10.168.1.11.5548       140.109.1.4.123
+udp          0      0  10.168.1.11.21989      129.6.15.29.123
+udp          0      0  10.168.1.11.13848      129.6.15.28.123
+udp          0      0  10.168.1.11.123        *.*</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看进程</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas ps axu | grep ntpd
+_ntp      9379  0.0  0.1   636   968 ??  Ss    11:43AM    0:00.04 ntpd: ntp engine (ntpd)
+_ntp      7130  0.0  0.1   768   932 ??  Is    11:43AM    0:00.05 ntpd: dns engine (ntpd)
+root     26733  0.0  0.1   552   772 ??  Is    11:43AM    0:00.00 ntpd: [priv] (ntpd)</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看日志</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ doas grep ntpd /var/log/messages
+
+Jun  6 10:44:29 openbsd ntpd[16964]: ntp engine ready
+Jun  6 10:44:49 openbsd ntpd[16964]: peer 184.171.168.106 now valid
+Jun  6 10:44:51 openbsd ntpd[16964]: peer 173.8.198.243 now valid
+Jun  6 10:44:59 openbsd ntpd[16964]: peer 173.9.142.98 now valid
+Jun  6 10:45:58 openbsd ntpd[2936]: adjusting local clock by 14.875577s
+Jun  6 10:48:40 openbsd ntpd[2936]: adjusting local clock by 14.072775s
+Jun  6 10:51:23 openbsd ntpd[2936]: adjusting local clock by 13.266602s
+Jun  6 10:54:40 openbsd ntpd[2936]: adjusting local clock by 12.294596s
+Jun  6 10:58:58 openbsd ntpd[2936]: adjusting local clock by 11.006576s
+Jun  6 11:00:06 openbsd ntpd[2936]: adjusting local clock by 10.671895s
+Jun  6 11:02:45 openbsd ntpd[2936]: adjusting local clock by 9.885871s
+Jun  6 11:05:21 openbsd ntpd[2936]: adjusting local clock by 9.109984s
+Jun  6 11:07:31 openbsd ntpd[2936]: adjusting local clock by 8.468130s
+Jun  6 11:10:42 openbsd ntpd[2936]: adjusting local clock by 7.521360s
+Jun  6 11:13:23 openbsd ntpd[2936]: adjusting local clock by 6.723380s
+Jun  6 11:15:35 openbsd ntpd[2936]: adjusting local clock by 6.071997s
+Jun  6 11:18:51 openbsd ntpd[2936]: adjusting local clock by 5.095530s
+Jun  6 11:20:26 openbsd ntpd[2936]: adjusting local clock by 4.630313s
+Jun  6 11:24:50 openbsd ntpd[2936]: adjusting local clock by 3.321498s
+Jun  6 11:28:38 openbsd ntpd[2936]: adjusting local clock by 2.186491s
+Jun  6 11:30:11 openbsd ntpd[2936]: adjusting local clock by 1.731629s
+Jun  6 11:34:30 openbsd ntpd[2936]: adjusting local clock by 0.440410s
+Jun  6 11:35:00 openbsd ntpd[2936]: adjusting local clock by 0.295056s
+Jun  6 11:37:44 openbsd ntpd[16964]: clock is now synced</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

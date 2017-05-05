@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>strongswan和ipsec</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-01-10-strongswan%E5%92%8Cipsec/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">strongswan和ipsec</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-01-10&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/ipsec"><i class="fa fa-tag">&nbsp;&nbsp;ipsec</i></a>
+           <!--a class="post-tag" href="/tag/ipsec">ipsec</a-->
+         
+           <a class="post-tag" href="/tag/strongswan"><i class="fa fa-tag">&nbsp;&nbsp;strongswan</i></a>
+           <!--a class="post-tag" href="/tag/strongswan">strongswan</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>ipsec是一个安全协议，它得到多个网络安全厂家的支持，各个厂家之间的设备的对接也不在话下。相比之下，虽然ssl vpn<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>百花齐放，但是服务器和客户端就只能使用同一家的，兼容性和应用的广泛性就没有ipsec这么广。</p>
+</div>
+<div class="paragraph">
+<p>随着freeswan开发的终结和openswan的日趋式微，strongswan大有一统天下之势，连freebsd都将strongswan作为默认的ipsec实现纳入官方源中。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装和卸载">安装和卸载</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>strongswan的开发很活跃，鉴于ubuntu/debian官方源中的strongswan软件包版本比较旧，所以建议通过编译的方式来安装最新的版本。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>准备</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ cd /tmp &amp;&amp; wget https://download.strongswan.org/strongswan-5.3.5.tar.gz
+$ tar -zxvf strongswan-5.3.5.tar.gz
+$ sudo apt-get install libpam0g-dev libgmp-dev libssl-dev make gcc pkg-config libsystemd-dev libsystemd-daemon-dev libsystemd-journal-dev</pre>
+</div>
+</div>
+</li>
+<li>
+<p>生成编译配置文件</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ ./configure --prefix=/opt/strongswan --enable-md4 --enable-eap-identity --enable-eap-md5 --enable-eap-mschapv2 --enable-eap-tls --enable-eap-ttls --enable-eap-peap --enable-eap-dynamic --enable-eap-radius --enable-xauth-eap --enable-xauth-pam  --enable-dhcp  --enable-openssl  --enable-addrblock --enable-unity --enable-certexpire --enable-radattr --enable-openssl --enable-lookip --enable-duplicheck --enable-coupling --enable-vici --enable-swanctl --enable-systemd <i class="conum" data-value="1"></i><b>(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>debian 8的init已经从sysV转向systemd，strongswan从5.2开始也针对systemd提供了更简洁的charon-systemd实现。需要打开<code>--enable-systemd</code>。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>编译安装</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ make &amp;&amp; sudo make install</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>configure默认的prefix为<code>/usr/local</code>，所以make install后，配置文件位于<code>/usr/local/etc</code>，可执行文件和lib则安装到<code>/usr/local/{bin, sbin, lib}</code>中。后续如果删除的话，手工删除相应的目录即可。如果想省事，可以将prefix更改为<code>--prefix=/opt/strongwan</code>。那么整个软件包的文件都放在该目录下。</p>
+</div>
+</li>
+<li>
+<p>卸载</p>
+<div class="paragraph">
+<p>因为编译的时候，选择了<code>--prefix=/opt/strongswan</code>，所以直接手工删除这个目录即可。当然也可以：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd ~/strongswan-5.3.5
+$ make uninstall</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="创建pki">创建pki</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>strongswan支持多种认证方式，证书是最重要的一种。其它认证方式还有eap、xx等。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ cd /usr/local/etc/ipsec.d
+
+$ sudo ipsec pki --gen --type rsa --size 4096 --outform pem &gt; private/qmcc.key.pem
+chmod 600 private/qmcc.key.pem
+$ sudo ipsec pki --self --ca --lifetime 3650 --in private/qmcc.key.pem --type rsa --dn "OU=jike, CN=qmcc CA" --outform pem &gt; cacerts/qmcc.cacert.pem
+
+$ sudo ipsec pki --gen --type rsa --size 4096 --outform pem &gt; private/gw3.syharman.key.pem
+$ sudo chmod 600 private/gw3.syharman.key.pem
+
+$ sudo ipsec pki --pub --in private/gw4.syharman.key.pem --type rsa | ipsec pki --issue --lifetime 3650 --cacert cacerts/qmcc.cacert.pem --cakey private/qmcc.key.pem --dn "OU=syharman, CN=gateway4.syharman.qmcc" --san gateway4.syharman.qmcc --san @xx.xx.xx.124 --flag serverAuth --flag ikeIntermediate --outform pem &gt; certs/gw4.syharman.cert.pem
+
+$ sudo ipsec pki --gen --type rsa --size 2048 --outform pem &gt; private/alice.key.pem
+$ sudo chmod 600 private/alice.key.pem
+
+$ sudo ipsec pki --pub --in private/alice.key.pem --type rsa | ipsec pki --issue --lifetime 3650 --cacert cacerts/qmcc.cacert.pem --cakey private/qmcc.key.pem --dn "OU=syharman, CN=alice@syharman.qmcc" --san "alice@syharman.qmcc" --outform pem &gt; certs/alice.cert.pem
+
+$ sudo openssl pkcs12 -export -inkey private/alice.key.pem -in certs/aliceCert.pem -name "alice@syharman.qmcc" -certfile cacerts/qmcc.cacert.pem -caname "qmcc CA" -out p12/alice.p12</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>关于证书的创建，有一些黑魔法，参考<a href="http://tiebing.blogspot.com.ar/2012/05/windows-7-ikev2-error-13806.html">下文</a></p>
+</div>
+<div class="paragraph">
+<p>p12证书可通过scp、ftp、邮件的方式发送给用户的电脑上。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置">配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>strongswan自5.2开始，引入了swanctl，未来将取代ipsec/stroke，所以配置方式分了两种，传统的ipsec.conf和未来的swanctl.conf</p>
+</div>
+<div class="listingblock">
+<div class="title">/usr/local/etc/ipsec.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>config setup
+
+conn win7-pubkey-template
+    keyexchange=ikev2
+    ike=aes256-sha1-modp1024!
+    esp=aes256-sha1!
+    rekey=no
+    left=%defaultroute
+    leftauth=pubkey
+    leftfirewall=yes
+    leftsubnet=0.0.0.0/0
+    leftcert=gw3.syharman.cert.pem
+    right=%any
+    rightauth=pubkey
+    auto=add
+
+conn rw-pubkey-alice
+    also=win7-pubkey-template
+    rightsourceip=192.168.6.2
+    rightid="OU=syharman, CN=alice@syharman.qmcc"
+
+conn rw-pubkey-bob
+    also=win7-pubkey-template
+    rightsourceip=192.168.6.3
+    rightid="OU=syharman, CN=bob@syharman.qmcc"
+
+#--== win7 eap-mschapv2 ==--
+conn win7-eap-mschapv2-template
+    keyexchange=ikev2
+    ike=aes256-sha1-modp1024!
+    esp=aes256-sha1!
+    dpdaction=clear
+    dpddelay=300s
+    rekey=no
+    left=%defaultroute
+    leftauth=pubkey
+    leftsubnet=0.0.0.0/0
+    leftcert=gw3.syharman.cert.pem
+    right=%any
+    rightauth=eap-mschapv2
+    rightsendcert=never
+    eap_identity=%any
+    auto=add
+
+conn rw-mschapv2-alice
+    also=win7-eap-mschapv2-template
+    rightsourceip=192.168.6.11
+    rightid="alice"</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">/usr/local/etc/ipsec.secrets</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>: RSA gw3.syharman.key.pem
+: PSK "xxxxxxxx"
+alice : EAP "xxxx"
+bob : EAP "xxxx"</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">/usr/local/etc/strongswan.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>charon {
+       duplicheck.enable = no
+       dns1 = 192.168.5.11
+       dns2 = 192.168.5.12
+       # for Windows only
+       nbns1 = 192.168.5.11
+       nbns2 = 192.168.5.12
+       filelog {
+               /var/log/strongswan-charon.log {
+                   time_format = %b %e %T
+                   ike_name = yes
+                   default = 1
+                   append = no
+                   flush_line = yes
+               }
+       }
+}
+
+include strongswan.d/*.conf</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="操控">操控</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="ipsec">ipsec</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>启动</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo ipsec start</pre>
+</div>
+</div>
+</li>
+<li>
+<p>重启</p>
+</li>
+<li>
+<p>查看连接</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="swanctl">swanctl</h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="场景">场景</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>strongswan官网中提到四种场景，分别是：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>site-to-site</p>
+</li>
+<li>
+<p>host-to-site</p>
+</li>
+<li>
+<p>host-to-host</p>
+</li>
+<li>
+<p>road warrior</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>其中，应用最广泛的是site-to-site和road warrior两种。</p>
+</div>
+<div class="sect2">
+<h3 id="road-warrior">road warrior</h3>
+<div class="paragraph">
+<p>在该场景下，ipsec server为<code>gateway4.syharman.qmcc</code>，客户端可以是linux、windows7或windows10</p>
+</div>
+<div class="sect3">
+<h4 id="ipsec-server-gateway4-syharman-qmcc">ipsec server(gateway4.syharman.qmcc)</h4>
+<div class="listingblock">
+<div class="title">ipsec.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>config setup
+
+#############################################
+# ikev2 road warrios pubkey template
+#############################################
+conn ikev2-rw-pub-template
+    keyexchange=ikev2
+    left=%defaultroute
+    leftauth=pubkey
+    leftfirewall=yes
+    leftsubnet=0.0.0.0/0
+    leftcert=gw5.syharman.cert.pem
+    leftid=gateway5.syharman.qmcc
+    right=%any
+    rightauth=pubkey
+    auto=add
+
+# ikev2 road warrios pubkey linux client
+conn ikev2-rw-pub-linux-ssTester
+    also=ikev2-rw-pub-template
+    rightdns=192.168.5.12
+    rightsourceip=192.168.7.10
+    rightid="OU=jike, CN=ssTester@jklab.qmcc"
+
+# ikev2 road warrios pubkey windows7+ client
+conn ikev2-rw-pub-win7-alice
+    also=ikev2-rw-pub-template
+    ike=aes256-sha1-modp1024!
+    rekey=no
+    rightsourceip=192.168.7.2
+    rightid="OU=syharman, CN=alice@syharman.qmcc"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="ipsec-client">ipsec client</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>linux client</p>
+<div class="paragraph">
+<p>本文所使用的linux client是ubuntu 14.04/strongswan 5.3.5</p>
+</div>
+<div class="listingblock">
+<div class="title">ipsec.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>config setup
+
+conn %default
+        ikelifetime=60m
+        keylife=20m
+        rekeymargin=3m
+        keyingtries=1
+        keyexchange=ikev2
+
+conn home
+        #left=192.168.111.246
+        leftsourceip=%config
+        leftcert=ssTester.cert.pem
+        #leftid=ssTester@jklab.qmcc
+        leftfirewall=yes
+        right=xx.xx.xx.124
+        rightsubnet=0.0.0.0/0
+        rightid=gateway5.syharman.qmcc
+        auto=add</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>windows 7 client:</p>
+<div class="paragraph">
+<p>使用windows7自带的agile客户端即可，安装和配置详见<a href="{uri-ipsec-client}">windows7的ipsec设置</a></p>
+</div>
+</li>
+<li>
+<p>windows 10 client</p>
+<div class="paragraph">
+<p>Windows 10的ikev2客户端似乎无法接受来自strongswan server的push route，通过以下方法可以手工添加路由：</p>
+</div>
+<div class="listingblock">
+<div class="title">powershell</div>
+<div class="content">
+<pre>set-vpnconnection syxy-ikev2 -splittunneling $True
+
+Add-VpnConnectionRoute -ConnectionName "syxy-ikev2" -DestinationPrefix 10.10.0.0/24 -PassThru
+Add-VpnConnectionRoute -ConnectionName "syxy-ikev2" -DestinationPrefix 192.168.111.0/24 -PassThru</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>syxy-ikev2是vpn连接的名称，10.10.0.0/24和192.168.111.0/24是远端网段，这两条powershell指令比route add更灵活，仅当vpn连接后，这两条预设的路由才起作用，当vpn断开时，路由自动消失。通过route print可以确认。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="site-to-site">site-to-site</h3>
+<div class="paragraph">
+<p>下面举例说明“节点A: gateway1.jklab.qmcc”跟“节点B: gateway-3.sy-harman.qmcc”之间构建ipsec tunnle。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>节点A: gateway1.jklab.qmcc</p>
+<div class="listingblock">
+<div class="title">/opt/strongswan/etc/ipsec.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>conn jklab-syharman
+    ikelifetime=60m
+    keylife=20m
+    rekeymargin=3m
+    keyingtries=1
+    keyexchange=ikev2
+    mobike=no
+    left=%defaultroute
+    leftcert=gw1.jklab.cert.pem
+    leftid=gateway1.jklab.qmcc
+    leftsubnet=192.168.33.0/24,192.168.66.0/24
+    leftfirewall=yes
+    right=xx.xx.xx.123
+    rightid=gateway3.syharman.qmcc
+    rightsubnet=192.168.5.0/24,172.16.28.0/24
+    auto=start</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>gateway-3.syharman.qmcc</p>
+<div class="listingblock">
+<div class="title">/opt/strongswan/etc/ipsec.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>conn syharman-jklab
+    ikelifetime=60m
+    keylife=20m
+    rekeymargin=3m
+    keyingtries=1
+    keyexchange=ikev2
+    mobike=no
+    left=%defaultroute
+    leftcert=gw3.syharman.cert.pem
+    leftid=gateway3.syharman.qmcc
+    leftsubnet=192.168.5.0/24,172.16.28.0/24
+    leftfirewall=yes
+    right=xx.xx.xx.189
+    rightid=gateway1.jklab.qmcc
+    rightsubnet=192.168.33.0/24,192.168.66.0/24
+    auto=start</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>下面是节点B启动后的日志：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ipsec start
+18866 Jan 18 16:39:29 05[NET] &lt;syharman-jklab|93&gt; received packet: from xx.xx.xx.189[4500] to 192.168.5.3[4500] (76 bytes)
+18867 Jan 18 16:39:29 05[ENC] &lt;syharman-jklab|93&gt; parsed INFORMATIONAL request 6 [ D ]
+18868 Jan 18 16:39:29 05[IKE] &lt;syharman-jklab|93&gt; received DELETE for IKE_SA syharman-jklab[93]
+18869 Jan 18 16:39:29 05[IKE] &lt;syharman-jklab|93&gt; deleting IKE_SA syharman-jklab[93] between 192.168.5.3[gateway3.syharman.qmcc]...xx.xx.xx.189[gateway1.jklab.qm      cc]
+18870 Jan 18 16:39:29 05[IKE] &lt;syharman-jklab|93&gt; IKE_SA deleted
+18871 Jan 18 16:39:29 05[ENC] &lt;syharman-jklab|93&gt; generating INFORMATIONAL response 6 [ ]
+18872 Jan 18 16:39:29 05[NET] &lt;syharman-jklab|93&gt; sending packet: from 192.168.5.3[4500] to xx.xx.xx.189[4500] (76 bytes)
+18873 Jan 18 16:39:29 16[NET] &lt;94&gt; received packet: from xx.xx.xx.189[62619] to 192.168.5.3[500] (1148 bytes)
+18874 Jan 18 16:39:29 16[ENC] &lt;94&gt; parsed IKE_SA_INIT request 0 [ SA KE No N(NATD_S_IP) N(NATD_D_IP) N(HASH_ALG) ]
+18875 Jan 18 16:39:29 16[IKE] &lt;94&gt; xx.xx.xx.189 is initiating an IKE_SA
+18876 Jan 18 16:39:29 16[IKE] &lt;94&gt; local host is behind NAT, sending keep alives
+18877 Jan 18 16:39:29 16[IKE] &lt;94&gt; remote host is behind NAT
+18878 Jan 18 16:39:29 16[IKE] &lt;94&gt; sending cert request for "OU=jike, CN=qmcc CA"
+18879 Jan 18 16:39:29 16[ENC] &lt;94&gt; generating IKE_SA_INIT response 0 [ SA KE No N(NATD_S_IP) N(NATD_D_IP) CERTREQ N(HASH_ALG) N(MULT_AUTH) ]
+18880 Jan 18 16:39:29 16[NET] &lt;94&gt; sending packet: from 192.168.5.3[500] to xx.xx.xx.189[62619] (481 bytes)
+18881 Jan 18 16:39:29 06[NET] &lt;94&gt; received packet: from xx.xx.xx.189[4500] to 192.168.5.3[4500] (2332 bytes)
+18882 Jan 18 16:39:29 06[ENC] &lt;94&gt; parsed IKE_AUTH request 1 [ IDi CERT N(INIT_CONTACT) CERTREQ IDr AUTH SA TSi TSr N(MULT_AUTH) N(EAP_ONLY) ]
+18883 Jan 18 16:39:29 06[IKE] &lt;94&gt; received cert request for "OU=jike, CN=qmcc CA"
+18884 Jan 18 16:39:29 06[IKE] &lt;94&gt; received end entity cert "OU=jklab, CN=gateway1.jklab.qmcc"
+18885 Jan 18 16:39:29 06[CFG] &lt;94&gt; looking for peer configs matching 192.168.5.3[gateway3.syharman.qmcc]...xx.xx.xx.189[gateway1.jklab.qmcc]
+18886 Jan 18 16:39:29 06[CFG] &lt;syharman-jklab|94&gt; selected peer config 'syharman-jklab'
+18887 Jan 18 16:39:29 06[CFG] &lt;syharman-jklab|94&gt;   using certificate "OU=jklab, CN=gateway1.jklab.qmcc"
+18888 Jan 18 16:39:29 06[CFG] &lt;syharman-jklab|94&gt;   using trusted ca certificate "OU=jike, CN=qmcc CA"
+18889 Jan 18 16:39:29 06[CFG] &lt;syharman-jklab|94&gt; checking certificate status of "OU=jklab, CN=gateway1.jklab.qmcc"
+18890 Jan 18 16:39:29 06[CFG] &lt;syharman-jklab|94&gt; certificate status is not available
+18891 Jan 18 16:39:29 06[CFG] &lt;syharman-jklab|94&gt;   reached self-signed root ca with a path length of 0
+18892 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; authentication of 'gateway1.jklab.qmcc' with RSA_EMSA_PKCS1_SHA384 successful
+18893 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; authentication of 'gateway3.syharman.qmcc' (myself) with RSA_EMSA_PKCS1_SHA384 successful
+18894 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; IKE_SA syharman-jklab[94] established between 192.168.5.3[gateway3.syharman.qmcc]...xx.xx.xx.189[gateway1.jklab      .qmcc]
+18895 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; scheduling reauthentication in 3353s
+18896 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; maximum IKE_SA lifetime 3533s
+18897 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; sending end entity cert "OU=syharman, CN=gateway3.syharman.qmcc"
+18898 Jan 18 16:39:29 06[IKE] &lt;syharman-jklab|94&gt; CHILD_SA syharman-jklab{362} established with SPIs c3b64fa9_i cccdb4cf_o and TS 172.16.28.0/24 192.168.5.0/24 ===       192.168.33.0/24 192.168.66.0/24
+18899 Jan 18 16:39:29 06[ENC] &lt;syharman-jklab|94&gt; generating IKE_AUTH response 1 [ IDr CERT AUTH SA TSi TSr N(AUTH_LFT) ]
+18900 Jan 18 16:39:29 06[NET] &lt;syharman-jklab|94&gt; sending packet: from 192.168.5.3[4500] to xx.xx.xx.189[4500] (2140 bytes)</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">ipsec status</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ipsec status
+Security Associations (1 up, 0 connecting):
+syharman-jklab[94]: ESTABLISHED 46 minutes ago, 192.168.5.3[gateway3.syharman.qmcc]...xx.xx.xx.189[gateway1.jklab.qmcc]
+syharman-jklab{365}:  INSTALLED, TUNNEL, reqid 92, ESP in UDP SPIs: c1df037d_i c24623f7_o
+syharman-jklab{365}:   172.16.28.0/24 192.168.5.0/24 === 192.168.33.0/24 192.168.66.0/24</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">rp_filter配置</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo sysctl -a | grep rp_filter
+net.ipv4.conf.all.arp_filter = 0
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.arp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.eth0.arp_filter = 0
+net.ipv4.conf.eth0.rp_filter = 0
+net.ipv4.conf.eth1.arp_filter = 0
+net.ipv4.conf.eth1.rp_filter = 0
+net.ipv4.conf.lo.arp_filter = 0
+net.ipv4.conf.lo.rp_filter = 0</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>因为netfilter会检查源ip地址，假如跟网卡的ip地址处于同一个网段，它就会根据路由表发送redirect给</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="自启动">自启动</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>开源界很疯狂，动不动就新造个轮子，systemd无疑是近期最轰动的，rhel7、debian8、ubuntu 15.04都已用systemd取代了sysV，虽然canoncial在ubuntu 9.10时欲以upstart取代sysV，谁知道螳螂捕蝉黄雀在后，最终也被systemd给干掉了。</p>
+</div>
+<div class="paragraph">
+<p>下面提供两种自启动方式的配置</p>
+</div>
+<div class="sect2">
+<h3 id="upstart">upstart</h3>
+<div class="listingblock">
+<div class="title">/etc/init/strongswan.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code># Upstart job for strongSwan.
+
+description     "strongSwan IPsec services"
+author          "Jonathan Davies &lt;jonathan.davies@canonical.com&gt;"
+
+start on (runlevel [2345] and net-device-up IFACE!=lo)
+stop on runlevel [!2345]
+
+expect fork
+respawn
+
+pre-start script
+    # Create lock directory.
+    mkdir -p /var/lock/subsys/
+end script
+
+post-stop script
+    rm -f /var/run/charon.pid /var/run/starter.charon.pid
+end script
+
+env PIDFILE=/var/run/charon.pid
+
+pre-start exec /usr/local/sbin/ipsec start
+post-stop exec /usr/local/sbin/ipsec stop</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="systemd">systemd</h3>
+<div class="paragraph">
+<p>这玩意挺复杂，待续。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="troubleshooting">troubleshooting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>可以通过tcpdump来跟踪ipsec的数据包，但是ipsec都tcpdump的版本有一定的要求：libpcap4.7+，目前只有debian8的tcpdump版本能够完整支持监听nflog和打印到屏幕，debian7虽然可以监听nflog，但是不支持打印，ubuntu14.04甚至都无法监听nflog端口。</p>
+</div>
+<div class="paragraph">
+<p>在某台strongswan(debian8)中应用以下iptables rules：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>iptables -t filter -I INPUT -p esp -j NFLOG --nflog-group 5
+iptables -t filter -I INPUT -p ah -j NFLOG --nflog-group 5
+iptables -t filter -I INPUT -p udp -m multiport --dports 500,4500 -j NFLOG --nflog-group 5
+iptables -t filter -I OUTPUT -p esp -j NFLOG --nflog-group 5
+iptables -t filter -I OUTPUT -p ah -j NFLOG --nflog-group 5
+iptables -t filter -I OUTPUT -p udp -m multiport --dports 500,4500 -j NFLOG --nflog-group 5
+iptables -t mangle -I PREROUTING -m policy --pol ipsec --dir in -j NFLOG --nflog-group 5
+iptables -t mangle -I POSTROUTING -m policy --pol ipsec --dir out -j NFLOG --nflog-group 5
+iptables -t filter -I INPUT -m addrtype --dst-type LOCAL -m policy --pol ipsec --dir in -j NFLOG --nflog-group 5
+iptables -t filter -I INPUT -m addrtype ! --dst-type LOCAL -m policy --pol ipsec --dir in -j NFLOG --nflog-group 5
+iptables -t filter -I OUTPUT -m policy --pol ipsec --dir out -j NFLOG --nflog-group 5</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后使用下列命令可以看到加密之前的数据包：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tcpdump -i nflog</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+在iptables中使用nflog target不需要安装ulogd2，但是如果希望将iptables的日志记录到文件中就只能使用ulogd2。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>ubuntu14.04的tcpdump不支持nflog，使用</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tcpdump -i eth0 -n -s 0 \(port 500 or port 4500 or proto 50\)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可以看到部分ipsec的数据包，但是看不到加密之前数据包。</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">ipsec on openbsd</div>
+<div class="paragraph">
+<p>在l2tp/ipsec的年代，openbsd的isakmpd(ipsec)碾压linux openswan<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>毫无压力，因为openbsd的isakmpd配置起来非常方便，真正做到开箱即用。然而到了ikev2的年代，虽然openbsd有openiked项目，但是优先级别并不高，到目前为止网上都没有一份像样的配置示例。strongswan逐渐一统江湖。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://forum.pfsense.org/index.php?topic=101305.0" class="bare">https://forum.pfsense.org/index.php?topic=101305.0</a></p>
+</li>
+<li>
+<p><a href="http://paulgorman.org/technical/openbsd-vpn-server.php" class="bare">http://paulgorman.org/technical/openbsd-vpn-server.php</a></p>
+</li>
+<li>
+<p><a href="https://wiki.strongswan.org/projects/strongswan/wiki/CorrectTrafficDump" class="bare">https://wiki.strongswan.org/projects/strongswan/wiki/CorrectTrafficDump</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. openvpn是ssl vpn的一个实现
+</div>
+<div class="footnote" id="_footnote_2">
+<a href="#_footnoteref_2">2</a>. linux中早期的ipsec实现
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

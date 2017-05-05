@@ -1,0 +1,275 @@
+/** 
+ * The absolute base styling is provided by the asciidoctor 
+ * stylesheet. This stylesheet only fixes some problems.
+ * Adapted from the default jekyll stylesheet.
+ */
+/**
+ * Wrapper
+ */
+.wrapper {
+  max-width: -webkit-calc(760px - (30px * 2));
+  max-width: calc(760px - (30px * 2));
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 30px;
+  padding-left: 30px; }
+  @media screen and (max-width: 760px) {
+    .wrapper {
+      max-width: -webkit-calc(760px - (30px));
+      max-width: calc(760px - (30px));
+      padding-right: 15px;
+      padding-left: 15px; } }
+
+/**
+ * Clearfix
+ */
+.wrapper:after, .footer-col-wrapper:after {
+  content: "";
+  display: table;
+  clear: both; }
+
+/**
+ * Site header
+ */
+.site-header {
+  border-top: 5px solid #424242;
+  border-bottom: 1px solid #e8e8e8;
+  min-height: 56px;
+  position: relative; }
+
+.site-title {
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 56px;
+  letter-spacing: -1px;
+  margin-bottom: 0;
+  float: left; }
+  .site-title, .site-title:visited {
+    color: #424242; }
+
+.site-nav {
+  float: right;
+  line-height: 56px; }
+  .site-nav .menu-icon {
+    display: none; }
+  .site-nav .page-link {
+    color: #111;
+    line-height: 1.5; }
+    .site-nav .page-link:not(:last-child) {
+      margin-right: 20px; }
+  @media screen and (max-width: 600px) {
+    .site-nav {
+      position: absolute;
+      top: 9px;
+      right: 15px;
+      background-color: #fdfdfd;
+      border: 1px solid #e8e8e8;
+      border-radius: 5px;
+      text-align: right; }
+      .site-nav .menu-icon {
+        display: block;
+        float: right;
+        width: 36px;
+        height: 26px;
+        line-height: 0;
+        padding-top: 10px;
+        text-align: center; }
+        .site-nav .menu-icon > svg {
+          width: 18px;
+          height: 15px; }
+          .site-nav .menu-icon > svg path {
+            fill: #424242; }
+      .site-nav .trigger {
+        clear: both;
+        display: none; }
+      .site-nav:hover .trigger {
+        display: block;
+        padding-bottom: 5px; }
+      .site-nav .page-link {
+        display: block;
+        padding: 5px 10px;
+        margin-left: 20px; }
+        .site-nav .page-link:not(:last-child) {
+          margin-right: 0; } }
+
+/**
+ * Site footer
+ */
+.site-footer {
+  border-top: 1px solid #e8e8e8;
+  padding: 30px 0; }
+
+.footer-heading {
+  font-size: 18px;
+  margin-bottom: 15px; }
+
+.contact-list,
+.social-media-list {
+  list-style: none;
+  margin-left: 0; }
+
+.footer-col-wrapper {
+  font-size: 15px;
+  color: #828282;
+  margin-left: -15px; }
+
+.footer-col {
+  float: left;
+  margin-bottom: 15px;
+  padding-left: 15px; }
+
+.footer-col-1 {
+  width: -webkit-calc(35% - (30px / 2));
+  width: calc(35% - (30px / 2)); }
+
+.footer-col-2 {
+  width: -webkit-calc(20% - (30px / 2));
+  width: calc(20% - (30px / 2)); }
+
+.footer-col-3 {
+  width: -webkit-calc(45% - (30px / 2));
+  width: calc(45% - (30px / 2)); }
+
+@media screen and (max-width: 760px) {
+  .footer-col-1,
+  .footer-col-2 {
+    width: -webkit-calc(50% - (30px / 2));
+    width: calc(50% - (30px / 2)); }
+
+  .footer-col-3 {
+    width: -webkit-calc(100% - (30px / 2));
+    width: calc(100% - (30px / 2)); } }
+@media screen and (max-width: 600px) {
+  .footer-col {
+    float: none;
+    width: -webkit-calc(100% - (30px / 2));
+    width: calc(100% - (30px / 2)); } }
+/**
+ * Page content
+ */
+.page-content {
+  padding: 30px 0; }
+
+.page-heading {
+  font-size: 20px; }
+
+/**
+ * Home>ul.post-index
+ */
+.post-index {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 80px;
+  font-family: "Microsoft YaHei";
+  font-size: 1.25em;
+  /**
+   * asciidoctor-default.css:86 margin-left:36px;
+   * the following line is fixed it.
+   */
+  margin-left: 0; }
+  .post-index li {
+    padding: 20px 0;
+    border-bottom: 1px solid #eee; }
+  .post-index a {
+    display: block;
+    text-decoration: none;
+    vertical-align: middle;
+    /**
+     * post title was include on tag a, the font color must
+     * be setting here as .post-title a
+     */ }
+    .post-index a .post-date {
+      color: #e8e8e8;
+      float: right; }
+    .post-index a .post-title {
+      color: #BA3925;
+      text-align: left;
+      font-weight: 500; }
+    .post-index a:hover .post-date {
+      color: #828282; }
+    .post-index a:hover .post-title {
+      color: #f1c1ba; }
+
+.related-post li {
+  padding: 10px 0; }
+.related-post a {
+  display: block;
+  text-decoration: none;
+  vertical-align: middle;
+  /**
+  * post title was include on tag a, the font color must
+  * be setting here as .post-title a
+  */ }
+  .related-post a .post-date {
+    color: #e8e8e8; }
+  .related-post a .post-title {
+    color: #2156A5;
+    text-align: left;
+    font-weight: 500; }
+  .related-post a .post-date {
+    color: #e8e8e8; }
+  .related-post a:hover .post-date {
+    color: #828282; }
+  .related-post a:hover .post-title {
+    color: #1D4B8F; }
+
+.post-date {
+  font-size: 30x;
+  color: #828282; }
+
+.post-tag {
+  font-size: 30x;
+  color: #828282; }
+
+.post-link {
+  display: block;
+  color: #BA3925; }
+
+.post-meta {
+  font-size: 14px;
+  color: #828282; }
+  .post-meta .post-tag {
+    background-color: #828282;
+    color: #e8e8e8;
+    font-weight: 500;
+    border-radius: 5px;
+    padding: 5px;
+    text-transform: uppercase;
+    text-decoration: none; }
+    .post-meta .post-tag:hover {
+      background-color: #424242; }
+
+/**
+ * Posts
+ */
+.post-header {
+  margin-bottom: 30px; }
+
+.post-content {
+  margin-bottom: 30px;
+  text-align: justify; }
+
+/**
+ * Post list
+ */
+.post-list .post-meta {
+  display: inline; }
+
+/**
+ * rumpelsepp's adjustments
+ */
+.home a, .footer-col a, .site-header a {
+  text-decoration: none; }
+
+.listingblock {
+  font-size: 0.9em; }
+
+*:not(pre) > code {
+  font-size: 0.9em; }
+
+.listingblock pre {
+  white-space: pre;
+  overflow-x: auto; }
+
+.listingblock .pygments, .listingblock .pygments code {
+  background: initial; }

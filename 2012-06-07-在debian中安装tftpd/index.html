@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>在debian中安装tftpd</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-06-07-%E5%9C%A8debian%E4%B8%AD%E5%AE%89%E8%A3%85tftpd/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">在debian中安装tftpd</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-06-07&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/debian"><i class="fa fa-tag">&nbsp;&nbsp;debian</i></a>
+           <!--a class="post-tag" href="/tag/debian">debian</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>tftp服务类似FTP服务，但它短小精干，仅适合于小文件的传输，所以大多数网络设备都选择tftp作为配置文件备份、firmware升级等操作的默认传输方式。</p>
+</div>
+<div class="paragraph">
+<p>tftp采用的是C/S架构，由服务端和客户端组成，其中网络设备就是客户端。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-tftp服务端">1. tftp服务端</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>tftp服务端有多个选择，debian的官方文档推荐的是<code>tftpd-hpa</code>。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude install tftpd-hpa</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-1-启动方式">1.1 启动方式</h3>
+<div class="paragraph">
+<p>有两种启动方式：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>daemon</p>
+<div class="paragraph">
+<p>这种方式适用于使用频率高的场景，不论是否有tftp客户端连接，tftpd进程都将常驻内存，一直监听`69`端口，这种方式的优点是响应迅速；</p>
+</div>
+</li>
+<li>
+<p>xinetd</p>
+<div class="paragraph">
+<p>该方式适用于偶尔使用的场景，由xinetd监听<code>69</code>端口，tftpd进程处于休眠状态，只有当tftp客户端尝试连接<code>69</code>端口的时候，才由xinetd唤醒tftpd进程，这种方式比较节省资源，并且安全性高，当然响应速度就稍慢一些；当一段时间内没有tftp客户端活动，xinetd便会终止tftpd进程。</p>
+</div>
+<div class="paragraph">
+<p>下面是xinetd方式的一个完整历程：</p>
+</div>
+<div class="paragraph">
+<p>xinetd监听<code>69</code>端口</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lsof -i -P | grep 69
+xinetd  1720  root    5u  IPv4   7516      0t0  UDP *:69</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>当tftp客户端发起一个连接，准备上传文件时，xinet会激活tftpd进程进行监听</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lsof -i -P | grep 69
+xinetd   1720  root    5u  IPv4   7516      0t0  UDP *:69
+in.tftpd 1747  root    0u  IPv4   7516      0t0  UDP *:69</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>过一段时间后，xinetd发现没有tftp客户端的活动，则终止tftpd进程</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lsof -i -P | grep 69
+xinetd  1720  root    5u  IPv4   7516      0t0  UDP *:69</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>建议选择使用xinetd方式启用tftpd。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-2-配置-xinetd方式">1.2 配置（xinetd方式）</h3>
+<div class="paragraph">
+<p>在Debian中，tftpd-hpa默认以daemon方式启动，所以需要先禁用该特性：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/default/tftp-hpa
+...
+RUN_DAEMON="no"
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着添加/etc/xinetd.d/tftpd</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/xinetd.d/tftpd
+-----------8&lt;------------
+service tftp
+{
+    protocol        = udp
+    socket_type     = dgram
+    wait            = yes
+    user            = root
+    server          = /usr/sbin/in.tftpd
+    server_args     = -c -s /srv/tftp
+    disable         = no
+}
+-----------&gt;8------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后修改/srv/tftp的属性</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo chown nobody:nogroup /srv/tftp
+$ sudo chmod 755 /srv/tftp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>/srv/tftp是tftp-hpa默认目录，为了方便起见，我放大了该目录的读写权限，读者可以根据自己的情况自行修改</p>
+</div>
+<div class="paragraph">
+<p>最后重启xinetd：<code>/etc/init.d/xinetd restart</code></p>
+</div>
+<div class="paragraph">
+<p>至此，完成了tftpd服务端的安装和配置。有了服务端，接下来安装客户端方便调试。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-tftp客户端">2. tftp客户端</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude install tftp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>测试一下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo touch foo
+$ sudo touch /srv/tftp/bar
+$ sudo tftp localhost
+tftp&gt; put foo # 上传
+tftp&gt; get bar # 下载</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-troubleshooting">3. troubleshooting</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>H3C 3600上传文件失败</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>h3c-3600&gt;tftp config xx xx
+
+  File will be transferred in binary mode.
+  Sending file to remote tftp server. Please wait...
+  Can't find source file .</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>原因：tftpd进程尚未启动。</p>
+</div>
+</li>
+<li>
+<p>tftp客户端上传文件时出现<code>Transfer timed out</code></p>
+<div class="paragraph">
+<p>原因：tftpd进程尚未启动。</p>
+</div>
+</li>
+<li>
+<p>tftpd服务起不来</p>
+<div class="paragraph">
+<p>原因：/etc/xinetd.d/tftpd中的语法有误</p>
+</div>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/xinetd.d/tftpd
+service tftpd
+{
+...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>将<code>service tftp</code>误写成<code>service tftpd</code>，导致in.tftpd无法正常启动</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-tips">4. TIPS</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>当xinetd停掉的时候，in.tftpd进程不会自动停止，还需要<code>/etc/init.d/tftpd stop</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

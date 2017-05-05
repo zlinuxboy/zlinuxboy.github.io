@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>HP远程管理卡</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-02-13-HP%E8%BF%9C%E7%A8%8B%E7%AE%A1%E7%90%86%E5%8D%A1/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">HP远程管理卡</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-02-13&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/HP"><i class="fa fa-tag">&nbsp;&nbsp;HP</i></a>
+           <!--a class="post-tag" href="/tag/HP">HP</a-->
+         
+           <a class="post-tag" href="/tag/iLO"><i class="fa fa-tag">&nbsp;&nbsp;iLO</i></a>
+           <!--a class="post-tag" href="/tag/iLO">iLO</a-->
+         
+           <a class="post-tag" href="/tag/ipmi"><i class="fa fa-tag">&nbsp;&nbsp;ipmi</i></a>
+           <!--a class="post-tag" href="/tag/ipmi">ipmi</a-->
+         
+           <a class="post-tag" href="/tag/技术"><i class="fa fa-tag">&nbsp;&nbsp;技术</i></a>
+           <!--a class="post-tag" href="/tag/技术">技术</a-->
+         
+           <a class="post-tag" href="/tag/工具"><i class="fa fa-tag">&nbsp;&nbsp;工具</i></a>
+           <!--a class="post-tag" href="/tag/工具">工具</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>大厂的服务器大都提供远程管理卡，每个厂家的命名均不相同，HP称为iLO，Dell称为iDRAC，IBM称为RSA。</p>
+</div>
+<div class="paragraph">
+<p>远程管理卡是个好东西，可以减少下机房的次数</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>可以远程操控服务器，关机、开机、重启，不受操作系统的影响；</p>
+</li>
+<li>
+<p>remote console可以通过tcp/ip网络，将服务器的显示器重定向到远程客户端，譬如办公室的PC，可以直接重装操作系统；</p>
+</li>
+<li>
+<p>支持virtual media，不需要跑到机房，把光盘塞到光驱中，可以通过网络挂载光盘镜像；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>HP的iLO历经多个版本，从G5时代的LO100到G8时代的iLO4。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="lo100">LO100</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>DL165 G5所附带的远程管理卡为LO100，standard license不具备virtual kvm功能，但是advanced license提供了。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ilo3-ilo4">iLO3/iLO4</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HP Gen7系列提供的是iLO3，HP Gen8系列对应的是iLO4。在windows中使用浏览器可以远程访问iLO管理页面。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>firefox</p>
+<div class="paragraph">
+<p>需要安装.net或java才能正常使用remote console，.net的版本从3.5到4.5，其中4需要full version，安装.net 4的时候，还需要安装`Windows 图像组件 (WIC)`，可以自行到windows官网下载。</p>
+</div>
+</li>
+<li>
+<p>chrome</p>
+<div class="paragraph">
+<p>还需要安装addon，但是目前在国内如果不翻墙的话还不好安装，所以首选还是firefox。在windows2003中，还需要关闭IE增强安全服务，最好从“程序”-“增加/删除windows组件”中删除掉“IE增强安全策略”，切记，否则会出现以下错误提示：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>“当前的安全设置不允许从该位置下载文件”</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ipmi">ipmi</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在linux下，可以通过ipmi协议访问HP LO/iLO，这为系统管理员提供了极大的便利。</p>
+</div>
+<div class="paragraph">
+<p>参考文档：http://ingvar.blog.redpill-linpro.com/2011/12/09/setting-the-ip-address-on-hp-ilo-from-linux/comment-page-1/</p>
+</div>
+<div class="sect2">
+<h3 id="基本配置">基本配置</h3>
+<div class="paragraph">
+<p>假如服务器已经安装了Linux操作系统，那么可以通过ipmitool来设置iLO的ip、账户和密码</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>查找hp iLO的channel</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>for i in `seq 1 14`; do ipmitool lan print $i 2&gt;/dev/null | grep -q ^Set &amp;&amp; echo Channel $i; done</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看lan channel</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ipmitool lan 2 print</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>配置ip、网关</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ipmitool lan set 2 ipsrc static
+$ sudo ipmitool lan set 2 ipaddr 192.168.33.243
+$ sudo ipmitool lan set 2 netmask 255.255.255.0
+$ sudo ipmitool lan set 2 defgw ipaddr 192.168.33.254</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>配置账号和密码</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ipmitool user list 2
+$ sudo ipmitool user set name 2 manager
+$ sudo ipmitool user set password 2 "Agm78stnd$"
+$ sudo ipmitool channel setaccess 2 2 link=on ipmi=on callin=on privilege=4
+$ sudo ipmitool user list 2</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>上面的指令适用于LO100、iLO3、iLO4。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="lo100高阶应用">LO100高阶应用</h3>
+<div class="paragraph">
+<p>用户可以通过telnet/ssh连接LO100的clp（hp的一个ipmi2.0实现，独立于服务器操作系统），通过clp可以对服务器进行加电、重启、远程console操作，其中远程console功能尤其诱人。</p>
+</div>
+<div class="paragraph">
+<p>假设服务器的操作系统是linux，通过clp可以将linux的终端重定向到clp，用户就像直接坐在服务器旁边一样，clp跟virtual console功能类似，不过它屏蔽了virtual console对图形界面和浏览器的需求，极大方便了linux系统管理员。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>设置</p>
+<div class="paragraph">
+<p>在centos/debian中设置ttyS0详见其它技术文档。</p>
+</div>
+</li>
+<li>
+<p>使用</p>
+<div class="paragraph">
+<p>首先用户通过telnet/ssh登陆clp，然后按住kbd:[ESC]，接着释放，再敲kbd:[q]，就可以在clp中附着到linux console了。若要退出，按住kbd:[ESC]，松开，然后敲kbd:[(]就可以释放，回到clp。</p>
+</div>
+<div class="paragraph">
+<p>这种用法略显麻烦，比不上<code>ipmitool -I lanplus -H 192.168.33.243 -U root sol activate</code>方便，可惜的是LO100并不支持<code>ipmitool sol activate</code>。所以redirect remote console through clp这个功能可以说是聊胜于无。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

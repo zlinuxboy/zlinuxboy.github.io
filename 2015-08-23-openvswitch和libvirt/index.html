@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>openvswitch和libvirt</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-08-23-openvswitch%E5%92%8Clibvirt/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">openvswitch和libvirt</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-08-23&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openvswitch"><i class="fa fa-tag">&nbsp;&nbsp;openvswitch</i></a>
+           <!--a class="post-tag" href="/tag/openvswitch">openvswitch</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>openvswitch特别适合于虚拟化环境。实际上openvswitch在性能上相较于原生的linux bridge并无优势，但是在管理方面强的不是一点半点，完全不可同日而语。</p>
+</div>
+<div class="paragraph">
+<p>物理服务器只有一个端口跟交换机相连，由于需要用到5个vlan，所以启用了vlan trunk功能。libvirt中的网络定义如下：</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="定义openswitch网络">定义openswitch网络</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>新建一个新的openvswitch network</p>
+<div class="listingblock">
+<div class="title">/etc/libvirt/qemu/ovs-network.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>&lt;network&gt;
+    &lt;name&gt;ovs-network&lt;/name&gt;
+    &lt;forward mode='bridge'/&gt;
+    &lt;bridge name='ovsbr1'/&gt;
+    &lt;virtualport type='openvswitch'/&gt;
+    &lt;portgroup name='vlan-20'&gt;
+        &lt;vlan&gt;
+            &lt;tag id='20'/&gt;
+        &lt;/vlan&gt;
+    &lt;/portgroup&gt;
+    &lt;portgroup name='vlan-24'&gt;
+        &lt;vlan&gt;
+            &lt;tag id='24'/&gt;
+        &lt;/vlan&gt;
+    &lt;/portgroup&gt;
+    &lt;portgroup name='vlan-28'&gt;
+        &lt;vlan&gt;
+            &lt;tag id='28'/&gt;
+        &lt;/vlan&gt;
+    &lt;/portgroup&gt;
+    &lt;portgroup name='vlan-111'&gt;
+        &lt;vlan&gt;
+            &lt;tag id='111'/&gt;
+        &lt;/vlan&gt;
+    &lt;/portgroup&gt;
+    &lt;portgroup name='vlan-300'&gt;
+        &lt;vlan&gt;
+            &lt;tag id='300'/&gt;
+        &lt;/vlan&gt;
+    &lt;/portgroup&gt;
+    &lt;portgroup name='vlan-all'&gt;
+        &lt;vlan trunk='yes'&gt;
+            &lt;tag id='20'/&gt;
+            &lt;tag id='24'/&gt;
+            &lt;tag id='28'/&gt;
+            &lt;tag id='111'/&gt;
+            &lt;tag id='300'/&gt;
+        &lt;/vlan&gt;
+    &lt;/portgroup&gt;
+&lt;/network&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>在线修改openvswitch network</p>
+<div class="paragraph">
+<p>后续如果希望在线修改network<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>，可以通过<code>virsh net-update</code>来实现，譬如要添加一个vlan112。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>virsh net-update ovs-network add portgroup \
+  "&lt;portgroup name='vlan-113'&gt; \
+     &lt;vlan&gt; \
+      &lt;tag id='113'/&gt; \
+     &lt;/vlan&gt; \
+   &lt;/portgroup&gt;" \
+--current</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>还要修改一下portgroup定义</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh net-update ovs-network modify portgroup \
+ "&lt;portgroup name='vlan-all'&gt; \
+   &lt;vlan trunk='yes'&gt; \
+     &lt;tag id='20'/&gt; \
+     &lt;tag id='24'/&gt; \
+     &lt;tag id='28'/&gt; \
+     &lt;tag id='111'/&gt; \
+     &lt;tag id='112'/&gt; \
+     &lt;tag id='300'/&gt;\
+   &lt;/vlan&gt; \
+ &lt;/portgroup&gt;" --current</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>新增vm网口别名</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>通过<code>&lt;target/&gt;</code>可以定义vm网口的别名，为后续的维护提供便利：</p>
+</div>
+<div class="paragraph">
+<p>+</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh net-define ovs-network.xml
+$ sudo virsh net-start ovs-network
+$ sudo vim d7-32-wptMgmt.xml
+------------8&lt;---------------
+    &lt;interface type='network'&gt;
+      &lt;mac address='52:54:00:64:63:4e'/&gt;
+      &lt;source network='ovs-network' portgroup='vlan-300'/&gt;
+      &lt;target dev='wptMgmt-300'/&gt;
+      &lt;model type='virtio'/&gt;
+      &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/&gt;
+    &lt;/interface&gt;
+------------&gt;8---------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>完成vm配置文件的修改后，需要重新定义一下，下次重启vm后方能生效</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>重新定义vm配置</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cp /etc/libvirt/qemu/d7-32-wptMgmt.xml /backup
+$ sudo virsh undefine d7-32-wptMgmt
+$ sudo cp /backupd7-32-wptMgmt.xml /etc/libvirt/qemu/
+$ sudo virsh define d7-32-wptMgmt.xml
+$ sudo virsh start d7-32-wptMgmt</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>在线更新vm配置</p>
+<div class="paragraph">
+<p>在先更新vm配置文件的的意义在于不需要关机，然后重新定义vm<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo virsh edit d7-32-wptMgmt
+------------8&lt;---------------
+    &lt;interface type='network'&gt;
+      &lt;mac address='52:54:00:64:63:4e'/&gt;
+      &lt;source network='ovs-network' portgroup='vlan-300'/&gt;
+      &lt;target dev='wptMgmt-300'/&gt;
+      &lt;model type='virtio'/&gt;
+      &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/&gt;
+    &lt;/interface&gt;
+------------&gt;8---------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>+
+需要说明的是在线更新vm配置并不意味着会hotplug网卡，还需要：</p>
+</div>
+<div class="paragraph">
+<p>+
+检查一下：</p>
+</div>
+<div class="paragraph">
+<p>+</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ovs-vsctl show
+2bb445bb-53d7-4cae-be95-5a37b16ba4d7
+    Bridge "ovsbr1"
+        Port "vnet2"
+            tag: 111
+            Interface "vnet2"
+        Port "wptMgmt-111"
+            tag: 111
+            Interface "wptMgmt-111"
+        Port "ovsbr1"
+            Interface "ovsbr1"
+                type: internal
+        Port "bond1"
+            Interface "eth2"
+            Interface "eth3"
+        Port "wptMgmt-300"
+            tag: 300
+            Interface "wptMgmt-300"
+    ovs_version: "2.3.2"
+$ sudo ip ad ls
+------------8&lt;---------------
+138: wptMgmt-300: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UNKNOWN qlen 500
+    link/ether fe:54:00:64:63:4e brd ff:ff:ff:ff:ff:ff
+139: wptMgmt-111: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UNKNOWN qlen 500
+    link/ether fe:54:00:3e:0a:f5 brd ff:ff:ff:ff:ff:ff
+------------&gt;8---------------</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://blog.scottlowe.org/2012/11/07/using-vlans-with-ovs-and-libvirt/" class="bare">http://blog.scottlowe.org/2012/11/07/using-vlans-with-ovs-and-libvirt/</a></p>
+</li>
+<li>
+<p><a href="http://blog.scottlowe.org/2012/11/12/libvirt-ovs-integration-revisited/" class="bare">http://blog.scottlowe.org/2012/11/12/libvirt-ovs-integration-revisited/</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 在线修改并非openvswitch独有
+</div>
+<div class="footnote" id="_footnote_2">
+<a href="#_footnoteref_2">2</a>. 相当于undefine &amp; define
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

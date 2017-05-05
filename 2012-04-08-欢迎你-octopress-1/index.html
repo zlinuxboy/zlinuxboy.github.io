@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>欢迎你，octopress！（上）</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-04-08-%E6%AC%A2%E8%BF%8E%E4%BD%A0-octopress-1/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">欢迎你，octopress！（上）</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-04-08&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/blog"><i class="fa fa-tag">&nbsp;&nbsp;blog</i></a>
+           <!--a class="post-tag" href="/tag/blog">blog</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">UPDATE</div>
+<div class="ulist">
+<ul>
+<li>
+<p>2016-10-06，一语成谶“生命不息，折腾不止”，我又抛弃了octopress，新欢是hugo。</p>
+</li>
+<li>
+<p>2016-11-19，不多说了，因为asciidoctor，暂时离开hugo，入坑jekyll。</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>前几年，我玩了一段时间wordpress，也断断续续写了一些博客，但是总感觉wordpress不顺手，遂抛弃之。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="一-为什么抛弃wordpress">一、为什么抛弃wordpress</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>主要原因是：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>帖代码麻烦</strong></p>
+<div class="paragraph">
+<p>作为一个linux用户，经常要跟命令和代码块打交道，所以我迫切希望能快速插入代码块。wordpress的处理方式中显得颇为累赘，要么需要挪动鼠标去点击visual editor中的<code>&lt;code&gt;</code>按钮，要么需要在代码块前后插入<code>&lt;pre lang="bash"&gt;</code>和<code>&lt;/pre&gt;</code>这样的标签，原本愉悦的写作心情顿时受阻，如鲠在喉。</p>
+</div>
+</li>
+<li>
+<p><strong>标签、标签、太多的标签！</strong></p>
+<div class="paragraph">
+<p>虽然wordpress提供了visual editor，但是功能太弱，资深用户往往切换到plain text模式，然而这种模式最大的缺点就是<code>&lt;html&gt;、&lt;h1&gt;</code>这样的标签和文字参杂在一块，版面混乱，修改起来非常困难。</p>
+</div>
+</li>
+<li>
+<p><strong>缺乏合适的客户端</strong></p>
+<div class="paragraph">
+<p>一般用户都希望能有个客户端进行离线写作，完事后再发布到博客中，然而目前还没有一款成熟的客户端可供使用。绝大部分的用户必须登录到wordpress后台进行编辑。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>总之，在wordpress中，技术类文档要想有漂亮的排版，作者必是经历一番辛苦的调整。这还不算，最郁闷的是，每一篇都要经历这个痛苦的过程，所以说，wordpress只适合于一般的文字工作者，不适合于技术人员。</p>
+</div>
+<div class="paragraph">
+<p>为了将wordpress改造得更便利一些，我曾尝试过一些插件：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>编辑器插件</strong></p>
+<div class="paragraph">
+<p>尝试过TinyMCE Advanced等插件，这条路是走错了，原因有二：1、可视化编辑器跟一些代码高亮插件冲突；2、它们基于GUI，无法满足快速插入代码块和快速格式化的需求，放弃之；</p>
+</div>
+</li>
+<li>
+<p><strong>wiki插件</strong></p>
+<div class="paragraph">
+<p>曾尝试着将wordpress改造成wiki，也找过一些wiki插件，其中BlogText效果最好，可以满足我的要求，本以为，我就这么一直用下去，安心落户于wordpress之中。</p>
+</div>
+<div class="paragraph">
+<p>然而随后的数据丢失事件耗尽了我的耐心。我的博客是跟别人合租的一个dreamhost虚拟空间，2011年的某天，我发现博客无法访问，联系房东后被告知，由于合租者中有人不守规矩，创建非法网站，dreamhost停用了整个空间，并删除了所有数据，WTF！辛辛苦苦写的博客全没了。虽然电脑里面还有一些原始文稿，但要重新录入wordpress，又要经历一番痛苦的折磨，索性作罢。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="二-新欢-octopress">二、新欢：octopress</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>直到前段时间，我偶然间发现了<strong>markdown</strong>和<strong>vim</strong>，接着发现了<strong>github</strong>、<strong>jekyll</strong>，然后是<strong>octopress</strong>和<strong>herohu</strong>，我的激情又被点燃。这是一个多么神奇的组合，仿佛就是为技术控而打造的。</p>
+</div>
+<div class="paragraph">
+<p>下面简单介绍这些组件：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>markdown</em></p>
+<div class="paragraph">
+<p>根据wikipedia的定义，它是一种轻量级标记语言，主要目的是为用户提供一种“易读易写的纯文本格式“编写文档，这意味着：1、帖代码非常方便；2、不需html标签就可以达成漂亮的排版。这是吸引广大技术博主的主因，因为用wordpress来写技术类文档简直就是反人类。</p>
+</div>
+</li>
+<li>
+<p><em>vim</em></p>
+<div class="paragraph">
+<p>vim是一款非常优秀的编辑器，它跟声名显赫的emacs并驾齐驱。坊间流传着这样的一句话：emacs是神的编辑器，而vim是编辑器之神。足见vim的地位之高。vim的特点是编辑功能强大而灵活，扩展性强，非常适合于码农或高阶用户。近年被移植到了windows，同样在windows程序员间引起了一阵旋风，纷纷从IDE叛逃至vim阵营。用vim写markdown文档是一种享受，因为经过打磨后的vim不仅有着漂亮的外表，还有自动补齐这些便利的功能。这就解决了编辑器的问题，至此，还有什么理由抱着wordpress不放呢？</p>
+</div>
+</li>
+<li>
+<p><em>git</em></p>
+<div class="paragraph">
+<p>是一个分布式版本控制系统。它linux内核开发过程中意外诞生的，现在被广泛应用于软件项目的代码管理。相对于CVS、SVN而言，git的特点是每个开发者的电脑均有整个代码仓库的镜像，大部分操作在本地执行，所以git具有速度快、对网络依赖小，不存在单点故障的优点。</p>
+</div>
+</li>
+<li>
+<p><em>github</em></p>
+<div class="paragraph">
+<p>顾名思义，它就是基于git工具的远程仓库托管平台。有大量的开源项目和著名的软件公司均使用它作为项目代码的远程仓库。不过，最吸引我的则是github pages功能，它允许用户免费存放300M的静态页面，此外还提供了一个二级域名：<code><a href="http://&lt;user-id&gt;.github.com/" class="bare">http://&lt;user-id&gt;.github.com/</a></code>，用户可以用它来创建一个免费的静态网站。看到这，读者可能会犯嘀咕：“都什么年代了，还要手写html网页啊？”，github当然也想到这一点，于是其创始人Tom Preton-Werner开发了jekyll这个引擎。</p>
+</div>
+</li>
+<li>
+<p><em>jekyll</em></p>
+<div class="paragraph">
+<p>是一个简单的、面向博客的静态网站生成器。当用户上传（push）源文件到github仓库后，github将触发jekyll引擎，调用markdown解析器对源文件进行编译，同时结合网站模版添加统一的风格，最终生成静态页面。jekyll引擎是一项关键性技术，它将用户从繁琐的html标签中解救出来。这样，用户就可以用markdown来随心所欲的书写文档了。然而jekyll仅仅是一个引擎，用户还需要调教评论、代码高亮、Javascripts和css等组件才能打造一个称心如意的博客。于是，octopress应运而生。</p>
+</div>
+</li>
+<li>
+<p><em>octopress</em></p>
+<div class="paragraph">
+<p>是一个基于jekyll的博客框架，它整合了Pinboard、Delicious、Disqus、google plus one等插件，还有一个高质量的HTML5模版。虽然octopress将自己标榜为“a blogging framework for hackers”，但普通用户也可以很容易用octopress创建一个漂亮的静态博客。</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>嗯，似乎很麻烦，不就是写个博客吗，只好以“生命不息，折腾不止”自勉了。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="三-octopress的使用流程">三、octopress的使用流程</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>octopress的使用分两部分：</p>
+</div>
+<div class="sect2">
+<h3 id="3-1-本地">3.1 本地</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>使用自己喜好的编辑器，遵循markdown语法来写博文；</p>
+</li>
+<li>
+<p>使用<code>rake generate</code>，遵循octopress/jekyll的定义生成一个完整的静态网站内容；</p>
+</li>
+<li>
+<p>使用<code>git</code>或<code>rsync</code>将该静态网站内容推送到位于互联网上的博客平台；</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-2-博客平台">3.2 博客平台</h3>
+<div class="paragraph">
+<p>博客平台所做的工作就非常简单了：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>接收从本地推送过来的静态网站；</p>
+</li>
+<li>
+<p>提供www访问服务；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>也就是说博客平台只要提供一定的磁盘空间，接着开启apache或nginx就可，完全不需要考虑PHP、MySQL等组件。用户既可以选择github或heroku这些免费的平台上，也可以放在自己的VPS中。</p>
+</div>
+<div class="paragraph">
+<p>那如何在部署octopress博客环境呢，请看<a href="/2012-04-08-%E6%AC%A2%E8%BF%8E%E4%BD%A0-octopress-2/">欢迎你，octopress！（下）</a>。</p>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

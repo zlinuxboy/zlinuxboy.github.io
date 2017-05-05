@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>lvm的日常</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-12-09-lvm%E7%9A%84%E6%97%A5%E5%B8%B8/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">lvm的日常</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-12-09&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/lvm"><i class="fa fa-tag">&nbsp;&nbsp;lvm</i></a>
+           <!--a class="post-tag" href="/tag/lvm">lvm</a-->
+         
+           <a class="post-tag" href="/tag/storage"><i class="fa fa-tag">&nbsp;&nbsp;storage</i></a>
+           <!--a class="post-tag" href="/tag/storage">storage</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="ulist">
+<ul>
+<li>
+<p>更改vg名称</p>
+<div class="paragraph">
+<p>一台debian 6，启用了lvm，root也在lvm上，由于名字起的不规范，因而需要修改。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vgrename $oldhostname $newhostname
+$ sudo sed -i “s/$oldhostname/$newhostname/g” /etc/fstab
+$ sudo sed -i “s/\/$oldhostname/\/$newhostname/g” /boot/grub/grub.cfg
+$ sudo update-initramfs -c -k all <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>update-initramfs的作用是重新生成一个initrd，否则下次重启的话会提示找不到原来的volume group错误提示，虽然不影响系统正常启动。建议将原来的initrd挪个位置，然后使用-c，虽然-u也可以更新，但是似乎不起作用，错误提示依然存在。</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>可以在线改名，也可以使用systemrescuecd然后挂载lvm中的分区改名。</p>
+</div>
+</li>
+<li>
+<p>删除lv(open状态)</p>
+<div class="paragraph">
+<p>在xen中删除了一个VM，但是它的镜像还处于open状态，无法使用lvremove删除：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo lvremove /dev/domU/VMs
+lvremove Can't remove open logical volume</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这时需要使用dmsetup来删除mapper：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo ll /dev/mapper/
+$ sudo dmsetup remove /dev/mapper/VMs11
+$ sudo dmsetup remove /dev/mapper/VMs15</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>最后再执行lvremove就可以了：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo lvremove /dev/domU/VMs</pre>
+</div>
+</div>
+</li>
+<li>
+<p>缩小LV的大小</p>
+<div class="ulist">
+<ul>
+<li>
+<p>umount filesystem</p>
+</li>
+<li>
+<p>e2fsck -f /dev/lvm/test</p>
+</li>
+<li>
+<p>resize2fs /dev/lvm/test size</p>
+</li>
+<li>
+<p>lvreduce -L size /dev/lvm/test</p>
+</li>
+<li>
+<p>mount filesystem</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>如何扩大lv的大小</p>
+<div class="ulist">
+<ul>
+<li>
+<p>umount /mnt/stuff</p>
+</li>
+<li>
+<p>lvextend -L +10G /dev/loc/stuff</p>
+</li>
+<li>
+<p>e2fsck -f /dev/loc/stuff</p>
+</li>
+<li>
+<p>resize2fs /dev/loc/stuff</p>
+</li>
+<li>
+<p>mount /dev/loc/stuff /mnt/stuff</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+如果想对根分区进行操作，需要先用光盘引导，譬如system rescue cd。
+</td>
+</tr>
+</table>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>tinc and custome firewall rules on pfsense</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2017-03-10-tinc-and-custom-firewall-rules-on-pfsense/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">tinc and custome firewall rules on pfsense</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2017-03-10&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+           <a class="post-tag" href="/tag/tutor"><i class="fa fa-tag">&nbsp;&nbsp;tutor</i></a>
+           <!--a class="post-tag" href="/tag/tutor">tutor</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>自从进入了pfsense 2.2时代，tinc就从pfsense的官方repo中消失了一段时间。前段时间发布的pfsense2.3.3又把tinc给带回来了。不过官方自带的GUI功能实在有限，无法满足我的要求：具备在firewall中提供接口功能；因为我需要在firewall webUI中设置多个1:1的NAT。so，hack it。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tinc">tinc</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="安装">安装</h3>
+<div class="paragraph">
+<p>不要通过webUI来安装tinc，要通过命令行：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>pkg install tinc</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="配置">配置</h3>
+<div class="paragraph">
+<p>tinc的配置文件位置为：<code>/usr/local/etc/tinc</code>，在命令行中安装tinc，是不会自动创建该目录的，需要手工创建：<code>mkdir /usr/local/etc/tinc</code></p>
+</div>
+<div class="paragraph">
+<p>然后创建相应的文件</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>└── mgmt
+     ├── hosts
+     │   ├── e40
+     │   ├── home
+     │   ├── guangdong
+     │   ├── corp
+     │   └── tpl450
+     ├── rsa_key.priv
+     ├── tinc.conf
+     ├── tinc-down
+     └── tinc-up</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>跟linux不同，freebsd没有iproute这个软件包，只能通过ifconfig来配置tun这个接口。</p>
+</div>
+<div class="listingblock">
+<div class="title">tinc-up</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>#!/bin/sh
+syxy_VIP="10.9.1.1"
+/sbin/ifconfig $INTERFACE up
+/sbin/ifconfig $INTERFACE inet ${syxy_VIP}/16</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">tinc-donw</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>#!/bin/sh
+/sbin/ifconfig $INTERFACE down</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>其它的没有什么差别。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="启动-停止tincd">启动/停止tincd</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>/usr/local/sbin/tincd -n $netname $flags <i class="conum" data-value="1"></i><b>(1)</b> <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>netname 可以运行多个tincd进程，每个进程通过netname进行区分，不同netname可以创建不同的mesh vpn。</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>flags tincd运行参数，譬如"-d 1 --log-files /var/log/tincd.log"，也可以是"-k"，即杀掉$netname的tincd进程</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>至此，暂时搞定了pfsense中的tincd，但是还没完，因为还没有实现自启动功能，不过先放一下，先看看如何添加防火墙策略。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="手工添加防火墙策略">手工添加防火墙策略</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在pfsense中，添加防火墙策略都要通过webUI，但是由于tincd是动态启停的，相关的防火墙策略需要根据tincd的状态来增加和删除，而pfsense官方是不支持这种做法，hack again：</p>
+</div>
+<div class="paragraph">
+<p>有个网友找到了一个办法：将动态变化的防火墙策略放到<code>/usr/local/pkg/CUSTOM_rules.inc</code>这个文件中，随着<code>/etc/rc.filter_configure</code>的执行而自动添加。</p>
+</div>
+<div class="listingblock">
+<div class="title">/usr/local/pkg/CUSTON_rules.inc</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>&lt;?php
+
+// Add this file as:  /usr/local/pkg/CUSTOM_rules.inc
+// pfSense will automatically add the rules defined here into the rules it loads in pf
+
+require_once("util.inc");
+
+        function CUSTOM_rules_generate_rules($type) { // called by filter.inc when pfSense rules generation happens
+        $rules = "";
+        switch($type) {
+        case 'nat':
+                $rules .= "# CUSTOM NAT RULES \n";
+                $rules .= "binat on tun0 from 192.xx.xx.154 to any -&gt; 10.x.x.154\n"; // esxi4
+                $rules .= "# END CUSTOM NAT RULES \n";
+                break;
+        case 'filter':
+                $rules .= "# CUSTOM FILTER RULES \n";
+                $rules .= "pass in quick on tun0 inet proto { tcp udp } from any to any\n";
+                $rules .= "# END CUSTOM FILTER RULES \n";
+                break;
+        }
+        return $rules;
+}
+?&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后手工reload防火墙</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>/etc/rc.filter_configure</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>查看这些策略是否已经生效（两种方式）：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>vim /tmp/rules.debug</p>
+</li>
+<li>
+<p>pfctl -sr</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="组合起来并自动化之">组合起来并自动化之</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>接下来考虑如何自动启动tinc和自动添加/删除这些策略，由于我们的pfsense是HA的，所以可以使用devd根据carp的状态来触发脚本：</p>
+</div>
+<div class="listingblock">
+<div class="title">/etc/devd.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>options {
+        directory "/etc/devd";
+        directory "/usr/local/etc/devd";
+        pid-file "/var/run/devd.pid";
+        set scsi-controller-regex
+                "(aac|adv|adw|aha|ahb|ahc|ahd|aic|amd|amr|asr|bt|ciss|ct|dpt|\
+                esp|ida|iir|ips|isp|mlx|mly|mpt|ncr|ncv|nsp|stg|sym|trm|wds)\
+                [0-9]+";
+};
+
+# CARP notify hooks. This will call carpup/carpdown with the
+# interface (carp0, carp1) as the first parameter.
+notify 100 {
+    match "system"          "CARP";
+    match "type"            "MASTER";
+    action "/usr/local/sbin/pfSctl -c 'interface carpmaster $subsystem'";
+};
+
+notify 100 {
+    match "system"          "CARP";
+    match "type"            "BACKUP";
+    action "/usr/local/sbin/pfSctl -c 'interface carpbackup $subsystem'";
+};
+
+notify 100 {
+    match "system"          "CARP";
+    match "type"            "INIT";
+    action "/usr/local/sbin/pfSctl -c 'interface carpbackup $subsystem'";
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>依葫芦画瓢，在下面添加了两个section：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>notify 150 {  <i class="conum" data-value="1"></i><b>(1)</b>
+    match "system"          "CARP";
+    match "type"            "MASTER";
+    action "/usr/local/etc/tinc/change_tincState.sh up";
+};
+
+notify 150 {
+    match "system"          "CARP";
+    match "type"            "BACKUP";
+    action "/usr/local/etc/tinc/change_tincState.sh down";
+};</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>notify的优先级要低于系统默认的carp section的优先级（此处为150，默认为100），假如这里仍然保留100，则不会触发该section</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>然后重启一下devd</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>/etc/rc.d/devd restart</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着写个change_tincState.sh的启动脚本</p>
+</div>
+<div class="listingblock">
+<div class="title">/usr/local/etc/tinc/change_tincState.sh</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>#!/bin/sh
+
+STATE=$1
+command="/usr/local/sbin/tincd"
+tinc_cfg="mgmt"
+tinc_flags="-d 1 --logfile /var/log/tincd.log"
+custom_rules_file="CUSTOM_rules.inc"
+src_path="/usr/local/etc/tinc/"
+dst_path="/usr/local/pkg/"
+reload_fw_rules="/etc/rc.filter_configure"
+
+case $STATE in
+        "up")   /bin/echo "start tinc for carp:master" | /usr/bin/logger -p local6.notice -t change_tincState
+                $command -n $tinc_cfg $tinc_flags
+                cp -f ${src_path}${custom_rules_file} $dst_path
+                $reload_fw_rules
+                exit 0
+                ;;
+        "down") /bin/echo "stop tinc for carp:backup" | /usr/bin/logger -p local6.notice -t change_tincState
+                $command -n $tinc_cfg -k
+                rm -rf ${dst}${custom_rules_file}
+                $reload_fw_rules
+                exit 0
+                ;;
+        *)      echo "Unknown state of CARP"
+                exit 1
+                ;;
+esac</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>现在让我们来转换两台pfsense中的master/backup角色，确认一下devd能否正常工作：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>pfsense-1:master/pfsense-2:backup&#8594;pfsense-1:backup/pfsense-2:master</p>
+<div class="paragraph">
+<p>在pfsense-1中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>sysctl net.inet.carp.demotion=240</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>此时，pfsense-1和pfsense-2的master/backup角色发生了互换，devd检测到carp的状态变化，于是</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>pfsense-1的tinc进程被杀掉，之前添加的防火墙策略也被删除；</p>
+</li>
+<li>
+<p>pfsense-2的tinc进程启动，添加新的防火墙策略；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>pfsense-1:backup/pfsense-2:master&#8594;pfsense-1:master/pfsense-2:backup</p>
+<div class="paragraph">
+<p>在pfsense-1中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>sysctl net.inet.carp.demotion=-240</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>此时，pfsense-1和pfsense-2的backup/master角色发生了互换，devd检测到carp的状态变化，于是</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>pfsense-1的tinc进程启动，添加新的防火墙策略；</p>
+</li>
+<li>
+<p>pfsense-2的tinc进程被杀掉，之前添加的防火墙策略也被删除；</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It&#8217;s awesome!</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="其它">其它</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>为了方便维护，建议将/etc/devd.conf的新增的两段section单独放在一个配置文件中：</p>
+</div>
+<div class="listingblock">
+<div class="title">/usr/local/etc/devd/tincd.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>notify 150 {
+    match "system"          "CARP";
+    match "type"            "MASTER";
+    action "/usr/local/etc/tinc/change_tincState.sh up";
+};
+
+notify 150 {
+    match "system"          "CARP";
+    match "type"            "BACKUP";
+    action "/usr/local/etc/tinc/change_tincState.sh down";
+};</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+切记，不能放在<code>/etc/devd/</code>这个目录中，经过测试，该目录的conf不起作用。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>ESXi中的nic teaming和trunk</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-08-20-ESXi%E4%B8%AD%E7%9A%84nic-teaming%E5%92%8Ctrunk/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">ESXi中的nic teaming和trunk</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-08-20&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/bonding"><i class="fa fa-tag">&nbsp;&nbsp;bonding</i></a>
+           <!--a class="post-tag" href="/tag/bonding">bonding</a-->
+         
+           <a class="post-tag" href="/tag/esxi"><i class="fa fa-tag">&nbsp;&nbsp;esxi</i></a>
+           <!--a class="post-tag" href="/tag/esxi">esxi</a-->
+         
+           <a class="post-tag" href="/tag/nic teaming"><i class="fa fa-tag">&nbsp;&nbsp;nic teaming</i></a>
+           <!--a class="post-tag" href="/tag/nic teaming">nic teaming</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>ESXi是经裁剪和扩展后的linux，同样可以做bonding或者vlan trunk，在esxi的术语中，bongding被称为nic teaming，vlan trunk则简称为trunk。然而，esxi和linux又有些不同，下面举例说明这两种功能的配置和行为。</p>
+</div>
+<div class="paragraph">
+<p>本实验用到一台DL385g8(安装esxi5.5u2)和两台h3c 5800交换机(利用h3c irf协议做了堆叠)，它们之间网口/端口连接对应表如下：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 1. DL385、h3c5800网口/端口连接对应表</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ESXi</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">h3c 5800</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">port1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gi1/0/26</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">port2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gi2/0/26</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">port3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gi1/0/34</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">port4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gi2/0/34</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="nic-teaming">nic teaming</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>ESXi的标准交换机不支持lacp，只能配置静态的上行链路聚合。VMware的分布式交换机支持lacp，但需要部署vCenter，本文仅涉及单台ESXi，所以只能用标准交换机。</p>
+</div>
+<div class="paragraph">
+<p>h3c 5800交换机的端口配置如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>interface Bridge-Aggregation26
+ description "DL385g8(esxi6-bond0)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 111 300
+interface GigabitEthernet1/0/26
+ port link-mode bridge
+ description "DL385g8:port1(esxi6)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 111 300
+ port link-aggregation group 26
+interface GigabitEthernet2/0/26
+ port link-mode bridge
+ description "DL385g8:port2(esxi6)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 111 300
+ port link-aggregation group 26
+...
+interface Bridge-Aggregation34
+ description "DL385g8(esxi6-bond1)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 111 300
+interface GigabitEthernet1/0/34
+ port link-mode bridge
+ description "DL385g8:port3(esxi6)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 111 300
+ port link-aggregation group 34
+interface GigabitEthernet2/0/34
+ port link-mode bridge
+ description "DL385g8:port4(esxi6)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 10 111 300
+ port link-aggregation group 34</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>esxi中的网口配置如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>ESXi# esxcli network nic list
+Name    PCI Device     Driver  Link  Speed  Duplex  MAC Address         MTU  Description
+------  -------------  ------  ----  -----  ------  -----------------  ----  -------------------------------------------------------
+vmnic0  0000:004:00.0  tg3     Up     1000  Full    a0:d3:c1:f1:03:a8  1500  Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet
+vmnic1  0000:004:00.1  tg3     Up     1000  Full    a0:d3:c1:f1:03:a9  1500  Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet
+vmnic2  0000:004:00.2  tg3     Up     1000  Full    a0:d3:c1:f1:03:aa  1500  Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet
+vmnic3  0000:004:00.3  tg3     Up     1000  Full    a0:d3:c1:f1:03:ab  1500  Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>但是h3c 5800上显示2/0/26处于down的状态</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[SY-S5800-HSW]dis int bri | incl /26
+The brief information of interface(s) under bridge mode:
+Link: ADM - administratively down; Stby - standby
+Speed or Duplex: (a)/A - auto; H - half; F - full
+Type: A - access; T - trunk; H - hybrid
+Interface            Link Speed   Duplex Type PVID Description
+GE1/0/26             UP   1G(a)   F(a)   T    1    "DL385g8:port1(esxi6)"
+GE2/0/26             DOWN auto    A      T    1    "DL385g8:port2(esxi6)"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>做了以下尝试：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>在esxi中重启网卡</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>ESXi# esxcli network nic down -n vmnic1
+ESXi# esxcli network nic up -n vmnic1</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>在交换机中重做link-aggregation</p>
+</li>
+<li>
+<p>关闭broadcom 5719驱动的netqueue<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>特性，并重启。</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>ESXi# esxcli system settings kernel set -s netNetqueueEnabled -v FALSE
+ESXi# reboot</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">broadcom netqueue关闭方法</div>
+<div class="paragraph">
+<p>可通过命令<code>esxcfg-module -s force_netq=0,0,0,0 tg3</code>关闭每一张1G nic的netqueue功能，<code>0</code>的含义请参考 <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=2035701。" class="bare">http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=2035701。</a></p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>ge2/0/26仍然处于down的状态，一怒之下弃之，改用vmnic2/vmnic3来做link-aggregation</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[SY-S5800-HSW]dis int bri | incl /34
+The brief information of interface(s) under bridge mode:
+Link: ADM - administratively down; Stby - standby
+Speed or Duplex: (a)/A - auto; H - half; F - full
+Type: A - access; T - trunk; H - hybrid
+Interface            Link Speed   Duplex Type PVID Description
+GE1/0/34             UP   1G(a)   F(a)   T    1    "DL385g8:port3(esxi6)"
+GE2/0/34             UP   1G(a)   F(a)   T    1    "DL385g8:port4(esxi6)"
+
+[SY-S5800-HSW]dis link-aggregation verbose Bridge-Aggregation 34
+
+Loadsharing Type: Shar -- Loadsharing, NonS -- Non-Loadsharing
+Port Status: S -- Selected, U -- Unselected
+Flags:  A -- LACP_Activity, B -- LACP_Timeout, C -- Aggregation,
+        D -- Synchronization, E -- Collecting, F -- Distributing,
+        G -- Defaulted, H -- Expired
+
+Aggregation Interface: Bridge-Aggregation34
+Aggregation Mode: Static
+Loadsharing Type: Shar
+  Port             Status    Oper-Key
+--------------------------------------------------------------------------------
+  GE2/0/34         S         1
+  GE1/0/34         S         1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后参考<a href="http://www.mustbegeek.com/configure-trunk-ports-in-esxi-server/">在vshpere client中做nic teaming</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="测试">测试</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>测试过程中用到的测试服务器如下：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 2. 测试服务器列表</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">服务器</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">master</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.111.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ws12r2-mgmt-2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.111.47</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">h3c-5800-vlan111</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.111.254</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+ws12r2-mgmt-2是运行在dl385/esxi上的一台虚拟机，网卡桥接了vlan111。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>在5800中对<code>bagg34</code>中的两个网口分别执行关闭和开启的操作</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>关闭<code>interface gi1/0/24</code></p>
+<div class="paragraph">
+<p>观察：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>在master中ping ws12r2-mgmt-2</p>
+<div class="paragraph">
+<p>没有丢包</p>
+</div>
+</li>
+<li>
+<p>在ws12r2-mgmt-2中ping h3c-5800-vlan111</p>
+<div class="paragraph">
+<p>没有丢包</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>将<code>interface gi1/0/24</code>恢复至开启状态。</p>
+</li>
+<li>
+<p>关闭<code>jinterface gi2/0/24</code></p>
+<div class="paragraph">
+<p>观察：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>在master中ping ws12r2-mgmt-2</p>
+<div class="paragraph">
+<p>丢一个包</p>
+</div>
+</li>
+<li>
+<p>在ws12r2-mgmt-2中ping h3c-5800-vlan111</p>
+<div class="paragraph">
+<p>丢一个包</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>将<code>interface gi2/0/24</code>恢复至开启状态。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>结论：</strong> vmware的nic teaming（route based on ip hash）与h3c 5800的link-aggregation可以很好的协作，至少比openvswitch和linux bonding的效果好。</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">linux/openvswitch bonding的链路倒换测试</div>
+<div class="paragraph">
+<p>经测试，openvswitch bonding和linux bonding的线路切换要丢7个包。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="{uri-ref-esxi-hp-4800g}">如何在两台h3c/hp堆叠交换机与esxi主机之间创建link-aggregation</a></p>
+</li>
+<li>
+<p><a href="http://www.mustbegeek.com/configure-trunk-ports-in-esxi-server/">如何在esxi中配置trunk</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 对于1G nic来说，netqueue用途不大，开启该功能却会导致esxi网络连接丢失，请参考 <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=2035701" class="bare">http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=2035701</a>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

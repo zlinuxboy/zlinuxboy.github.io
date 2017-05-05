@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>collectd简易教程</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2014-11-11-collectd%E7%AE%80%E6%98%93%E6%95%99%E7%A8%8B/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">collectd简易教程</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2014-11-11&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/collectd"><i class="fa fa-tag">&nbsp;&nbsp;collectd</i></a>
+           <!--a class="post-tag" href="/tag/collectd">collectd</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>collectd，一把网管界的瑞士军刀，小巧玲珑又功能强大，主要用来搜集主机的相关信息，用C来编写，可运行在多种操作系统之下，跟graphite的结合更是如虎添翼，是居家旅行、杀人越货的必备神器。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-安装">1. 安装</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="1-1-openbsd">1.1 openbsd</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>root@openbsd-1/var/ossec/etc: # pkg_add -vr collectd
+Update candidates: quirks-1.32 -&gt; quirks-1.32 (ok)
+collectd-4.10.2:libxml-2.7.8p1: ok
+collectd-4.10.2:libstatgrab-0.15p1: ok
+collectd-4.10.2:libltdl-1.5.26p0: ok
+collectd-4.10.2:libgpg-error-1.9: ok
+collectd-4.10.2:libgcrypt-1.4.6: ok
+collectd-4.10.2: ok
+--- +collectd-4.10.2 -------------------
+First, configure collectd in /etc/collectd.conf,
+Then use the following to start the daemon:
+ 
+        sudo -u _collectd /usr/local/sbin/collectd</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-2-debian-squeeze">1.2 debian squeeze</h3>
+<div class="paragraph">
+<p>collectd 5.1已经进入squeeze backports中，因此</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language- " data-lang=" ">$ sudo aptitude -t squeeze-backports install collectd-core</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre> 
+backports中的collectd-core，其依赖关系漏了libsnmp15包（提供libnetsnmp.so.15库文件）。然而snmp插件的正常需要该文件，否则会出错：</pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="1-2-1-snmp">1.2.1 snmp：</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ldd /usr/lib/collectd/snmp.so      
+        linux-gate.so.1 =&gt;  (0xb770e000)
+        libnetsnmp.so.15 =&gt; not found
+        libpthread.so.0 =&gt; /lib/i686/cmov/libpthread.so.0 (0xb76e7000)
+        libiptc.so.0 =&gt; /lib/libiptc.so.0 (0xb76e5000)
+        libdl.so.2 =&gt; /lib/ i686/cmov/libdl.so.2 (0xb76e0000)
+        libc.so.6 =&gt; /lib/i686/cmov/libc.so.6 (0xb7599000)
+        /lib/ld-linux.so.2 (0xb770f000)
+        libip4tc.so.0 =&gt; /lib/libip4tc.so.0 (0xb7593000)
+        libip6tc.so.0 =&gt; /lib/libip6tc.so.0 (0xb758d000)</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre> 
+解决办法：</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude install libsnmp15
+$ sudo aptitude install snmp snmp-mibs-downloader</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&gt;<strong>说明</strong>：snmp-mibs-downloader是non-free软件包，所以source.list的条目中要加上non-free这个关键字。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="1-2-2-ping">1.2.2 ping：</h4>
+<div class="paragraph">
+<p>错误：依赖liboping0</p>
+</div>
+<div class="paragraph">
+<p>解决办法：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo aptitude install liboping0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>关于依赖包明细，请参考https://github.com/collectd/collectd</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language- " data-lang=" ">$ sudo collectd -T
+ERROR: lt_dlopen ("/usr/lib/collectd/snmp.so") failed: file not found. The most common cause for this problem are missing dependencies. Use ldd(1) to check the dependencies of the plugin / shared object.
+Unable to load plugin snmp.
+0</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-3-centos">1.3 centos</h3>
+<div class="paragraph">
+<p>centos 6.5的源中自带的collectd版本比较老，是4.10.9</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo yum -y install collectd collectd-ping collectd-rrdtool collectd-snmp</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-基本配置">2. 基本配置</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre> </pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/collectd.conf
+--------8&lt;-----------
+FQDNLookup false
+ 
+LoadPlugin syslog
+LoadPlugin cpu
+LoadPlugin csv
+ 
+&lt;Plugin "csv"&gt;
+       DataDir "/var/lib/collectd/csv"
+       StoreRates true
+&lt;/Plugin&gt;
+--------8&lt;-----------</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre> 
+== 3. 运行</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>测试插件正常</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo collectd -T</pre>
+</div>
+</div>
+</li>
+<li>
+<p>测试配置是否正常</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo collectd -t</pre>
+</div>
+</div>
+</li>
+<li>
+<p>强制前台运行</p>
+<div class="paragraph">
+<p>在标准输出设备（显示屏）打印运行日志</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo collectd -f</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>当然，假如启用了syslog 插件，也可以通过<code>/var/log/message</code>或<code>/var/log/syslog</code>查看collectd的运行日志</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tail -f /var/log/syslog | grep collectd
+--------8&lt;-----------
+Nov 28 07:10:52 deb6-collectd collectd[8145]: Exiting normally.
+Nov 28 07:10:52 deb6-collectd collectd[8145]: collectd: Stopping 5 read threads.
+Nov 28 07:10:52 deb6-collectd collectdmon[8143]: Info: collectd terminated with exit status 0
+Nov 28 07:10:52 deb6-collectd collectdmon[8143]: Info: shutting down collectdmon
+Nov 28 07:10:54 deb6-collectd collectd[9736]: Initialization complete, entering read-loop.
+--------&gt;8-----------</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>前面几项都测试成功之后，就可以看是否将cpu的信息写入到csv文件中：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo tail -f /var/lib/collectd/csv/&lt;hostname&gt;/cpu-0/cpu-interrupt-yyyy-mm-dd
+--------8&lt;-----------
+1354086456.105,198.700561
+1354086466.105,199.100324
+1354086476.105,199.501158
+1354086486.105,199.399259
+1354086496.105,199.599833
+1354086506.105,199.799262
+1354086516.105,198.799251
+1354086526.105,199.000930
+1354086536.105,199.401715
+--------&gt;8-----------</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>留意观察的话就会发现，每10秒就更新一次数据</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-高级应用">4. 高级应用</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="4-1-snmp">4.1 snmp</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language- " data-lang=" ">&lt;Plugin snmp&gt;
+   &lt;Data "std_traffic"&gt;
+       Type "if_octets"
+       Table true
+       Instance "IF-MIB::ifName"
+       #Values "IF-MIB::ifHCInOctets" "IF-MIB::ifHCOutOctets"
+       Values "IF-MIB::ifInOctets" "IF-MIB::ifOutOctets"
+   &lt;/Data&gt;
+ 
+   &lt;Data "sysUpTime"&gt;
+       Type "uptime"
+       Table false
+       Instance ""
+       Scale 0.0000001157
+       Values "iso.3.6.1.2.1.1.3.0"
+   &lt;/Data&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>通过<code>snmpget iso.3.6.1.2.1.1.3.0</code>获得的数据类型是timeticks，单位是1/100秒，所以需要转换成易读的值。1天=24小时*60分*60秒，uptime = sysUpTime/24*60*60*100 = sysUpTime* 0.0000001157 天。snmp plugin中提供了两个配置参数，用于对原始值进行数学计算，其中Scale表示乘除，所以此处的Scale值应为0.0000001157，另外还有一个配置参数是shift，表示加/减，本处没用上。</p>
+</div>
+<div class="paragraph">
+<p>实际上，可以通过match_regex和target scale统一将if_octet的值进行乘积运算，避免重复工作，详见下文
+ 
+Type "uptime"，该值必须从/usr/share/collectd/types.db挑选，不能随便填，对于sysUpTime，其值类型为gauge。
+ 
+华为交换机的sysUpTime oid为<code>.1.3.6.1.2.1.1.3.0</code>，也可表示为<code>iso.3.6.1.2.1.1.3.0</code>。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo snmpget -c public -v 2c 192.168.33.254 iso.3.6.1.2.1.1.3.0
+iso.3.6.1.2.1.1.3.0 = Timeticks: (3422757479) 396 days, 3:39:34.79
+ 
+   &lt;Host "SW5328-3.dataSrv.4f"&gt;
+       Address "192.168.33.254"
+       Version 2
+       Community "public"
+       Collect "std_traffic"
+       Collect "sysUpTime"
+       Interval 60
+   &lt;/Host&gt;
+   &lt;Host "SW5328-4.dataSrv.4f"&gt;
+       Address "192.168.55.254"
+       Version 2
+       Community "public"
+       Collect "std_traffic"
+       Collect "sysUpTime"
+       Interval 60
+   &lt;/Host&gt;
+   &lt;Host "SW5328-1.dslab.2f"&gt;
+       Address "192.168.66.254"
+       Version 2
+       Community "public"
+       Collect "std_traffic"
+       Collect "sysUpTime"
+       Interval 60
+   &lt;/Host&gt;
+   &lt;Host "SW5328-2.dslab.2f"&gt;
+       Address "192.168.88.254"
+       Version 2
+       Community "public"
+       Collect "std_traffic"
+       Collect "sysUpTime"
+       Interval 60
+   &lt;/Host&gt;
+&lt;/Plugin&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-2-ping">4.2 ping</h3>
+<div class="paragraph">
+<p>默认情况下，collectd的interval是10s，所以在ping plugins中，interval必须小于10s，否则出不了图。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>&lt;Plugin ping&gt;
+        Host "192.168.8.99"
+        Interval 5.0
+        Timeout 0.9
+        TTL 255
+        SourceAddress "192.168.8.254"
+        Device "eth4"
+        MaxMissed -1
+&lt;/Plugin&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-3-libvirt">4.3 libvirt</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>&lt;Plugin libvirt&gt;
+       Connection "qemu:///system"
+       RefreshInterval 60
+       Domain "d6-64-unifi-ac"
+#       BlockDevice "name:device"
+#       InterfaceDevice "name:device"
+       IgnoreSelected false
+#       HostnameFormat name
+&lt;/Plugin&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可以通过libvirt查看某个或多个domain，但是在visage-app中，domain的所有metric全部都显示在一张图中，很不方便，而且libvirt这个插件稳定性似乎不行，运行一段时间后会导致进程消失（崩溃？未能确认），通过ps aux | grep collectd找不到。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-4-interface">4.4 interface</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>LoadPlugin ping
+&lt;Plugin interface&gt;
+        Interface "eth0"   # oa outboud
+        Interface "eth4"   # unifi ap
+        Interface "br3"     # internet connection
+        IgnoreSelected false
+&lt;/Plugin&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-5-chains">4.5 chains</h3>
+<div class="paragraph">
+<p>借用了iptables的概念，还没有深入研究，总之以下的配置可以将interface中的if_octets转换成bit，在两台主机之间，使用iperf来生成背景流量，然后通过visage-app观察，发现与iperf的结果一致。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>LoadPlugin match_regex
+LoadPlugin target_scale
+&lt;Chain "PreCache"&gt;
+  &lt;Rule "8timesForBits"&gt;
+    &lt;Match "regex"&gt;
+      Plugin "interface"
+      Type "if_octets"
+    &lt;/Match&gt;
+    &lt;Target "scale"&gt;
+      Factor 8
+    &lt;/Target&gt;
+  &lt;/Rule&gt;
+&lt;/Chain&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>证明上面的配置是生效的，说明在centos6.5 + collectd 4.10中，match_regex和target_scale可正常工作。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="5-web-ui">5. web UI</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="5-1-visage">5.1 visage</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo yum -y install ruby rubygems ruby-devel rrdtool-ruby
+$ sudo gem install visage-app</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在启用visage之前，需要确保collectd正常工作，正常输出rrd，然后启动：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># RRDDIR=/usr/var/lib/collectd/rrd visage-app start</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>RRDDIR路径要完整，否则在create profile的时候无法显示host
+visage-app的问题是collectd plugin输出的rrd文件，需要显示在同一张图片中，使用起来很不方便。不过对付一两台服务器足以。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="6-排错">6. 排错</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>no such file to load&#8201;&#8212;&#8201;RRD (LoadError)</p>
+<div class="paragraph">
+<p>这是因为<a href="https://github.com/auxesis/visage/issues/76">有安装rrdtool-ruby</a>，我尝试了安装rrd-ffi，但是要求ruby1.9.3，费事装ruby，所以直接安装了rrdtool-ruby组件。</p>
+</div>
+</li>
+<li>
+<p>让图X轴的时间以local time显示</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># cd $(dirname $(gem which visage-app))/visage-app/public/javascripts
+# vi highcharts.js</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

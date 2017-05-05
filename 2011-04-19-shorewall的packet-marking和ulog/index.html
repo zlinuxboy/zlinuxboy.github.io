@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>shorewall的packet marking和ulog</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2011-04-19-shorewall%E7%9A%84packet-marking%E5%92%8Culog/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">shorewall的packet marking和ulog</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2011-04-19&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/iptables"><i class="fa fa-tag">&nbsp;&nbsp;iptables</i></a>
+           <!--a class="post-tag" href="/tag/iptables">iptables</a-->
+         
+           <a class="post-tag" href="/tag/shorewall"><i class="fa fa-tag">&nbsp;&nbsp;shorewall</i></a>
+           <!--a class="post-tag" href="/tag/shorewall">shorewall</a-->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>最近正在学习iptables+tc做流量控制，根据流量控制原理，首先需要识别数据包并打上标签，tc根据标签才能进一步处理。</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+Mark values are stored in the skb (socket buffer) structure used by the Linux kernel to track packets; the mark value is not part of the packet itself and cannot be seen with tcpdump, ethereal or any other packet sniffing program. They can be seen in an iptables/ip6tables trace.
+</blockquote>
+<div class="attribution">
+&#8212; shorewall<br>
+<cite>packet marking</cite>
+</div>
+</div>
+<div class="paragraph">
+<p>由于标签仅存在于skb(socket buffer)中，数据包发送到本地程序或离开linux之后是不带任何标签的，因此通过tcpdump无法看到标签状态。</p>
+</div>
+<div class="paragraph">
+<p>那如何查看每一个经过的数据包是否真的被iptables打好标签呢？那就需要查看dmesg，因为默认情况下，iptables将利用syslog，这就给系统管理员带来很大的困扰，因为iptables的log很快将吞噬dmesg信息，如果能有某种办法将iptables的数据包日志写到另一个单独的文件就好了，ulogd应运而生。</p>
+</div>
+<div class="paragraph">
+<p>ulogd守护进程能够将流经netfilter的数据包原原本本地输出到一个单独的文本中，通过插件还可以输出到mysql和postgresql数据库中长期保存，为系统管理员进一步分析提供了便利。netfilter存在于内核中，而linux内核维护小组对内核的改动相当谨慎，因此一些新的功能和patch不能及时应用到netfilter中，于是诞生了patch-o-matic，后来衍生成xtables-addons。若要正常使用ulogd，除了安装ulogd软件包之后，还需要安装xtables-addons。目前ulogd有两个版本，一个是v1，一个是v2，其中v2将取代v1，debian squeeze官方源的ulogd是v1。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装">安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>xtables-addons在debian repo中是以源码的方式存在，所以还不能直接通过apt/aptitude直接安装，需要编译：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo aptitude install xtables-addons-common
+$ sudo aptitude install module-assistant build-essential xtables-addons-source
+$ sudo module-assistant auto-install xtables-addons-source
+$ sudo aptitude install ulogd</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置">配置</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">shorewall.conf</div>
+<div class="content">
+<pre>LOGFILE=/var/log/ulog/syslogemu.log <i class="conum" data-value="1"></i><b>(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>syslogemu的意思是以syslogd的格式</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="title">rules</div>
+<div class="content">
+<pre>ACCEPT(SSH):$LOG</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">params</div>
+<div class="content">
+<pre>LOG=ULOG</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">account</div>
+<div class="content">
+<pre>account(net-loc,192.168.2.0/24) - eth0 eth1
+account(net-loc,192.168.2.0/24) - eth1 eth0 <i class="conum" data-value="1"></i><b>(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>account是单向的，因此需要写两条规则</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>这样，就可以通过以下两条命令看到每个IP的流量了：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ iptaccount -l net-loc</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>或者</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ shorewall show ipa net-loc</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接下来要做的就是配置tcrules，实现Per-IP的流量限速。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>打开iptables的trace功能</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo shorewall iptrace</pre>
+</div>
+</div>
+</li>
+<li>
+<p>关闭iptables的trace功能</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo shorewall noiptrace</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="验证">验证</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>首先开启ulog和iptables的iptrace功能</p>
+</li>
+<li>
+<p>接着检查dmesg最后一个数据包的时间为：[1796969.936261]</p>
+</li>
+<li>
+<p>过10秒后再检查，最后一个数据包的时间是：[1796969.936261]</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>说明iptables已经将数据包记录到ulog中了。</p>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

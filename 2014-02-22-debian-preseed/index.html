@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>debian preseed</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2014-02-22-debian-preseed/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">debian preseed</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2014-02-22&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/tech"><i class="fa fa-tag">&nbsp;&nbsp;tech</i></a>
+           <!--a class="post-tag" href="/tag/tech">tech</a-->
+         
+           <a class="post-tag" href="/tag/debian"><i class="fa fa-tag">&nbsp;&nbsp;debian</i></a>
+           <!--a class="post-tag" href="/tag/debian">debian</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="paragraph">
+<p>preseed是一个自动安装的工具，通过脚本配置OS的locale、mirror、rootpasswd、package和一些个性化配置。</p>
+</div>
+<div class="paragraph">
+<p>以下是一个可正常运行的preseed，在centos6.5 + kvm + oz-install中测试通过。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>### Location
+d-i debian-installer/language string en
+d-i debian-installer/locale string en_US.UTF-8
+d-i debian-installer/country string US
+d-i localechooser/supported-locales en_US.UTF-8, zh_CN.UTF-8
+
+### keyboard setup
+d-i console-setup/ask_detect boolean false
+d-i console-setup/layoutcode string us
+d-i debian-installer/keymap select us
+d-i keymap select us
+
+### Network configuration
+#d-i netcfg/enable boolean false
+d-i netcfg/choose_interface select auto
+
+# If you have a slow dhcp server and the installer times out waiting for
+# it, this might be useful.
+#d-i netcfg/dhcp_timeout string 60
+
+# If you prefer to configure the network manually, uncomment this line and
+# the static network configuration below.
+d-i netcfg/disable_dhcp boolean true
+
+# If you want the preconfiguration file to work on systems both with and
+# without a dhcp server, uncomment these lines and the static network
+# configuration below.
+#d-i netcfg/dhcp_failed note
+#d-i netcfg/dhcp_options select Configure network manually
+
+# static address config
+d-i netcfg/get_nameservers string &lt;nameserver&gt; <i class="conum" data-value="1"></i><b>(1)</b>
+d-i netcfg/get_ipaddress string &lt;ip-address&gt; <i class="conum" data-value="2"></i><b>(2)</b>
+d-i netcfg/get_netmask string &lt;netmask&gt; <i class="conum" data-value="3"></i><b>(3)</b>
+d-i netcfg/get_gateway string &lt;gateway&gt; <i class="conum" data-value="4"></i><b>(4)</b>
+d-i netcfg/confirm_static boolean true
+# Disable that annoying WEP key dialog
+d-i netcfg/wireless_wep string
+
+# hardware, etc.
+d-i hw-detect/load_firmware boolean false
+#d-i debian-install/add-kernel-opts string elevator=deadline console=tty0 console=ttyS0,115200
+
+# hostname config
+d-i netcfg/get_domain string &lt;domain.name&gt;
+d-i netcfg/get_hostname string &lt;hostname&gt;
+d-i netcfg/hostname string &lt;hostname&gt;
+
+### Clock and time zone setup
+d-i clock-setup/utc boolean true
+d-i time/zone select Asia/Shanghai
+d-i clock-setup/ntp boolean true
+
+### Partitioning
+d-i partman-auto/expert_recipe string           \
+    root ::                                     \
+        10000 20 11000 ext4                     \
+          $primary{ } $bootable{ }              \
+          method{ format } format{ }            \
+          use_filesystem{ } filesystem{ ext4 }  \
+          mountpoint{ / }                       \
+        .
+d-i partman-auto/method string regular
+d-i partman-auto/choose_recipe select atomic
+d-i partman/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+d-i partman/mount_style select traditional
+d-i partman-basicfilesystems/no_swap boolean false
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/with_other_os boolean true
+
+### Account setup
+d-i passwd/root-login boolean true
+d-i passwd/make-user boolean false
+d-i passwd/root-password password %ROOTPW%
+d-i passwd/root-password-again password %ROOTPW%
+
+### APT setup
+d-i mirror/country string manual
+
+d-i mirror/http/hostname string ftp.jaist.ac.jp <i class="conum" data-value="5"></i><b>(5)</b>
+d-i mirror/http/directory string /pub/Linux/debian
+#d-i mirror/suite string wheezy
+
+d-i apt-setup/non-free boolean true
+d-i apt-setup/contrib boolean true
+d-i apt-setup/backports boolean true
+d-i apt-setup/security-updates boolean true
+
+#d-i apt-setup/services-select multiselect security, updates
+d-i apt-setup/security_host string security.debian.org
+#d-i apt-setup/volatile_host string
+d-i debian-installer/allow_unauthenticated boolean true
+
+## custom repository: jaist.ac.jp
+d-i apt-setup/comment string jaist.ac.jp
+d-i apt-setup/local0/repository string \
+    http://ftp.jaist.ac.jp/debian/ wheezy main contrib non-free
+d-i apt-setup/local0/source boolean true
+
+d-i apt-setup/comment string jaist.ac.jp - backports
+d-i apt-setup/local1/repository string \
+    http://ftp.jaist.ac.jp/debian/ wheezy-backports main contrib non-free
+d-i apt-setup/local1/source boolean true
+
+
+### Package selection
+tasksel tasksel/first multiselect
+#d-i pkgsel/include install-recommends boolean true
+d-i pkgsel/include string openssh-server openssh-client vim wget iftop tcpdump mtr htop mosh
+d-i pkgsel/upgrade select none
+#popularity-contest popularity-contest/participate boolean false
+
+### Misc options
+#d-i cdrom-detect/eject boolean false
+d-i finish-install/reboot_in_progress note
+#d-i finish-install/keep-consoles boolean true
+
+d-i preseed/late_command string \
+  sed -i 's/^deb cdrom/# deb cdrom/g' /target/etc/apt/sources.list; \
+  echo "UseDNS no" &gt;&gt; /target/etc/ssh/sshd_config; \
+  rm /target/etc/udev/rules.d/70-persistent-*.rules; \
+  ln -s /dev/null /target/etc/udev/rules.d/70-persistent-net.rules; \
+  ln -s /dev/null /target/etc/udev/rules.d/70-persistent-cd.rules; \
+  sed -i '/GRUB_CMDLINE_LINUX/d' /target/etc/default/grub; \
+  sed -i '/GRUB_TERMINAL/d' /target/etc/default/grub; \
+  echo 'GRUB_CMDLINE_LINUX="console=tty0 console=ttyS0,115200n8"' &gt;&gt; /target/etc/default/grub; \
+  echo 'GRUB_TERMINAL=serial' &gt;&gt; /target/etc/default/grub; \
+  echo 'GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1"' &gt;&gt; /target/etc/default/grub; \
+  in-target update-grub; \
+  sed -i '/#T0/d' /target/etc/inittab; \
+  echo "T0:23:respawn:/sbin/getty -L ttyS0 115200 vt100" &gt;&gt; /target/etc/inittab;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">关于late_command</div>
+<div class="paragraph">
+<p>late_command是在系统安装完毕，提示用户重启之前所执行的操作，in-target的含义相当于chroot /，这时候，可以直接使用全路径。
+譬如：
+in-target echo "UseDNS no" &gt;&gt; /etc/ssh/sshd_config;
+否则：
+echo "UseDNS no" &gt;&gt; /target/etc/ssh/sshd_config;
+前提是echo这个命令包含在debian-installer中，具体debian-installer包含了哪些命令，不得而知。</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>sed替换
+在late_command中写sed的替换有些痛苦，特别是有-、=、/等需要转义的符号时，可读性差。所以我决定直接删除，然后再添加到文件末端。
+譬如：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>sed -i '/GRUB_CMDLINE_LINUX/d' /target/etc/default/grub; \
+sed -i '/GRUB_TERMINAL/d' /target/etc/default/grub; \
+echo 'GRUB_CMDLINE_LINUX="console=tty0 console=ttyS0,115200n8"' &gt;&gt; /target/etc/default/grub; \
+echo 'GRUB_TERMINAL=serial' &gt;&gt; /target/etc/default/grub; \
+echo 'GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1"' &gt;&gt; /target/etc/default/grub; \</code></pre>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

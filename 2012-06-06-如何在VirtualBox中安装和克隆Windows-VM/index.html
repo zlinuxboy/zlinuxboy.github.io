@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何在VirtualBox中安装和克隆Windows VM</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2012-06-06-%E5%A6%82%E4%BD%95%E5%9C%A8VirtualBox%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E5%85%8B%E9%9A%86Windows-VM/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何在VirtualBox中安装和克隆Windows VM</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2012-06-06&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/virtualbox"><i class="fa fa-tag">&nbsp;&nbsp;virtualbox</i></a>
+           <!--a class="post-tag" href="/tag/virtualbox">virtualbox</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>上回讲了<a href="/2012-06-06-%E5%A6%82%E4%BD%95%E5%9C%A8VirtualBox%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E5%85%8B%E9%9A%86Debian-VM/">如何安装和克隆Debian VM</a>，本回说说Windows VM。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-创建windows-vm">1. 创建windows VM</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo VBoxManage createvm --name "win2k3-template" --register
+$ sudo VBoxManage modifyvm "win2k3-template" --memory 512 --acpi on --boot1 dvd --nic1 bridged --nictype1 virtio --bridgeadapter1 eth0
+$ sudo VBoxManage createhd --filename /vbox.images/win2k3-template/win2k3-template.vdi --size 20000
+$ sudo VBoxManage storagectl "win2k3-template" --name "IDE Controller" --add IDE --controller IntelAhci
+$ sudo VBoxManage storageattach "win2k3-template" --storagectl "IDE Controller" --port 0 --device 0 --type hdd --medium /vbox.images/win2k3-template/win2k3-template.vdi
+$ sudo VBoxManage storageattach "win2k3-template" --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium /home/software/Windows.Server.2003.SP2.ent.iso</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>细心的读者可能会发现，硬盘控制器用的是IDE，为什么不用更快的SATA呢？因为windows 2003没有SATA驱动，所以需先以IDE的方式进行安装，进入操作系统之后再安装SATA驱动，随后再切换回SATA。</p>
+</div>
+<div class="paragraph">
+<p>网卡也一样，virtio网卡的性能更佳，但是windows 2003没有内置virtio驱动，需要先安装标准网卡，然后再安装linux-kvm.org的virtio驱动。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-安装操作系统">2. 安装操作系统</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vboxheadless --startvm "win2k3-template" -e vrdeproperty tcp/ports=3390</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>假如有多个vm需要以headless的方式启动，则每台vm的VRDP所占用端口不能相同，默认是<code>3389</code>，因为该端口已被占用，因此本处选择其它端口：<code>3390</code></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-常用软件和服务">3. 常用软件和服务</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>mtPuTTY</p>
+</li>
+<li>
+<p>QQ拼音</p>
+</li>
+<li>
+<p>Microsoft Forefront client security</p>
+</li>
+<li>
+<p>xplorer_lite</p>
+</li>
+<li>
+<p>dotnet framework</p>
+</li>
+<li>
+<p>Terminal Service</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-收尾">4. 收尾</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="4-1-sharedfoler">4.1 sharedfoler</h3>
+<div class="paragraph">
+<p>详见<a href="/2012-06-10-VirtualBox%E7%9A%84%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7/">VirtualBox Tips</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-2-vboxguestaddition">4.2 VBoxGuestAddition</h3>
+<div class="paragraph">
+<p>类似于VMware tools，提供Guest中的图形显示优化，时间同步等有用的功能。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>HOST</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo VBoxManage storageattach "win2k3-template" --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium /usr/share/virtualbox/VBoxGuestAdditions.iso</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>该操作不需要关闭VM。</p>
+</div>
+</li>
+<li>
+<p>GUEST</p>
+<div class="paragraph">
+<p>在“windows资源管理器”中打开光驱，就会自动弹出安装界面，根据提示完成安装。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-3-virtio">4.3 virtio</h3>
+<div class="paragraph">
+<p>不知为何，网卡类型选择virtio之后，VM的FTP下载速度仅为0.1KB/s，但上传速度可达到30MB/s，尚未找到解决的办法。不过采用默认的Intel网卡，速度已经完全可以满足日常的使用，因此本文放弃了virtio这个驱动。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="5-tips">5. TIPS</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在“远程桌面”窗口，如何向VM发送<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd>呢？请将快捷键更换为<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>End</kbd>。</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="/2012-06-06-%E5%A6%82%E4%BD%95%E5%9C%A8VirtualBox%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E5%85%8B%E9%9A%86Debian-VM/">如何安装和克隆Debian VM</a></p>
+</li>
+<li>
+<p><a href="/2012-06-06-%E5%A6%82%E4%BD%95%E5%9C%A8VirtualBox%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E5%85%8B%E9%9A%86Windows-VM/">如何安装和克隆Windows VM</a></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>但是，随着VM的增多，怎样才能更好的管理和使用VirtualBox呢？且听<a href="/2012-06-10-VirtualBox%E7%9A%84%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7/">下回分解</a></p>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

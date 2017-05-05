@@ -1,0 +1,19 @@
+box: ruby
+no-response-timeout: 10
+build:
+  steps:
+    - bundle-install
+    - script:
+        name: generate site
+        code: if [ -d _posts ]; then bundle exec jekyll build --trace; fi;
+deploy:
+  steps:
+    - install-packages:
+        packages: git ssh-client
+    - ysqi/git-push:
+        gh_oauth: $GIT_TOKEN
+        basedir: _site
+        clean_removed_files: true
+        branch: $GIT_BRANCH
+        repo: $GIT_REPO
+        gh_pages_domain: $GIT_DOMAIN

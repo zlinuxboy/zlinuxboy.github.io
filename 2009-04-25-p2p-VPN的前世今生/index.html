@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>P2p Vpn的前世今生</title>
+  <meta name="description" content="p2p VPN的前世今生:page-liquid::img-dual-nat: http://blog.zlinuxboy.com/2009-04-05_double-nat.png:img-hamachi-arch: http://dl.linuxabc.net.cn/u/74911209/octopress/...">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2009-04-25-p2p-VPN%E7%9A%84%E5%89%8D%E4%B8%96%E4%BB%8A%E7%94%9F/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">P2p Vpn的前世今生</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2009-04-25&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/vpn"><i class="fa fa-tag">&nbsp;&nbsp;vpn</i></a>
+           <!--a class="post-tag" href="/tag/vpn">vpn</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="ulist">
+<ul>
+<li>
+<p>p2p VPN的前世今生
+:page-liquid:
+:img-dual-nat: <a href="http://blog.zlinuxboy.com/2009-04-05_double-nat.png" class="bare">http://blog.zlinuxboy.com/2009-04-05_double-nat.png</a>
+:img-hamachi-arch: <a href="http://dl.linuxabc.net.cn/u/74911209/octopress/2009-04-05_hamachi-arch.png" class="bare">http://dl.linuxabc.net.cn/u/74911209/octopress/2009-04-05_hamachi-arch.png</a>
+:img-n2n-arch: <a href="http://dl.linuxabc.net.cn/u/74911209/octopress/2009-04-05_n2n-arch.png" class="bare">http://dl.linuxabc.net.cn/u/74911209/octopress/2009-04-05_n2n-arch.png</a>
+:lnk-tinc-website: <a href="http://www.tinc-vpn.org" class="bare">http://www.tinc-vpn.org</a></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">UPDATE</div>
+<div class="paragraph">
+<p><strong>2012.04.18</strong> ：我对之前的武断表示歉意，原以为n2n会有良好的发展前景，然而前两天再去查看n2n的SVN时发现，最后一次更新是2010年，看来这些小众的开源项目，终究是逃脱不掉成为孤儿的命运。替代品是<a href="{lnk-tinc-website}">tinc</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>企业发展到一定规模的时候大都在全国乃至全球设置分支机构，它们的地理位置分散，在VPN没有出现之前，这些分支机构之间的网络互联只能通过租用专线实现，然而租用专线的费用高昂，一般企业无法承受。</p>
+</div>
+<div class="paragraph">
+<p>随着互联网的发展，互联网的接入越来越廉价，嗅觉敏锐的厂家推出了替代专线的解决方案：在Internet的基础上实现一张虚拟的专用网络，这就是VPN（virtual private network 虚拟专用网）的由来。它一方面采用了Internet作为传输媒介，租用成本大大降低；另一方面通过IPsec等多种安全协议实现了等同于专线般安全的效果，因此普一推出便大受欢迎，checkpoint、cisco、juniper等都有成熟的商业解决方案，然而它们针对的是企业市场，对于个人用户而言还是过于高贵了，直到2003年情况才发生改变。</p>
+</div>
+<div class="paragraph">
+<p>2003年，日本筑波大学的一名学生登游大发布了SoftEther这款软件，该软件允许用户将两台位于NAT/防火墙之后的电脑实现互联，这在当时引起了很大的轰动，为什么会这样呢？请看下图：</p>
+</div>
+<div class="paragraph">
+<p>image::{img-dual-nat}[dual-nat]</p>
+</div>
+<div class="paragraph">
+<p>熟悉TCP/IP的读者应该知道，在互联网上通信的双方都必须有公网IP，然而公网IP的数量有限，往往是多个人通过NAT方式共享一个公网IP，所以只能是由私网的用户去访问公网的服务器，无法由公网的用户直接访问私网的主机。这在早期的互联网应用中倒也相安无事，因为当时上网主要是浏览新闻。</p>
+</div>
+<div class="paragraph">
+<p>随着互联网的发展，p2p应用层出不穷，1999年诞生的napster顿时名动天下，因为它是第一个以p2p方式共享文件的软件。后来相继诞生了许许多多的p2p应用，然而它们都只是在应用层实现了p2p，软件提供什么应用，用户就只能使用这些应用，而SoftEther不同，它直接在网络层实现了p2p，换句话说就是用户透过SoftEther可以实现联网游戏、文件共享、远程访问、视频会议等大量的互联网应用，所以这在当时赢得大量网友的青睐，为什么？因为CS、因为魔兽，这些网络游戏需要在联网对战，而玩友的电脑大都隐匿在NAT之后，SoftEther为他们实现了互联的美好愿望。</p>
+</div>
+<div class="paragraph">
+<p>2004年4月份，SoftEther公司成立。</p>
+</div>
+<div class="paragraph">
+<p>2004年8月，SoftEther正式推出1.0版本，开始闭源，开始收钱。</p>
+</div>
+<div class="paragraph">
+<p>2006年，推出2.0版，更名为PacketiX VPN，号称重写了全部源代码，跟SoftEther 1.0一点关系都没有，与个人用户渐行渐远……</p>
+</div>
+<div class="paragraph">
+<p>提起SoftEther就不得不提VNN，VNN是国人开发的一款类似软件，虽然其推出的时间要比SoftEther早些，但是一直没有得到广泛的关注，后来2004年5月份，登游大抱怨VNN主页抄袭了SoftEther的主页样式，还在日本媒体中大势宣传。当时的CCF精品技术论坛上还掀起了一番激烈的<a href="http://bbs.et8.net/bbs/printthread.php?t=527295&amp;pp=100">讨论</a>，这时VNN才逐渐进入众人的视野。其实两款软件实现的原理有很大的不同，SoftEther通过在ssl over tcp来保证安全，而VNN使用udp进行封装；SoftEther客户端需要在互联网上找一个公用的虚拟hub来实现互联，而VNN的客户端需要到VNN公司的服务器上进行注册才能实现连接；SoftEther客户端之间的通信需要通过虚拟hub中转，而VNN客户端注册完毕之后就可以实现点对点的互联。它们之间唯一的共同点就是都使用了虚拟网卡。令人惊奇的是两家发生矛盾的原因竟然是主页过于雷同而不是源代码的抄袭，这在软件史上倒是头一遭，权当作是茶余饭后的谈资。
+VNN是一款闭源软件，不提供服务器版本，用户需要登录到官方的服务器上进行验证之后然后才能建立p2p通信隧道。现在由北京宇华亿欣科技有限公司推广运营，已经发展到了4.0版，功能很丰富，只是需要收取服务费，这表明它已经不跟个人用户玩了。</p>
+</div>
+<div class="paragraph">
+<p>有压迫的地方就有起义，有需求的地方就有市场，2005年，LogMeIn公司看中了p2p VPN的个人市场，推出了hamachi，它的实现原理跟VNN类似，而且可在多种OS中运行，win2k、win2k3、vista自然不在话下，还可以在Linux和OSX下跑，甚至破天荒的推出了<a href="http://files.hamachi.cc/linux/nokia-770/">Nokia770的版本</a>，这对移动商务人士来说可是一大噱头。时至今日，hamachi已经发展到了1.0.3，值得一提的是hamachi的版本升级非常谨慎，从0.9.9.9到1.0，总共发布了61个测试版本，时间跨度为2年，除了foobar和wine，估计无人能敌了。</p>
+</div>
+<div class="paragraph">
+<p>hamachi相对于SoftEther/VNN的优势在于</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>对于个人用户免费；</p>
+</li>
+<li>
+<p>零配置，使用非常简单；</p>
+</li>
+<li>
+<p>体贴的管理功能，由用户自己组建网络，管理组内成员；</p>
+</li>
+<li>
+<p>采用了RSA、DH group、AES256和HMAC-SHA1多种安全技术；</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>这些优势对个人用户是非常具有杀伤力的，单单免费这一项就可以把SoftEther和VNN踩在脚下，然而，hamachi的安全性还是值得怀疑，请看下图：</p>
+</div>
+<div class="paragraph">
+<p>image::{img-hamachi-arch}[hamachi-arch]</p>
+</div>
+<div class="paragraph">
+<p>用户需要登录到hamachi的服务器进行注册才能建立隧道，由于hamachi是一款闭源的商业软件，LogMeIn公司是否会截获用户的数据流就不得而知了，因此，在p2p VPN这个肥沃的市场中，软件公司要真的要好好想想商务模式，否则技术实现方案再好，用户不接受也是白搭。</p>
+</div>
+<div class="paragraph">
+<p>hamachi就这样不温不火的发展着，直到2008年，ntop的作者Luca Deri开始研究p2p VPN，他一方面看到公众对p2p VPN有着强烈的需求，另一方面又不满足已有产品的现状，于是n2n诞生了。</p>
+</div>
+<div class="paragraph">
+<p>image::{lnk-n2n-arch}[n2n-arch]</p>
+</div>
+<div class="paragraph">
+<p>如上图所示，n2n是一个二层架构的VPN网络，其中super node提供场所，让两个位于NAT/防火墙之后的edge node进行会面，一旦双方完成首次握手，剩下的数据流就之发生在两个edge node之间，如果有一方的NAT属于对称型（symmetrical），super node则还需继续为双方提供数据包的转发；edge node负责数据流的加解密，原理很简单。</p>
+</div>
+<div class="paragraph">
+<p>对于一个VPN而言，主要涉及封装和加解密两个步骤，edge node使用UDP协议进行封装，目的是为了更好的兼容防火墙的策略，因为很多防火墙禁用了非TCP/UDP协议禁用。加密算法则采用了twofish，好处开源、简便，处理速度快。</p>
+</div>
+<div class="paragraph">
+<p>为了降低设计难度，n2n利用了tap/tun虚拟网卡，这样做得好处是一方面软件尺寸极小，一方面源码的依赖性极低，可以很容易移植到嵌入式设备中，目前有openwrt的版本，在未来的计划中，还将移植到android和iPhone中。</p>
+</div>
+<div class="paragraph">
+<p>相对于hamachi，n2n最大的优势在于：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>开源</strong>，任何人都可以检查代码，看看是否有猫腻，而hamachi是闭源的，LogMeIn是否会截获密钥不得而知，一旦截获密钥，就可以对流经hamachi服务器的数据包进行解码。n2n的加解密过程由edge node实现，只有两端的用户知道协商好的共享密钥，super node无从知晓。</p>
+</li>
+<li>
+<p><strong>灵活性</strong>，n2n允许用户在Internet上自行创建super node，也可以利用任何一个公开的super node。hamachi用户则必须登录到LogMeIn服务器才能创建隧道。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>n2n支持的OS也非常广，Linux、FreeBSD、MAC OSX、甚至windows，不过由于n2n只提供源代码，需要用户自行手工编译。</p>
+</div>
+<div class="paragraph">
+<p>下面就介绍一下如何在Debian Lenny中安装和使用n2n。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>添加源</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/apt/sources.list
+deb-src http://mentors.debian.org/debian/ unstable main contrib non-free
+$ sudo apt-get update</pre>
+</div>
+</div>
+</li>
+<li>
+<p>下载&amp;编译</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get source n2n
+$ sudo apt-get install fakeroot build-essential devscripts <i class="conum" data-value="1"></i><b>(1)</b>
+$ sudo apt-get build-dep n2n <i class="conum" data-value="2"></i><b>(2)</b>
+$ cd /usr/src/n2n_1.2.2~svn3653
+$ sudo debuild -us -uc <i class="conum" data-value="3"></i><b>(3)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>安装编译环境所需的组件，debuild是devscripts软件包中的一个脚本，编译的时候需要用到</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>编译n2n的过程可能需要一些lib的支持，该步骤就是让debian判断并下载安装相关的lib</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>如果不是Debian的维护者，需要打上-us和-uc这两个标签，避免编译完后签名</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>安装</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo dpkg --install n2n_1.2.2~svn3653_i386.deb</pre>
+</div>
+</div>
+</li>
+<li>
+<p>使用</p>
+<div class="ulist">
+<ul>
+<li>
+<p>家</p>
+<div class="listingblock">
+<div class="content">
+<pre>alfie:~# edge -d n2n -c zlinuxboy -k zlinuxboy -a 10.1.2.1 -l 88.86.108.50:82</pre>
+</div>
+</div>
+</li>
+<li>
+<p>公司</p>
+<div class="listingblock">
+<div class="content">
+<pre>ds-server:~# edge -d n2n -c zlinuxboy -k zlinuxboy -a 10.1.2.2 -l 88.86.108.50:82 <i class="conum" data-value="1"></i><b>(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>88.86.108.50</code>是<code><a href="http://www.vpnhosting.cz/index.php/N2n-at-vpnhosting.cz.html" class="bare">http://www.vpnhosting.cz/index.php/N2n-at-vpnhosting.cz.html</a></code>提供的一个公共super node。</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>这样就可以将两台位于NAT/防火墙之后的电脑互联起来了，是不是特别简单呢？</p>
+</div>
+<div class="paragraph">
+<p>n2n是一个很有前途的p2p VPN软件，优秀的设计理念将会为它带来大量的用户群，随着时间的流逝，SoftEther，VNN，hamachi将成为过眼烟云，唯有开源的n2n才是永恒。</p>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

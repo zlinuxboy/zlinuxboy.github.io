@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>NTP服务</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2010-03-20-ntp%E6%9C%8D%E5%8A%A1/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">NTP服务</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2010-03-20&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/ntp"><i class="fa fa-tag">&nbsp;&nbsp;ntp</i></a>
+           <!--a class="post-tag" href="/tag/ntp">ntp</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="sect1">
+<h2 id="1-什么是ntp-干什么用的">1. 什么是NTP，干什么用的？</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>NTP的全称是network time protocol（网络时间协议），它的作用是用来同步电脑系统时间的。</p>
+</div>
+<div class="paragraph">
+<p>中央1的新闻联播每天19:00准时播出，可能有人就有疑问了：为什么我的手表才18:53分，而中央1却是19:00分，到底谁的是准确的。造成这种疑惑的原因在于两者使用的时间计量仪器之间存在着误差，科学家研究表明，铯原子的振荡是最稳定的，所以用它来做时间计量标准也是最精确的，中央1台用的就是铯原子钟的时间，而机械表、电子表等计时精度都比不上铯原子，所以中央1台的时间才是精确的。电脑的BIOS时间依靠主板上的一个晶振来提供，晶振需要电源才能工作，开机时由主机电源供电，关机时依赖主板电池，然而主板晶振也存在跟机械表、电子表类似的问题：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>主板电池可能没电了</p>
+</li>
+<li>
+<p>与铯原子时间的存在误差</p>
+</li>
+<li>
+<p>用户误操作</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>这三个因素都将导致电脑系统时间不精确，NTP就是为了解决这个问题而诞生的。</p>
+</div>
+<div class="paragraph">
+<p>在讲NTP之前还需要需要了解一下时区的概念：时间在某个时刻是确定的，有关国际组织商定将英国格林尼制这个地方的时间做为标准，亦即格林尼制时间。然而由于地球自转的关系，太阳从东边升起在西边落下，所以当我们中国人已经开始上班的时候英国人还在睡梦中。如果全球都统一使用格林尼制时间的话，则当格林尼制时间是00:00:00的时候，中国是凌晨，而西方是黑夜，这样各个地方之间的交流就很不方便了。因而国际组织又引入一个当地时间的概念，它将全球划分为24个时区，以格林尼制为起点，中国位于+8时区，当+8区的当地时间为2007年10月10日08:00:00的时候，格林尼制时间是2007年3月3日00:00:00。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-ntp的工作原理">2. NTP的工作原理</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>NTP采用了分布式的master/slave构架，与铯原子钟直接相连的NTP服务器称为stratum1，不妨把它当作根master，与stratum1相连的slave称为stratum2，以此类推，每一层的stratum既是下一层的master，又是上一层的slave，除此之外同一层stratum将成为peers，最大能到stratum15。</p>
+</div>
+<div class="paragraph">
+<p>每个stratum（NTP服务器）都将维护自己的时间状态（因为ntp的守护进程是ntpd，所以也称ntpd状态），它会定时查询上一层或者同一层的stratum。根据返回的ntpd状态数据包，通过一套复杂的算法校正自己ntpd状态，从而保证整个NTP系统之间只有极小的时间误差，即使在缓慢的WAN链路上，也能保证误差在毫秒极的范围。</p>
+</div>
+<div class="paragraph">
+<p>一般来说，NTP服务器最佳的安装位置是互联网网关，它除了要跟互联网上的NTP服务器同步外，还要提供NTP服务给企业内网的NTP客户端，NTP客户端泛指所有网络设备，包括路由器、交换机和其他服务器、客户端。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-手工调整系统时间">3. 手工调整系统时间</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>讲了这么多原理是不是头都晕了，毕竟NTP是系统管理员才需要操心的问题，一般人关注的也仅仅是自己的系统时间准不准，如何手工校准？下面就让我们动手做些小练习提提神：</p>
+</div>
+<div class="sect2">
+<h3 id="3-1-设置系统时区">3.1 设置系统时区</h3>
+<div class="paragraph">
+<p>一般在BIOS里面设置的是当地时间，然而Debian默认情况下以为BIOS使用的是UTC时间，也就是标准的格林尼治时间，首先调整：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/default/rcS
+----8&lt;----
+# UTC=yes
+UTC=no
+----8&lt;----</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着将系统市区改为东八区</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tzselect</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>根据提示选择<code>Asia/Beijing</code></p>
+</div>
+<div class="paragraph">
+<p>然后</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo dpkg-reconfigure tzdata</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>地区选择<code>asia</code>，地点选择<code>shanghai</code></p>
+</div>
+<div class="paragraph">
+<p>这样系统时区就可以调整为东八区了，也就是<code>CST</code>。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-2-调整系统时间">3.2 调整系统时间</h3>
+<div class="paragraph">
+<p>以下几个命令可以显示、修改BIOS和系统时间</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>显示系统时间</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ date
+Mon Apr 23 23:25:00 CST 2012</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>该命令不仅显示时间、日期还有时区，本例中的时区是<code>CST</code></p>
+</div>
+</li>
+<li>
+<p>修改系统日期</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo date -s '20070324'</pre>
+</div>
+</div>
+</li>
+<li>
+<p>修改系统时间</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo date -s '14:23:36'</pre>
+</div>
+</div>
+</li>
+<li>
+<p>显示BIOS时间</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo hwclock --show</pre>
+</div>
+</div>
+</li>
+<li>
+<p>用系统时间覆盖BIOS时间</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo hwclock --systohc</pre>
+</div>
+</div>
+</li>
+<li>
+<p>用BIOS时间覆盖系统时间</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo hwclock --hctosys</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>date和hwclock还有其他参数，有兴趣的读者可以自行参考其他文档，这里就不累述了。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-3-手工同步系统时间">3.3 手工同步系统时间</h3>
+<div class="paragraph">
+<p>前面手工设置的时间难免还是会跟标准时间有轻微的误差，ntpdate这个软件包可以解决这个问题，它将连上互联网的NTP服务器，同步系统时间。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get install ntpdate
+$ sudo ntpdate -u &lt;ntp_server&gt; <i class="conum" data-value="1"></i><b>(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>&lt;ntp_server&gt;指的是NTP服务器的IP地址或者域名</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>系统每次启动时，都会调用ntpdate这个工具做时间同步，ntpdate将使用<code>/etc/default/ntpdate</code>中默认的pool.ntp.org作为NTP服务器，您也可以将其修改成其他，例如使用距离较近的ntp.pku.edu.cn，它由北京大学维护。</p>
+</div>
+<div class="paragraph">
+<p>总之，如果您的系统时间不对，可以按以下的步骤进行操作：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>先检查BIOS时间</p>
+</li>
+<li>
+<p>使用date修改系统时间</p>
+</li>
+<li>
+<p>检查修改时区设置</p>
+</li>
+<li>
+<p>手工ntpdate同步系统时间</p>
+</li>
+<li>
+<p>将系统时间写入BIOS</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="4-ntp服务器的安装">4. NTP服务器的安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在安装NTP服务器之间，需要先按照前面的步骤手工调整好系统时间，接下再用ntpdate手工同步一下系统时间。这是因为如果当前的系统时间跟互联网上的标准时间误差太大的话，NTP服务启动会失败。</p>
+</div>
+<div class="sect2">
+<h3 id="4-1-安装">4.1 安装</h3>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo apt-get install ntp ntp-server</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>ntp-server的守护进程是ntpd，默认的配置文件是<code>/etc/ntp.conf</code>。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="4-2-配置">4.2 配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/ntp.conf
+----8&lt;----
+# 定义ntpd的日志文件
+logfile /var/log/ntpd
+
+# 定义drift文件，这个很重要。如果没有的话
+# 需要手工创建
+driftfile /var/lib/ntp/ntp.drift
+
+statsdir /var/log/ntpstats/
+statistics loopstats peerstats clockstats
+filegen loopstats file loopstats type day enable
+filegen peerstats file peerstats type day enable
+filegen clockstats file clockstats type day enable
+
+# 定义上一层NTP服务器：
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+; NTP将定时跟上面的NTP服务器群进行时间同步，
+; 从而保证系统时间是精确的。
+; 这三个都是ntp的官方主机群，相当稳定。
+
+# 企业内网的NTP服务器：
+server 127.127.1.0
+; 将本机作为企业内网NTP服务器
+
+fudge 127.127.1.0 stratum 10
+; 因为要提供NTP服务给企业内网，所以应该选择一个较低的stratum，
+; 10是一个安全选择。
+
+# 权限控制：
+restrict default ignore
+; 默认情况下拒绝所有主机的NTP数据包，下面简单讲一下常用的参数
+; nomodify 拒绝主机修改本机的nptd状态，不过他们仍然可以通过本机同步时间
+; notrust 忽略没有通过密文验证的（子网内的）主机
+; noquery 拒绝主机查询本机的ntpd状态
+; notrap 拒绝trap service的控制信息
+
+restrict 0.pool.ntp.org mask 255.255.255.255 nomodify notrap noquery
+restrict 1.pool.ntp.org mask 255.255.255.255 nomodify notrap noquery
+restrict 2.pool.ntp.org mask 255.255.255.255 nomodify notrap noquery
+; 不允许pool.ntp.org的NTP服务器
+; 1、修改本机ntpd状态
+; 2、查询本机ntpd状态
+; 3、使用trap service
+
+restrict 127.0.0.1
+# 开放本机对ntpd状态的所有权限，包括查询和修改
+restrict 192.168.100.0 mask 255.255.255.0 nomodify notrap
+restrict 192.168.101.0 mask 255.255.255.0 nomodify notrap
+; 开放192.168.100.0/24和192.168.101.0/24两个网段的查询权限，
+; 但是不允许他们修改本机的ntpd状态。
+
+----8&lt;----</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>修改完配置后要重启守护进程：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo /etc/init.d/ntp-server restart</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="5-ntp客户端的安装">5. NTP客户端的安装</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>ntp-server</code>既是服务器，又是客户端。</p>
+</div>
+<div class="paragraph">
+<p>互联网上很多资料都建议使用ntpdate作为时间同步的工具，这是不对的，因为它对系统时间的修改是跳跃式的，不像ntp-server那样可以通过修改drift平滑过渡，所以ntpdate只适合在系统首次启动时同步时间，详细情况可以参<a href="http://www.hants.lug.org.uk/cgi-bin/wiki.pl?Ntpdate">该文</a>。</p>
+</div>
+<div class="sect2">
+<h3 id="5-1-修改ntpdate的设置">5.1 修改ntpdate的设置</h3>
+<div class="paragraph">
+<p>ntpdate默认的ntp服务器是pool.ntp.org，用户可以自行修改成企业内网的ntp服务器。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/default/ntpdate
+----8&lt;----
+NTPSERVERS="192.168.100.1"
+## 也可以使用域名：ntp_server.linuxabc.com
+----8&lt;----</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="5-2-手工同步系统时间">5.2 手工同步系统时间</h3>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo ntpdate -u 192.168.100.1</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="5-3-配置-etc-ntp-conf">5.3 配置/etc/ntp.conf</h3>
+<div class="paragraph">
+<p>因为客户端只需要去查询NTP服务器，并不提供服务器给其他人，所以配置文件很简单。</p>
+</div>
+<div class="listingblock">
+<div class="title">/etc/ntp.conf</div>
+<div class="content">
+<pre>server 192.168.100.1
+restrict default ignore
+# 忽略所有主机的ntp请求
+restrict 127.0.0.1
+restrict 192.168.100.1 mask 255.255.255.255 nomodify notrap noquery
+# 允许本机向192.168.100.1提交ntp请求，不允许
+driftfile /var/lib/ntp/drift
+# 192.168.100.1也可以替换成ntp_server.linuxabc.com</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="6-排错">6. 排错</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>检查ntpd进程是否已经启用</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo netstat -an | grep 123
+$ sudo ps aux | grep ntpd</pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看/var/log/daemon.log</p>
+<div class="paragraph">
+<p>默认情况下，ntpd的log写在/var/log/daemon.log中。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo grep ntpd /var/log/daemon.log | head
+Apr 22 07:06:58 netmgmt-debian ntpd[2448]: kernel time sync status change 0001
+Apr 22 07:41:06 netmgmt-debian ntpd[2448]: kernel time sync status change 4001
+Apr 22 07:58:10 netmgmt-debian ntpd[2448]: kernel time sync status change 0001
+Apr 22 09:57:39 netmgmt-debian ntpd[2448]: kernel time sync status change 4001
+Apr 22 10:14:45 netmgmt-debian ntpd[2448]: kernel time sync status change 0001
+Apr 22 11:23:01 netmgmt-debian ntpd[2448]: kernel time sync status change 4001
+Apr 22 11:40:04 netmgmt-debian ntpd[2448]: kernel time sync status change 0001
+Apr 22 13:22:30 netmgmt-debian ntpd[2448]: kernel time sync status change 4001
+Apr 22 13:39:35 netmgmt-debian ntpd[2448]: kernel time sync status change 0001
+Apr 22 14:13:47 netmgmt-debian ntpd[2448]: kernel time sync status change 4001</pre>
+</div>
+</div>
+</li>
+<li>
+<p>使用ntpq -p查看跟NTP服务器的同步情况</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+*202.118.1.199   202.112.31.197   2 u 2035 1024  176   81.911    0.912   0.211
++114.80.81.13    204.152.184.72   2 u  620 1024  377   41.315  -34.665  13.221
++Hshh.org        209.81.9.7       2 u  681 1024  375   39.913  -29.659   1.524</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>poll表示每隔1024秒，客户端就会跟服务器同步一次。NTP客户端会自动调整poll的值，如果他们的误差很小就增大poll，反之则减小poll。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

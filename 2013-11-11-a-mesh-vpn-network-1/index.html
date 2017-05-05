@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>a mesh vpn network - part1</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-11-11-a-mesh-vpn-network-1/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">a mesh vpn network - part1</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-11-11&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/技术"><i class="fa fa-tag">&nbsp;&nbsp;技术</i></a>
+           <!--a class="post-tag" href="/tag/技术">技术</a-->
+         
+           <a class="post-tag" href="/tag/系列"><i class="fa fa-tag">&nbsp;&nbsp;系列</i></a>
+           <!--a class="post-tag" href="/tag/系列">系列</a-->
+         
+           <a class="post-tag" href="/tag/tinc"><i class="fa fa-tag">&nbsp;&nbsp;tinc</i></a>
+           <!--a class="post-tag" href="/tag/tinc">tinc</a-->
+         
+           <a class="post-tag" href="/tag/vpn"><i class="fa fa-tag">&nbsp;&nbsp;vpn</i></a>
+           <!--a class="post-tag" href="/tag/vpn">vpn</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>整个系列分为以下几个部分：</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">第一部分：<a href="/2013-11-11-a-mesh-vpn-network-1/">需求及配置</a></dt>
+<dd>
+<p>主要描述本项目的需求和软硬件配置</p>
+</dd>
+<dt class="hdlist1">第二部分：<a href="/2013-11-12-a-mesh-vpn-network-2/">tinc的安装和配置</a></dt>
+<dd>
+<p>介绍tinc在debian、openwrt下的安装、配置和基本排错</p>
+</dd>
+<dt class="hdlist1">第三部分：<a href="/2013-11-13-a-mesh-vpn-network-3/">tinc的三种模式</a></dt>
+<dd>
+<p>详细介绍tinc的三种组网模式，并论述各自的优缺点</p>
+</dd>
+<dt class="hdlist1">第四部分：<a href="/2013-11-14-a-mesh-vpn-network-4/">HA</a></dt>
+<dd>
+<p>实现tinc的高可用性</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>本文是第一部分。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="需求">需求</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>最初的需求是：允许维护人员通过互联网访问位于客户2（User2）的网络，进行远程维护。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2013-11-11-vpn-orig-rqmt-top.jpg" alt="originial requirement topology">
+</div>
+</div>
+<div class="paragraph">
+<p>公司办公室（corp）位于互联网和公司广域网的交界处，互联网和公司广域网的防火墙均不在我的控制范围之内，corp节点的终端仅拥有outbound访问权限，无法对外提供网络服务。那么要实现这个需求唯一可行的办法就是：首先在互联网上找一个拥有固定公网IP地址的节点（lab），然后使用vpn技术，分别在lab节点与corp节点，corp节点与User2节点之间建立两条点对点隧道，最后开启corp节点的路由转发，从而实现移动用户&#8594;lab节点&#8594;corp节点&#8594;User2节点的访问连接需求。</p>
+</div>
+<div class="paragraph">
+<p>随后便想到，维护人员：1、有时在家（home）需要连回公司（corp）处理业务；2、在公司（corp）需经常处理客户1（User1）的网络故障；索性把这几个节点全部连起来，于是需求变成了：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>实现lab、User1、User2、corp和home五个节点（内网）之间的互联。</p>
+</li>
+<li>
+<p>User2节点可通过corp节点访问互联网；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>下图是网络拓扑图（物理视图）</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2013-11-11-vpn-top-phy-view.jpg" alt="vpn topology physical view">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="选型">选型</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>接下来需要选择一个合适的解决方案。毫无疑问，需要构建一个VPN network，才能实现五个节点的互联。第一个想到的是OpenVPN，它成熟、稳定、文档丰富、社区庞大，出问题都能很快找到解决的办法，然而它有一个缺点：组网不够灵活。OpenVPN的组网类型要么是点对点，要么是spoke-and-hub（星状），像本次组网，假如各节点均具备双向访问权限，那么将corp设为中心节点，其它四个节点设为分节点，就可以实现整网的互联互通。问题恰恰就在于corp和User2，其中corp只有outbound的权限，无法成为中心节点；User2只具有inbound权限，无法成为分节点。</p>
+</div>
+<div class="paragraph">
+<p>当然，如果非要用OpenVPN来实现也不是不可能，但是组网结构比较别扭，可将lab设为server，User1、corp和home作为client。接着，在corp和User2之间再创建一条点对点隧道。这种组网结构的配置会比较繁琐，排错困难。而且一旦lab节点宕机，则互联网用户将无法访问User2，既然采用spoke-and-hub的组网方式那么困难，那有没有一种去中心化的VPN组网呢？</p>
+</div>
+<div class="paragraph">
+<p>有，那就是mesh VPN，tinc、ZeroRouter、hamachi、cloudVPN和socialVPN是其中的代表。经过比较，本项目选择tinc。实际上tinc的诞生已逾10年，同OpenVPN一样基于OpenSSL，不过它提供了Automatic full mesh routing<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>，这个是OpenVPN所不具备的。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://ofugtm1dt.bkt.clouddn.com/2013-11-11-vpn-top-log-view.jpg" alt="vpn topology logical view">
+</div>
+</div>
+<div class="paragraph">
+<p>上图是网络拓扑逻辑视图，tinc启动后，会自动创建一个full mesh network，无需人工接入。譬如home和corp节点，在通常情况下是无法直接创建隧道的，原因是：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>我缺乏corp互联网防火墙的控制权，不能开端口映射；</p>
+</li>
+<li>
+<p>home用的是移动宽带，无法对其它运营商用户提供公网服务；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>然而借助lab这个公网节点，corp和home之间就可以直接创建加密隧道了，后续的业务流量也直接跑在该隧道中而不需要经过lab这个桥接节点。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安全策略">安全策略</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>因为这是一个生产环境，所以还需要考虑各个节点之间的安全访问策略。5个节点的安全要求不尽相同，User1和User2的安全性要求最高，lab次之，corp和home最低，需要定义严格的访问策略。</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+防火墙的默认策略为拒绝
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>corp</strong>节点</p>
+<div class="ulist">
+<ul>
+<li>
+<p>允许节点内网终端访问互联网；</p>
+</li>
+<li>
+<p>允许User2节点访问本节点网关的DNS服务，并通过本节点访问互联网；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>home</strong>节点</p>
+<div class="ulist">
+<ul>
+<li>
+<p>允许终端访问lab、corp、User1和User2节点内网；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>lab</strong>节点</p>
+<div class="ulist">
+<ul>
+<li>
+<p>允许home、corp节点内网访问lab节点内网的SSH、web服务；</p>
+</li>
+<li>
+<p>终端可以自由的访问User1和User2的节点内网；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>User1</strong>节点</p>
+<div class="ulist">
+<ul>
+<li>
+<p>允许lab、corp和home内网的特定主机访问User1节点内网的SSH、web服务；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>User2</strong>节点</p>
+<div class="ulist">
+<ul>
+<li>
+<p>允许lab、corp和home节点内网的特定主机访问节点内网的SSH、web服务；</p>
+</li>
+<li>
+<p>允许节点内网访问corp节点的DNS服务；</p>
+</li>
+<li>
+<p>允许节点内网关通过corp节点访问互联网，用于软件升级；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>所有节点</p>
+<div class="ulist">
+<ul>
+<li>
+<p>允许节点之间互ping。</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="软硬件配置">软硬件配置</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>lab、User1和User2均有虚拟化环境，为了方便起见，选择虚拟机（debian）作为节点网关。</p>
+</li>
+<li>
+<p>考虑到噪音和能耗，选择无线路由器（支持OpenWRT固件）担任corp和home节点网关；</p>
+</li>
+<li>
+<p>corp节点处于整张网的中心，vpn的加解密工作颇为频繁，对设备性能要求较高，因而选择了一台MikroTik的RB450G，这个设备拥有680Mhz CPU和512M运行内存。home仅作为末梢节点接入，因而Linksys WRT54G<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>足矣。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>在构建VPN之前，需先普及一下<a href="/2013-11-12-a-mesh-vpn-network-2/">tinc的安装和使用流程</a>。</p>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. You can link multiple ethernet segments together to work like a single segment, allowing you to run applications and games that normally only work on a LAN over the Internet.
+</div>
+<div class="footnote" id="_footnote_2">
+<a href="#_footnoteref_2">2</a>. 这台设备经过改造，运行内存和存储空间都做了扩容：64M ram，16M flash
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

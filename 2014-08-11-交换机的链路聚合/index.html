@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>交换机的链路聚合</title>
+  <meta name="description" content="[srvB]: $ sudo ifconfig eth1 down[srvB]: $ sudo ifconfig eth1 up">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2014-08-11-%E4%BA%A4%E6%8D%A2%E6%9C%BA%E7%9A%84%E9%93%BE%E8%B7%AF%E8%81%9A%E5%90%88/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">交换机的链路聚合</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2014-08-11&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/h3c"><i class="fa fa-tag">&nbsp;&nbsp;h3c</i></a>
+           <!--a class="post-tag" href="/tag/h3c">h3c</a-->
+         
+           <a class="post-tag" href="/tag/华为"><i class="fa fa-tag">&nbsp;&nbsp;华为</i></a>
+           <!--a class="post-tag" href="/tag/华为">华为</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>端口聚合可以提高交换机的吞吐量和高可用性，不同厂家的交换机，其端口聚合的配置不尽相同。本文仅涉及华为和h3c两个厂家的配置。</p>
+</div>
+<div class="paragraph">
+<p>服务器两个端口跟一台华为5328交换机的7和8口配置成端口聚合。采用的是lacp/802.3ad协议。华为交换机支持静态lacp协议，但不支持动态lacp。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="1-华为交换机s5328">1. 华为交换机S5328</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="1-1-配置">1.1 配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># 清掉物理接口下的配置
+int GigabitEthernet 0/0/7
+undo ndp enable
+undo ntdp enable
+undo port def vlan
+bpdu disable
+quit
+ 
+int GigabitEthernet 0/0/8
+undo ndp enable
+undo ntdp enable
+undo port def vlan
+bpdu disable
+quit
+
+# 创建eth-trunk 
+int eth-trunk 1
+# 在bond口中，并不接收bpdu数据包，因此此指令是多余的
+# bpdu enable
+ndp enable
+ntdp enable
+port def vlan 55
+mode lacp-static
+lacp timeout fast
+load-blan src-ip
+quit</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-2-两种增-删聚合口的操作">1.2 两种增、删聚合口的操作</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>在<code>eth-trunk</code>端口下</p>
+<div class="ulist">
+<ul>
+<li>
+<p>增加</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>trunkport gigabitethernet 0/0/7
+trunkport gigabitethernet 0/0/8</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>删除</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>undo trunkport gigabitethernet 0/0/7
+undo trunkport gigabitethernet 0/0/8</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>分别在各自的物理端口下：</p>
+<div class="ulist">
+<ul>
+<li>
+<p>增加</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>int GigabitEthernet 0/0/7
+eth-trunk 1
+quit
+ 
+int GigabitEthernet 0/0/8
+eth-trunk 1
+quit</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>删除</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>int GigabitEthernet 0/0/7
+undo eth-trunk 1
+quit
+
+int GigabitEthernet 0/0/8
+undo eth-trunk 1
+quit</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-3-查看聚合端口状态">1.3 查看聚合端口状态</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>&gt;dis eth-trunk 1
+Eth-Trunk1's state information is:
+WorkingMode: NORMAL         Hash arithmetic: According to SIP                
+Least Active-linknumber: 1  Max Bandwidth-affected-linknumber: 8             
+Operate status: up          Number Of Up Port In Trunk: 2                    
+--------------------------------------------------------------------------------
+PortName                      Status      Weight
+GigabitEthernet0/0/8          Up          1     
+GigabitEthernet0/0/7          Up          1   </code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-4-查看聚合端口统计">1.4 查看聚合端口统计</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>&gt;dis lacp statistics eth-trunk 1
+ Eth-Trunk1's PDU statistic is:
+ ------------------------------------------------------------------------------
+ Port                    LacpRevPdu   LacpSentPdu  MarkerRevPdu MarkerSentPdu
+ GigabitEthernet0/0/7    3202028      4109548      0            0
+ GigabitEthernet0/0/8    3198516      4109020      0            0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>默认情况下的lacp timeout为slow（30秒），所以通过该命令可以查看到LacpRevPdu的计数为每30秒增加1，当在交换机中配置了lacp timeout fast（1秒）之后，通过该命令就会发现LacpRevPdu的计数每秒增加1。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="1-5-测试端口聚合的效果">1.5 测试端口聚合的效果</h3>
+<div class="paragraph">
+<p>两台服务器srvA和srvB，一台华为交换机hw-sw，其中srvB的eth0和eth1和hw-sw的ge1/0/1和ge1/0/2做了端口聚合。</p>
+</div>
+<div class="paragraph">
+<p>启动两个方向的ping：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>srvA ping srvB</p>
+</li>
+<li>
+<p>srvB ping srvA</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>通过tcpdump确定srvB当前所起作用的端口为eth1。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[srvB]: $ sudo ifconfig eth1 down</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>观察srvA ping srvB，发现有30秒的icmp reply中断，随后通过srvB的eth0发生交互。</p>
+</li>
+<li>
+<p>观察srvB ping srvA，没有icmp reply中断情况。</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[srvB]: $ sudo ifconfig eth1 up</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>观察srvA ping srvB，没有icmp reply中断情况。</p>
+</li>
+<li>
+<p>观察srvB ping srvA，没有icmp reply中断情况。</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="2-h3c交换机s5800">2. h3c交换机S5800</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在做端口聚合时，华三5800跟华为5300的配置有很大的不同。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>&gt;dis cur
+------------8&lt;------------
+interface Bridge-Aggregation19
+ description "DL585g7(master)'s bond0"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 20 24 28 111 300
+ link-aggregation mode dynamic
+
+interface GigabitEthernet1/0/19
+ port link-mode bridge
+ description "DL585g7:port1(master)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 20 24 28 111 300
+ port link-aggregation group 19
+
+interface GigabitEthernet2/0/19
+ port link-mode bridge
+ description "DL585g7:port2(master)"
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 20 24 28 111 300
+ port link-aggregation group 19
+------------&gt;8------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>需要注意的是，在物理接口下，无需配置port的相关属性，只需要如下配置即可：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>port link-aggregation group 19</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置步骤如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>interface Bridge-Aggregation19
+ description "DL585g7(master)'s bond0"
+ link-aggregation mode dynamic
+ quit
+
+interface GigabitEthernet1/0/19
+ port link-mode bridge
+ description "DL585g7:port1(master)"
+ port link-aggregation group 19
+ quit
+interface GigabitEthernet2/0/19
+ port link-mode bridge
+ description "DL585g7:port2(master)"
+ port link-aggregation group 19
+ quit
+
+interface Bridge-Aggregation19
+ port link-type trunk
+ undo port trunk permit vlan 1
+ port trunk permit vlan 20 24 28 111 300
+ quit</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>假如需要在聚合组中添加新的物理端口，则需要在Bridge-Aggregation19接口模式下，重做一遍port link-type、port trunk permit等。这种配置方式很不方便，但是不知道为什么hp/h3c一直没有改过来，很任性！</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="3-参考">3. 参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://robertparten.com/trunking-between-3com-and-hp-switches/" class="bare">http://robertparten.com/trunking-between-3com-and-hp-switches/</a></p>
+</li>
+<li>
+<p><a href="https://www.shilpasys.com/articles/how-do-you-configure-lacp-on-comware/" class="bare">https://www.shilpasys.com/articles/how-do-you-configure-lacp-on-comware/</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

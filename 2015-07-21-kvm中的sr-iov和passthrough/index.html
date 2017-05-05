@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>kvm中的sr-iov和passthrough</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2015-07-21-kvm%E4%B8%AD%E7%9A%84sr-iov%E5%92%8Cpassthrough/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">kvm中的sr-iov和passthrough</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2015-07-21&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/sr-iov"><i class="fa fa-tag">&nbsp;&nbsp;sr-iov</i></a>
+           <!--a class="post-tag" href="/tag/sr-iov">sr-iov</a-->
+         
+           <a class="post-tag" href="/tag/kvm"><i class="fa fa-tag">&nbsp;&nbsp;kvm</i></a>
+           <!--a class="post-tag" href="/tag/kvm">kvm</a-->
+         
+           <a class="post-tag" href="/tag/passthrough"><i class="fa fa-tag">&nbsp;&nbsp;passthrough</i></a>
+           <!--a class="post-tag" href="/tag/passthrough">passthrough</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>有个项目需要对互联网出口流量进行DPI，我的想法是将防火墙的出口流量镜像到一台VM中进行分析，由于出口流量达到了3G，所以需要在物理服务器中用10G口接收，然而如何将接收到的流量送给VM？可以采用sr-iov，也可以采用pass-through，sr-iov当然更省资源，然而sr-iov后的虚拟网卡无法运行在混杂模式下，所以只能采用pass-through。</p>
+</div>
+<div class="paragraph">
+<p>以下是两种方式的具体配置，虽然sr-iov无法满足要求项目需求，但记录下来已备不时之需。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>物理服务器：HP DL585G7</p>
+</li>
+<li>
+<p>万兆网卡：HP 560 dual port SFP+，芯片为intel 82599</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="sr-iov">sr-iov</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="kvm-host">kvm host</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>添加内核<code>amd_iommu=on</code></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /boot/grub/menu.lst
+...
+title CentOS (2.6.32-504.1.3.el6.x86_64)
+        root (hd0,1)
+        kernel /vmlinuz-2.6.32-504.1.3.el6.x86_64 ro root=/dev/mapper/centos-root rd_NO_LUKS rd_LVM_LV=pve/swap rd_LVM_LV=centos/root LANG=en_US.UTF-8 rd_NO_MD SYSFONT=latarcyrheb-sun16 crashkernel=auto  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb console=tty1 console=ttyS0,115200n8 amd_iommu=on
+...</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>配置max_vfs</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/modprobe.d/ixge.conf
+options ixgbe max_vfs=8</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>intel 82599支持的最大vfs为64，max_vfs将平均分配至每个物理网口，譬如本例的物理网口有2个，max_vfs为8，则每个物理网口的vf为4。如下所示：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo ip link show eth4
+38: eth4: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu 1500 qdisc mq state DOWN qlen 1000
+    link/ether 38:ea:a7:36:e4:cc brd ff:ff:ff:ff:ff:ff
+    vf 0 MAC 38:ea:a7:36:e4:01
+    vf 1 MAC a6:fc:71:47:e0:6e
+    vf 2 MAC 32:f4:c3:18:d6:ae
+    vf 3 MAC 4e:65:17:83:65:28</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>10G网卡的另外一个端口已经被pass-through给了一台VM，所以在host里面已经看不到该端口，当然更不会有VF。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lspci | grep 82599
+47:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+47:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+47:10.1 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:10.3 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:10.5 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:10.7 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+同一个端口下，47:10.0、47:10.2、47:10.4、47:10.6为eth4的<code>Virtual Function</code>，后缀要么同为奇数，要么同为偶数。
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>将一个vf分配给vm</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/libvirt/qemu/c6-64-probe.xml
+...
+    &lt;interface type='hostdev' managed='yes'&gt;
+      &lt;source&gt;
+        &lt;address type='pci' domain='0x0000' bus='0x47' slot='0x10' function='0x1'/&gt;
+      &lt;/source&gt;
+      &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/&gt;
+    &lt;/interface&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>分配另一个vf给第二台vm</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/libvirt/qemu/u1404-64-ntopng.xml
+...
+    &lt;interface type='hostdev' managed='yes'&gt;
+      &lt;source&gt;
+        &lt;address type='pci' domain='0x0000' bus='0x47' slot='0x10' function='0x3'/&gt;
+      &lt;/source&gt;
+      &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/&gt;
+    &lt;/interface&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果一切正常，<code>vm</code>启动后将自动加载ixgbevf这个驱动：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lsmod | grep ixgbe
+ixgbevf</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>测试</p>
+<div class="paragraph">
+<p>分别在这两台vm中，为网卡分配相同网段的ip地址，可互ping</p>
+</div>
+<div class="paragraph">
+<p>然而，根据intel官方的说法，vf并不支持混杂模式，也就是说无法捕获目标mac为非本网卡的数据帧。这从某种程度上来说限制了vf的应用，特别是无法作为ntopng，不过这也容易理解，如果同一个pf下的vf，都能获得整个物理网口的数据帧，在管理和安全上将是一场噩梦。</p>
+</div>
+<div class="paragraph">
+<p>所以作为如果想对镜像的流量进行DPI，只能将整个pf，也就是物理网口passthrough给VM。</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="pass-through">pass-through</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="kvm-host-2">kvm host</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>修改vm的配置文件</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo vim /etc/libvirt/qemu/c6-64-probe.xml
+&lt;hostdev mode='subsystem' type='pci' managed='yes'&gt;
+  &lt;source&gt;
+    &lt;address domain='0x0000' bus='0x47' slot='0x00' function='0x1'/&gt;
+  &lt;/source&gt;
+  &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/&gt;
+&lt;/hostdev&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查网卡</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lsmod | grep ixgbe
+ixgbevf                43812  0
+ixgbe                 275825  0
+dca                     7101  1 ixgbe
+mdio                    4769  1 ixgbe
+ptp                     9614  2 ixgbe,tg3
+
+[root@master mapper]# lspci | grep 82599
+47:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+47:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+47:10.0 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:10.2 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:10.4 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:10.6 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:11.0 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:11.2 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:11.4 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+47:11.6 Ethernet controller: Intel Corporation 82599 Ethernet Controller Virtual Function (rev 01)
+
+$ sudo ip link show eth4
+6: eth4: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN qlen 1000
+   	link/ether 38:ea:a7:36:e4:cc brd ff:ff:ff:ff:ff:ff
+   	vf 0 MAC e6:4d:47:33:80:39
+   	vf 1 MAC 7e:0c:59:a9:b7:94
+   	vf 2 MAC aa:32:97:a3:3b:dc
+   	vf 3 MAC 1e:31:c5:36:ef:dd
+   	vf 4 MAC 8e:96:dc:fb:b4:d3
+   	vf 5 MAC 3e:e5:54:52:d5:f0
+   	vf 6 MAC 82:91:ef:a2:d9:e2
+   	vf 7 MAC fa:d5:42:0e:53:ee
+
+$ sudo ip link show eth5
+Device "eth5" does not exist.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>说明host已经将一个物理口(eth5)pass-through给vm了，<code>ip</code>命令无法查看到该物理口的状态。这个例子也说明，同一块网卡的不同端口，可以分别做pass-through和sr-iov。</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="kvm-vm">kvm vm</h3>
+<div class="paragraph">
+<p>检查是否成功<code>pass-through</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo lsmod | grep ixgbe
+ixgbe                 275921  0
+dca                     7101  1 ixgbe
+ptp                     9614  1 ixgbe
+mdio                    4769  1 ixgbe
+
+$ sudo lspci | grep 82599
+00:08.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://www.slideshare.net/raydelott/82599-sriov-vm-configuration-notes" class="bare">http://www.slideshare.net/raydelott/82599-sriov-vm-configuration-notes</a></p>
+</li>
+<li>
+<p><a href="http://www.slideshare.net/juet-y/sr-iovinteldebian" class="bare">http://www.slideshare.net/juet-y/sr-iovinteldebian</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

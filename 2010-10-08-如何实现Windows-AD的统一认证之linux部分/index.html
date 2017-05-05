@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>如何实现Windows AD的统一认证之linux部分</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2010-10-08-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0Windows-AD%E7%9A%84%E7%BB%9F%E4%B8%80%E8%AE%A4%E8%AF%81%E4%B9%8Blinux%E9%83%A8%E5%88%86/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">如何实现Windows AD的统一认证之linux部分</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2010-10-08&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/AD"><i class="fa fa-tag">&nbsp;&nbsp;AD</i></a>
+           <!--a class="post-tag" href="/tag/AD">AD</a-->
+         
+           <a class="post-tag" href="/tag/linux"><i class="fa fa-tag">&nbsp;&nbsp;linux</i></a>
+           <!--a class="post-tag" href="/tag/linux">linux</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>现代企业的业务需求多种多样，因此在生产环境中经常会出现多种操作系统互相协作的现象。微软的Windows操作系统在桌面应用方面拥有绝对的领先优势，因此很多企业部署了Windows活动目录来实现单点登录（SSO）；Linux在服务器和网络应用方面有自己的独门利器，因此很多企业的服务器操作系统和网络设备的嵌入式操作系统用的大部分是Linux。这对系统管理员来说就存在这么一个令人饶头的问题：如何实现统一登录认证？</p>
+</div>
+<div class="paragraph">
+<p>答案就是Samba，它就像粘胶剂一样将Windows和Linux连在一起，共同为用户服务。Samba是怎样当好这个粘胶剂的活儿的呢，下面是验证流程说明：</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="一-验证流程">一、验证流程</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>当Linux主机中的应用程序向Linux查询用户/组的时候，根据NSS的配置，请求将会被Winbind截获，并通过系统底层重定向至AD域控制器,随后Winbind将返回的结果经过解析后再返回应用程序。</p>
+</div>
+<div class="paragraph">
+<p>解析的一个重要步骤就是将Windows的RID映射成Linux的UID和GID，这让Linux应用程序以为AD的域用户/组就是Linux操作系统的用户/组，从而实现利用Windows AD做统一验证的功能。</p>
+</div>
+<div class="paragraph">
+<p>下面将分三部分进行阐述：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>部署Windows AD域测试环境；</p>
+</li>
+<li>
+<p>安装和部署Linux相关组件；</p>
+</li>
+<li>
+<p>验证；</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="二-部署windows-ad域测试环境">二、部署Windows AD域测试环境</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Windows AD域环境的部署是一个庞大的话题，因此下面只给一个用于测试目的的简单安装流程，进阶的Windows 活动目录信息请参考微软的官方文档。</p>
+</div>
+<div class="sect2">
+<h3 id="2-1-目标">2.1 目标</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>安装一台Windows AD域控制器；</p>
+</li>
+<li>
+<p>创建四个域账号：alice、bob、carl和david；</p>
+</li>
+<li>
+<p>创建两个域用户组：net-mgmt和sys-mgmt，其中netmgmt组中的用户角色是网络管理员，组成员是alice和bob；sys-mgmt组中的用户角色是系统管理员，组成员是carl和david。</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="2-2-安装">2.2 安装</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>通过光盘安装Windows 2003 server；</p>
+</li>
+<li>
+<p>分配IP地址并设置机器名为：dc，然后重启服务器；</p>
+</li>
+<li>
+<p>在“开始”-“命令行”中输入`dcpromo`，回车将启动域服务器的安装过程，域名为“linuxabc.com”，其他的根据提示进行选择，一般默认即可。在这个过程中将会提示安装DNS服务，因为域是跟DNS紧密结合在一起的，请选择“是”。</p>
+</li>
+<li>
+<p>安装结束后重启服务器，设定域管理员密码，新增alice，bob，carl和david四个域帐号，新增net-mgmt和sys-mgmt两个用户组，将alice和bob添加到net-mgmt组，将carl和david添加到sys-mgmt组。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>至此，一个简单的Windows AD域测试环境就部署完成了。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="三-安装和部署linux相关组件">三、安装和部署Linux相关组件</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="3-1-samba-winbind的安装和配置">3.1 samba/winbind的安装和配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get install samba samba-common samba-doc winbind
+$ sudo vim /etc/samba/smb.conf
+ [global]
+    workgroup = LINUXABC   #域名称，不带“.com”后缀
+    server string = %h server
+    socket options = TCP_NODELAY
+    security = ads
+    netbios name = debian
+    realm = LINUXABC.COM
+    encrypt passwords = true
+    obey pam restrictions = yes
+    password server = dc.linuxabc.com
+    idmap uid = 10000-20000
+    idmap gid = 10000-20000
+    winbind enum users = yes
+    winbind enum groups = yes
+    winbind use default domain = yes
+    template shell = /bin/bash
+    domain master = no</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>因为在这台服务器上并不提供共享文件和打印服务，所以smb.conf文件剩下的部分可以删除。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-2-nss的安装和配置">3.2 NSS的安装和配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get install libnss-ldap
+$ sudo vim /etc/nsswitch.conf
+--------8&lt;----------
+passwd:		compat winbind
+passwd_compat:	winbind
+group:		compat winbind
+group_compat:	winbind
+shadow:		compat
+--------8&lt;----------</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>NSS(name service switch)的作用是允许*nix主机根据配置文件/etc/nsswitch.conf按顺序依次从不同的源去查询诸如主机名、邮箱别名、用户信息等数据。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-3-pam的配置">3.3 PAM的配置</h3>
+<div class="paragraph">
+<p>NSS只是调整Winbind的优先顺序，PAM才是决定是否使用Winbind进行验证的决策者。
+PAM是大多数Linux发行办的默认安装组件，故省略安装步骤。下面将针对/etc/pam.d/中的文件进行调整：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/pam.d/common-auth
+auth	sufficient	pam_winbind.so
+auth	required	pam_unix.so use_first_pass nullok_secure
+
+$ sudo vim /etc/pam.d/common-account
+account	sufficient	pam_winbind.so
+account	required	pam_unix.so
+
+$ sudo vim /etc/pam.d/common-session
+password    sufficient	pam_winbind.so
+password    required	pam_unix.so</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="3-4-kerberos的安装和配置">3.4 kerberos的安装和配置</h3>
+<div class="paragraph">
+<p>Winbind将利用kerberos协议与AD域控制器进行通信。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo apt-get install krb5-user krb5-config
+$ sudo vim /etc/krb5.conf
+[libdefaults]
+    ticket_lifetime = 24000
+    dns_lookup_realm = true
+    dns_lookup_kdc = true
+    default_realm = LINUXABC.COM
+[realms]
+    DOMAIN.INTERNAL = {
+	kdc = dc.linuxabc.com
+	admin_server = dc.linuxabc.com
+	default_domain = LINUXABC.COM
+    }
+[domain_realm]
+    .domain.internal = LINUXABC.COM
+    domain.internal = LINUXABC.COM</pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>LINUXABC.COM是域名，均为大写；</p>
+</li>
+<li>
+<p>dc.linuxabc.com是域控制器，均为小写。</p>
+</li>
+</ol>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>至此，相关的验证组件已经安装配置完毕。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="四-验证">四、验证</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="4-1-将linux服务器加入linuxabc-com域">4.1 将Linux服务器加入linuxabc.com域</h3>
+<div class="sect3">
+<h4 id="4-1-1-初始化kerberos">4.1.1 初始化kerberos</h4>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo kinit administrator@LINUXABC.COM
+Password for administrator@LINUXABC.COM:&lt;&lt;域管理员密码&gt;&gt;
+$ sudo klist</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果通过域验证的话将显示以下信息：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Ticket cache: FILE:/tmp/krb5cc_0
+Default principal: administrator@LINUXABC.COM
+
+Valid starting     Expires            Service principal
+03/06/10 10:39:38  03/06/10 20:39:38  krbtgt/LINUXABC.COM@LINUXABC.COM
+
+
+Kerberos 4 ticket cache: /tmp/tkt0
+klist: You have no tickets cached</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接下来将debian加入linuxabc.com域。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&gt; net ads join -U administrator@LINUXABC.COM
+administrator@LINUXABC.COM's password: &lt;&lt;域管理员密码&gt;&gt;
+Using short domain name -- LINUXABC
+Joined 'DEBIAN' to realm 'LINUXABC.COM'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>一切顺利的话就可以在AD域控制器的“Active Directory域用户和计算机”管理界面中看到debian这台机器。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="4-1-2-login验证">4.1.2 login验证</h4>
+<div class="paragraph">
+<p>前面已经将Linux主机加入到AD域中，成为一个域成员，接下来要测试Linux程序能否利用AD域的用户进行验证。</p>
+</div>
+<div class="paragraph">
+<p>验证前先重启samba和winbind服务</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo /etc/init.d/samba restart
+$ sudo /etc/init.d/winbind restart</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>接着在debian服务器中打开一个终端窗口，用域账号alice登录。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="五-参考">五、参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://www.samba.org/samba/docs/man/Samba-HOWTO-Collection/winbind.html">samba官方文档</a></p>
+</li>
+<li>
+<p><a href="http://thelazyadmin.com/blogs/thelazyadmin/archive/2006/03/16/Linux_2F00_Unix-Active-Directory-Authentication-Integration-Part-1.aspx">Linux-Unix Active Directory Authentication Integration</a></p>
+</li>
+<li>
+<p><a href="http://www.surlyjake.com/using-debian-in-an-active-directory-environment/install-prerequisite-packages-using-debian-in-an-active-directory-environment/">using debian in an active directory environment</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

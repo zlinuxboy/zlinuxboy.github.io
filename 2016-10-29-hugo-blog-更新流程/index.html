@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>hugo blog - 更新流程</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-10-29-hugo-blog-%E6%9B%B4%E6%96%B0%E6%B5%81%E7%A8%8B/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">hugo blog - 更新流程</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-10-29&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/blog"><i class="fa fa-tag">&nbsp;&nbsp;blog</i></a>
+           <!--a class="post-tag" href="/tag/blog">blog</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>hugo的文件分为输入文件和输出文件两大类，其中输入文件是<code>hugo new site</code>时所创建的文件结构，包括：archetyps、config.{toml, yaml}、content、data、layouts、static、themes，输出文件指的是运行<code>hugo</code>命令时所生成的<code>public</code>这个文件夹。</p>
+</div>
+<div class="paragraph">
+<p>传统的做法是租个虚拟主机，提供web server，并手工将<code>public</code>上传至该虚拟主机。这种方式未免过于陈旧。现在很多代码托管网站，譬如github、bitbucket、gitcafe（code）都提供了个人主页功能。该功能相当于一台虚拟主机。而且这些代码托管网站都提供免费的账号、空间和流量，用来承载静态blog是非常合适的。本blog就承载在github上。</p>
+</div>
+<div class="paragraph">
+<p>前面提到hugo有两类文件，在github中需要创建一个项目仓库和一个个人主页仓库，分别用于承载输入文件和输出文件。</p>
+</div>
+<div class="paragraph">
+<p>输入文件的仓库取名为<code>zlinuxboy-blog-hugo</code>，输出文件的仓库则有特定的格式：<code>&lt;account&gt;.github.io</code>，github还为每个账号预留了一个专属三级域名：<code><a href="http://&lt;account&gt;.github.io" class="bare">http://&lt;account&gt;.github.io</a></code>，对应的是每个账户的个人主页仓库。</p>
+</div>
+<div class="paragraph">
+<p>下面主要解释如何使用<code>git</code>命令完成本地仓库和远程仓库的关联和更新。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="安装git-bash">安装git-bash</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>下载link:(<a href="https://git-scm.com/download/win)">git-bash</a>，安装就是一路next。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="创建本地仓库">创建本地仓库</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>为了方便起见，输入文件的本地仓库文件夹名称跟远程仓库名一致，均为<code>zlinuxboy-blog-hugo</code>。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ hugo new site zlinuxboy-blog-hugo</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>该命令相当于创建了一个<code>zlinuxboy-blog-hugo</code>的目录。目录结构如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>|-- archetypes
+|-- config.toml
+|-- content
+|-- data
+|-- layouts
+|-- static
+`-- themes</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+先别执行<code>hugo</code>命令，否则会生成<code>public</code>目录，该目录应按照下面的步骤生成。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>最后，初始化本地仓库：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ git init</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="创建远程仓库">创建远程仓库</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>需要在github的webUI中link:(<a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/0013752340242354807e192f02a44359908df8a5643103a000)">创建</a>，名字跟本地仓库相同：<code>zlinuxboy-blog-hugo</code></p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+github的账号申请请查阅官方文档。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="关联输入文件夹">关联输入文件夹</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在将本地的修改推送到github之前，需要将本地仓库和远程仓库进行关联。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ git remote add origin git@github.com:zlinuxboy/zlinux-blog-hugo.git</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="关联输出文件夹">关联输出文件夹</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>由于<code>public</code>文件夹位于本地仓库<code>zlinuxboy-blog-hugo</code>下，然而我们又希望将<code>public</code>关联到github的另外一个仓库<code>zlinuxboy.github.io</code>，所以需要将<code>public</code>作为子模块而存在。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ git submodule add -b master git@github.com:&lt;username&gt;/&lt;username&gt;.github.io.git public</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="首次同步">首次同步</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>由本地首次推送至远程。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cd /e/zlinuxboy-blog-hugo
+$ git push -u origin master
+$ cd public
+$ git push -u origin master
+$ cd ..</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="完整的更新流程">完整的更新流程</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># 更新blog输入文件
+$ cd /e/zlinuxboy-blog-hugo
+$ git add -A
+$ git commit -m "update blog"
+$ git push origin master
+
+# 更新blog输出文件
+$ hugo
+$ cd public
+$ git add -A
+$ git commit -m "rebuild site 2016.10.11 12:31"
+$ git push origin master
+$ cd ..</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://nanshu.wang/post/2015-01-31/" class="bare">http://nanshu.wang/post/2015-01-31/</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

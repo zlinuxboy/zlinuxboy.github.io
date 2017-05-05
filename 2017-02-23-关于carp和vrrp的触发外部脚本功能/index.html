@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>关于carp和vrrp的触发外部脚本功能</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2017-02-23-%E5%85%B3%E4%BA%8Ecarp%E5%92%8Cvrrp%E7%9A%84%E8%A7%A6%E5%8F%91%E5%A4%96%E9%83%A8%E8%84%9A%E6%9C%AC%E5%8A%9F%E8%83%BD/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">关于carp和vrrp的触发外部脚本功能</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2017-02-23&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/HA"><i class="fa fa-tag">&nbsp;&nbsp;HA</i></a>
+           <!--a class="post-tag" href="/tag/HA">HA</a-->
+         
+           <a class="post-tag" href="/tag/network"><i class="fa fa-tag">&nbsp;&nbsp;network</i></a>
+           <!--a class="post-tag" href="/tag/network">network</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div class="paragraph">
+<p>在遥远的年代，为了实现路由器的高可用性，cisco开发了hsrp，因为hsrp是私有协议，所以开源社区就自己出了一个vrrp。openbsd向来看不起linux，另辟蹊径推出了一个carp，而freebsd在9版本之前的carp移植自openbsd，可不知道为何到了10，freebsd又重新实现了一遍carp。开源社区真是精力旺盛到无以复加的地步。哦对了，pure-ftpd的作者还开发了一个ucarp，linux下的carp实现，不过已经好久没更新了。</p>
+</div>
+<div class="paragraph">
+<p>这些协议工作原理都是类似的，都有一个浮动的虚拟IP（简称vip），在master和backup中漂移，然而有不少软件是无法监听一个未知的IP的，譬如openvpn、ipsec、tinc等vpn软件，那么有没有可能当vip漂移到某一台主机的时候，再启动vpn的进程？答案是肯定的，不过bsd和linux是两种不同的实现方式：freebsd和openbsd的carp不具备触发外界程序/脚本的能力，只能依靠第三方的链路状态检测工具来触发，freebsd中是devd，openbsd中是ifstated，而linux要方便一些，keepalived在实现vrrp的同时，还顺带提供了触发外界程序/脚本的能力。</p>
+</div>
+<div class="paragraph">
+<p>下面举例说明如何利用keepalived来实现tinc的（部分）高可用性</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>keepalived/notify配置</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">/etc/keepalived/keepalived.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>...
+vrrp_instance VI_eth0{
+	...
+	notify /path/to/script.sh
+	...
+}
+…</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">/path/to/script.sh</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>#!/bin/bash
+
+TYPE=$1
+NAME=$2
+STATE=$3 <i class="conum" data-value="1"></i><b>(1)</b>
+
+case $STATE in
+	"MASTER") /bin/echo "start tinc for ${STATE}" | /usr/bin/logger -p local6.notice -t change_tincState
+			  exit 0
+			  ;;
+	"BACKUP") /bin/echo "stop tinc for ${STATE}" | /usr/bin/logger -p local6.notice -t change_tincState
+			  /etc/init.d/tinc stop
+			  exit 0
+			  ;;
+	"FAULT")  /etc/init.d/tinc stop
+			  exit 0
+			  ;;
+	*)        echo "Unknown state ${STATE} for VRRP ${TYPE} ${NAME}"
+			  exit 1
+			  ;;
+esac</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>一共有3种状态：MASTER、BACKUP和FAULT，notify会将状态通过参数$3传给该脚本，实现了tinc在MASTER中start，在BACKUP/FAULT中stop的功能</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>tinc是一个mesh vpn，可惜跟大多数vpn一样，自身都不支持high availability<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>。不过利用keepalived可以部分实现ha，为什么说是部分实现，因为keepalived也无法同步状态，只是能简单的确保两个tinc进程之间，永远有一个处于在线状态，工作原理是：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>远端网关（ext gw）安装了一个tinc（ext tinc），本端网关（loc gw1）安装了一个tinc（loc tinc1），两个tinc之间构建了一条加密隧道，里面跑着一些关键性应用；</p>
+</li>
+<li>
+<p>它们存在单点故障，先不考虑远端，先在本端新增一个网关（loc gw2），并安装一个tinc（loc tinc2），它跟loc tinc1使用相同的配置；</p>
+</li>
+<li>
+<p>当loc gw1的vrrp状态是master的时候，keepalived通过notify启动loc tinc1，监听vip。此时，因为loc gw2的vrrp状态为backup，所以loc tinc2处于stop状态（即便之前处于start状态，也会被keepalived的notify给stop掉），keepalived的notify确保了tinc1和tinc2两者中只有一个处于start状态，避免了冲突；</p>
+</li>
+<li>
+<p>ext tinc和loc tinc{1|2}通过心跳包来检测各自的状态，一旦发现中断后将重新发起连接请求；</p>
+</li>
+<li>
+<p>当loc tinc{1|2} stop，loc tinc{2|1} start，由于它们两者之间的状态无法同步，所以ext tinc和loc tinc{1|2}的隧道丢失，跑在隧道里面的stateful connection（对，说的就是你，tcp）也丢失，不过由于ext tinc和loc tinc{1|2}会立刻新建一个新的隧道，所以应用程序尝试重连又可以正常工作。所以说，对于tcp而言，keepalived能实现部分HA；</p>
+</li>
+<li>
+<p>对于udp而言，则是另外一个场景：由于udp是stateless connection，因而一般由上层应用程序来维护状态，所以这类程序对tinc隧道的状态切换不敏感，keepalived能为这类程序实现传统意义上的HA；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>这就是keepalived/devd/ifstated这类程序的价值所在。也许有一天freebsd/openbsd能在carp协议里面添加触发外界程序/脚本的功能，只是不管是学院派freebsd，还是固执的openbsd，修改一个协议的可能性微乎其微。所以，还是安心的用devd/ifstated吧。</p>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. vpn实现ha非常困难，详见<a href="https://wiki.strongswan.org/projects/strongswan/wiki/HighAvailability#Kernel-Implementation">strongswan ha</a>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

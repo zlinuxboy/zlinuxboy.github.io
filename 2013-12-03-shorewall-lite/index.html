@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>﻿shorewall-lite</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-12-03-shorewall-lite/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">﻿shorewall-lite</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-12-03&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/openwrt"><i class="fa fa-tag">&nbsp;&nbsp;openwrt</i></a>
+           <!--a class="post-tag" href="/tag/openwrt">openwrt</a-->
+         
+           <a class="post-tag" href="/tag/shorewall"><i class="fa fa-tag">&nbsp;&nbsp;shorewall</i></a>
+           <!--a class="post-tag" href="/tag/shorewall">shorewall</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>shorewall是一个优秀的netfilter管理工具，它通过perl将配置文件转换成iptables语句，极大降低了netfilter的学习曲线。然而，shorewall依赖于perl，而perl对于一些嵌入式linux(譬如OpenWRT)来说太庞大了。另外，shorewall只是单机版的iptables外壳程序，假如有多个netfilter需要管理的时候，shorewall能否实现配置文件的统一管理呢？于是shorewall-lite诞生了。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="工作原理">工作原理</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="shorewall-topology.jpg" alt="shorewall和shorewall-lite组网示意图">
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">administrative system</dt>
+<dd>
+<p>管理节点，安装了shorewall，firewall system配置文件的集中地，负责向firewall system分发和更新配置</p>
+</dd>
+<dt class="hdlist1">firewall system</dt>
+<dd>
+<p>防火墙节点，安装了shorewall-lite，负责接收来自管理节点的配置文件，并转换成iptables语句，并应用到linux/netfilter中。</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>管理节点统一掌管防火墙节点配置文件，完成某防火墙节点配置后，通过<code>shorewall compile</code>来生成firewall脚本<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup>，接着通过scp将该脚本拷贝至防火墙节点的<code>/etc/shorewall-lite/state</code>目录，然后使用ssh远程执行防火墙节点的<code>shorewall-lite</code>命令，将firewall脚本转换成iptables rules并加载到防火墙节点的netfilter中。</p>
+</div>
+<div class="paragraph">
+<p>这就是shorewall-lite的运作原理。所以，shorewall-lite工作流如下：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>安装和配置管理节点中的shorewall；</p>
+</li>
+<li>
+<p>准备防火墙节点中的shorewall-lite；</p>
+</li>
+<li>
+<p>在管理节点中将配置分发到各防火墙节点；</p>
+</li>
+<li>
+<p>后续更新防火墙节点的配置均在管理节点中完成，并重新分发至各防火墙节点。</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="管理节点-shorewall">管理节点/shorewall</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>本文的管理节点OS为debian</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>安装shorewall</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo apt-get update &amp;&amp; apt-get install shorewall</pre>
+</div>
+</div>
+</li>
+<li>
+<p>为每个<code>防火墙节点</code>创建一个export目录</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo make -p /etc/shorewall/export/rb450g &amp;&amp; cd /etc/shorewall/export/rb450g</pre>
+</div>
+</div>
+</li>
+<li>
+<p>准备<code>防火墙节点</code>配置文件</p>
+<div class="paragraph">
+<p>对于debian系，需下载tarball，解压后将<code>/usr/share/shorewall/configfiles</code>中的文件拷贝至<code>/etc/shorewall/export/rb450g</code>目录</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>params</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>WAN_IF=eth0
+LAN_IF=br-lan
+OA_IF=br-oa
+VPN_IF=tun0
+LOG=ULOG</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>zones</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>fw      firewall
+oa      ipv4
+lan     ipv4
+wan     ipv4
+vpn     ipv4</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>interfaces</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>wan             $WAN_IF                 dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0
+lan             $LAN_IF                 tcpflags,logmartians,nosmurfs,sourceroute=0
+vpn             $VPN_IF                 tcpflags,logmartians,nosmurfs,sourceroute=0
+oa              $OA_IF                  tcpflags,logmartians,nosmurfs,sourceroute=0 ```</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>policy</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$FW     all     ACCEPT
+lan     all     ACCEPT
+wan     all     DROP            $LOG    10/sec:40
+all     all     REJECT</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>rules</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>SECTION NEW
+Invalid(DROP)   wan             all
+
+###############
+# vpn2fw
+
+Ping(ACCEPT)    vpn             $FW
+SSH(ACCEPT)     vpn             $FW
+HTTP(ACCEPT)    vpn             $FW
+
+###############
+# wan2fw
+
+ACCEPT          wan             $FW     tcp     655
+ACCEPT          wan             $FW     udp     655
+SSH(ACCEPT)     wan             $FW</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>masq</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$OA_IF          192.168.44.0/24 10.199.27.17
+$VPN_IF         192.168.44.0/24 10.9.5.1
+$WAN_IF         192.168.44.0/24 192.168.7.21</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>nat</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>10.9.5.2       tun0   192.168.44.3 No   No
+10.9.5.3       tun0   192.168.44.5 No   No
+10.9.5.4       tun0   192.168.44.14 No   No</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>params</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>WAN_IF=eth0
+LAN_IF=br-lan
+OA_IF=br-oa
+VPN_IF=tun0
+LOG=ULOG</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>zones</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>fw      firewall
+oa      ipv4
+lan     ipv4
+wan     ipv4
+vpn     ipv4</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>interfaces</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>wan             $WAN_IF                 dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0
+lan             $LAN_IF                 tcpflags,logmartians,nosmurfs,sourceroute=0
+vpn             $VPN_IF                 tcpflags,logmartians,nosmurfs,sourceroute=0
+oa              $OA_IF                  tcpflags,logmartians,nosmurfs,sourceroute=0 ```</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>policy</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$FW     all     ACCEPT
+lan     all     ACCEPT
+wan     all     DROP            $LOG    10/sec:40
+all     all     REJECT</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>rules</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>SECTION NEW
+Invalid(DROP)   wan             all
+
+###############
+# vpn2fw
+
+Ping(ACCEPT)    vpn             $FW
+SSH(ACCEPT)     vpn             $FW
+HTTP(ACCEPT)    vpn             $FW
+
+###############
+# wan2fw
+
+ACCEPT          wan             $FW     tcp     655
+ACCEPT          wan             $FW     udp     655
+SSH(ACCEPT)     wan             $FW</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>masq</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$OA_IF          192.168.44.0/24 10.199.27.17
+$VPN_IF         192.168.44.0/24 10.8.0.65
+$WAN_IF         192.168.44.0/24 192.168.7.21</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>nat</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>10.8.0.66       tun0   192.168.44.3 No   No
+10.8.0.67       tun0   192.168.44.5 No   No
+10.8.0.68       tun0   192.168.44.14 No   No</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>编译生成防火墙节点目标文件</p>
+<div class="paragraph">
+<p>虽然可用<code>shorewall compile</code>来生成firewall脚本，但是过程略显繁琐，所以shorewall作者Thomas M. Eastep自己又写了Makefile这个工具。通过该工具，管理员可以使用<code>make</code>和<code>make install</code>命令来编译和部署firewall脚本。</p>
+</div>
+<div class="paragraph">
+<p>首先下载<a href="http://www1.shorewall.net/pub/shorewall/contrib/Shorewall-lite/">Makefile</a>并修改该文件中的防火墙节点地址：<code>HOST</code>，域名和IP地址均可。若用域名，则需要确保可以被正确解析</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo make
+shorewall compile -e . firewall
+Compiling...
+Processing /etc/shorewall/export/rb450g/params ...
+Processing /etc/shorewall/export/rb450g/shorewall.conf...
+   WARNING: Your capabilities file is out of date -- it does not contain all of the capabilities defined by Shorewall version 4.5.5.3
+Compiling /etc/shorewall/export/rb450g/zones...
+Compiling /etc/shorewall/export/rb450g/interfaces...
+Determining Hosts in Zones...
+Locating Action Files...
+Compiling /usr/share/shorewall/action.Drop for chain Drop...
+Compiling /usr/share/shorewall/action.Broadcast for chain Broadcast...
+Compiling /usr/share/shorewall/action.Invalid for chain Invalid...
+Compiling /usr/share/shorewall/action.NotSyn for chain NotSyn...
+Compiling /usr/share/shorewall/action.Reject for chain Reject...
+Compiling /etc/shorewall/export/rb450g/policy...
+Compiling /etc/shorewall/export/rb450g/notrack...
+Running /etc/shorewall/export/rb450g/initdone...
+Adding Anti-smurf Rules
+Adding rules for DHCP
+Compiling TCP Flags filtering...
+Compiling Kernel Route Filtering...
+Compiling Martian Logging...
+Compiling Accept Source Routing...
+Compiling /etc/shorewall/export/rb450g/tcrules...
+Compiling /etc/shorewall/export/rb450g/masq...
+Compiling MAC Filtration -- Phase 1...
+Compiling /etc/shorewall/export/rb450g/rules...
+Compiling /usr/share/shorewall/action.Invalid for chain %Invalid...
+Compiling MAC Filtration -- Phase 2...
+Applying Policies...
+Generating Rule Matrix...
+Creating iptables-restore input...
+Shorewall configuration compiled to /etc/shorewall/export/rb450g/firewall</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>编译结束后将会在当前目录生成firewall脚本，随后管理节点执行<code>make install</code>即可将firewall脚本部署至防火墙节点：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo make install
+scp firewall firewall.conf root@192.168.44.1:/etc/shorewall-lite/state
+root@192.168.44.1's password:
+firewall                                                                  100%   79KB  79.3KB/s   00:00 <i class="conum" data-value="1"></i><b>(1)</b>
+firewall.conf                                                             100%  862     0.8KB/s   00:00 <i class="conum" data-value="1"></i><b>(1)</b>
+ssh root@192.168.44.1 "/sbin/shorewall-lite restart" <i class="conum" data-value="2"></i><b>(2)</b>
+root@192.168.44.1's password:Restarting Shorewall Lite....
+Initializing...
+Processing init user exit ...
+Processing tcclear user exit ...
+Setting up Route Filtering...
+Setting up Martian Logging...
+Setting up Accept Source Routing...
+Setting up Proxy ARP...
+Setting up Traffic Control...
+Preparing iptables-restore input...
+Running /usr/sbin/iptables-restore...
+IPv4 Forwarding EnabledProcessing start user exit ...
+Processing started user exit ...
+done.
+touch: /var/lock/subsys/shorewall: No such file or directory</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>管理节点将<code>firewall</code>、<code>firewall.conf</code>分发到防火墙节点中的<code>/etc/shorewall-lite/state</code>目录中</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>管理节点通过ssh，触发防火墙节点的<code>/etc/init.d/shorewall-lite</code>指令，解析并加载firewall脚本中的iptables规则</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="防火墙节点-shorewall-lite">防火墙节点/shorewall-lite</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>创建<code>state</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>root@RB450G:/ # mkdir /etc/shorewall-lite/state</pre>
+</div>
+</div>
+</li>
+<li>
+<p>禁用firewall</p>
+<div class="literalblock">
+<div class="content">
+<pre>root@RB450G:/ # /etc/init.d/firewall disable
+root@RB450G:/ # /etc/init.d/firewall stop</pre>
+</div>
+</div>
+</li>
+<li>
+<p>启用shorewall-lite</p>
+<div class="literalblock">
+<div class="content">
+<pre>root@RB450G:/# /etc/init.d/shorewall-lite enable</pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查firewall脚本</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># ls -alh
+drwxr-xr-x    1 root     root        2.0K Sep  3 13:49 .
+drwxr-xr-x    1 root     root        2.0K Sep  3 11:05 ..
+-rw-------    1 root     root           0 Sep  3 13:49 .dynamic
+-rw-------    1 root     root        9.8K Sep  3 13:49 .iptables-restor
+-rw-------    1 root     root        3.4K Sep  3 13:49 .modules
+-rw-------    1 root     root          12 Sep  3 13:49 .modulesdir
+-rw-r--r--    1 root     root        1.0K Sep  3 11:09 capabilities
+-rwx------    1 root     root       79.3K Sep  3 13:43 firewall
+-rw-------    1 root     root         862 Sep  3 13:43 firewall.conf
+-rw-------    1 root     root         162 Sep  3 13:49 marks
+-rw-------    1 root     root           0 Sep  3 13:49 nat
+-rw-------    1 root     root         740 Sep  3 13:49 policies
+-rw-------    1 root     root           0 Sep  3 13:49 proxyarp
+-rw-------    1 root     root          29 Sep  3 13:49 restarted
+-rw-------    1 root     root          74 Sep  3 13:49 state
+-rw-------    1 root     root         110 Sep  3 13:49 zones</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://www.shorewall.net/Shorewall-Lite.html">shorewall-lite官方文档</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 管理节点根据防火墙配置文件编译出来的目标脚本
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

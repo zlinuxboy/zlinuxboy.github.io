@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>a mesh vpn network - part3</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2013-11-13-a-mesh-vpn-network-3/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">a mesh vpn network - part3</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2013-11-13&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/技术"><i class="fa fa-tag">&nbsp;&nbsp;技术</i></a>
+           <!--a class="post-tag" href="/tag/技术">技术</a-->
+         
+           <a class="post-tag" href="/tag/系列"><i class="fa fa-tag">&nbsp;&nbsp;系列</i></a>
+           <!--a class="post-tag" href="/tag/系列">系列</a-->
+         
+           <a class="post-tag" href="/tag/tinc"><i class="fa fa-tag">&nbsp;&nbsp;tinc</i></a>
+           <!--a class="post-tag" href="/tag/tinc">tinc</a-->
+         
+           <a class="post-tag" href="/tag/vpn"><i class="fa fa-tag">&nbsp;&nbsp;vpn</i></a>
+           <!--a class="post-tag" href="/tag/vpn">vpn</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="toc" class="toc">
+<div id="toctitle">目录</div>
+<ul class="sectlevel2">
+<li><a href="#术语">术语</a></li>
+<li><a href="#网络情况">网络情况</a></li>
+<li><a href="#路由模式-静态路由">路由模式+静态路由</a></li>
+<li><a href="#交换模式-动态路由">交换模式+动态路由</a>
+<ul class="sectlevel2">
+<li><a href="#tinc配置">tinc配置</a></li>
+<li><a href="#动态路由">动态路由</a>
+<ul class="sectlevel3">
+<li><a href="#选择">选择</a></li>
+<li><a href="#安装">安装</a></li>
+<li><a href="#配置">配置</a></li>
+<li><a href="#常用指令">常用指令</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#路由-nat">路由+NAT</a>
+<ul class="sectlevel2">
+<li><a href="#tinc配置-2">tinc配置</a>
+<ul class="sectlevel3">
+<li><a href="#host文件">host文件</a></li>
+<li><a href="#tinc-conf">tinc.conf</a></li>
+</ul>
+</li>
+<li><a href="#防火墙">防火墙</a>
+<ul class="sectlevel3">
+<li><a href="#lab">lab</a></li>
+<li><a href="#corp">corp</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>本项目一共尝试了2种模式的3种不同组合，每种组合均有适合的应用场景：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>路由模式+静态路由</p>
+<div class="ulist">
+<ul>
+<li>
+<p>少量节点，譬如实现公司的服务器和家里笔记本两点的互联；</p>
+</li>
+<li>
+<p>大量节点，但仅限于节点之间互相通信，譬如网络游戏，游戏主机同时扮演tinc node角色；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>交换模式+动态路由</p>
+<div class="ulist">
+<ul>
+<li>
+<p>大量节点，节点内主机参与通信，同时管理员拥有节点内网的IP地址规划和控制核心路由器的权限；</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>路由模式+NAT</p>
+<div class="ulist">
+<ul>
+<li>
+<p>大量节点，节点内主机参与通信，但管理员缺乏或仅拥有少部分节点内网IP地址规划和控制核心路由器的权限；</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>总得来说，路由模式的效率更高，broadcast被阻断；switch模式更方便，无需配置节点路由。</p>
+</div>
+<div class="paragraph">
+<p>在讨论之前，先了解一下相关术语和网络情况：</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="术语">术语</h3>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">tinc节点/网关</dt>
+<dd>
+<p>tinc节点/网关指的是运行tinc的主机或无线路由器，整个系列中简称为节点。</p>
+</dd>
+<dt class="hdlist1">tinc公网节点</dt>
+<dd>
+<p>由于tinc支持nat，所以并非所有节点都有公网ip地址，对于私网tinc节点而言，它只能发起连接，而无法被直接连接。</p>
+</dd>
+<dt class="hdlist1">tinc桥接节点</dt>
+<dd>
+<p>假如两个节点之间无法直接访问，需要通过第三个节点作为跳板，则第三个节点称之为桥接节点。譬如本文中的corp节点。</p>
+</dd>
+<dt class="hdlist1">tinc节点内网</dt>
+<dd>
+<p>tinc主机下挂的内部子网；</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="网络情况">网络情况</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">节点名称</th>
+<th class="tableblock halign-left valign-top">节点性质</th>
+<th class="tableblock halign-left valign-top">互联网IP</th>
+<th class="tableblock halign-left valign-top">防火墙控制权限<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnote_1" title="View footnote.">1</a>]</sup></th>
+<th class="tableblock halign-left valign-top">防内网网</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">home</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">私网节点</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dhcp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">有</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.44.0/24</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">corp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">桥接节点</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">211.x.x.189</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.44.0/24<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lab</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">公网节点</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">221.x.x.188</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>192.168.33.0/24</p>
+</li>
+<li>
+<p>192.168.55.0/24</p>
+</li>
+<li>
+<p>192.168.66.0/24</p>
+</li>
+<li>
+<p>192.168.88.0/24</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">公网节点</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">211.173.x.42</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>10.168.1.0/24</p>
+</li>
+<li>
+<p>10.168.2.0/24</p>
+</li>
+<li>
+<p>10.1.0.0/24</p>
+</li>
+<li>
+<p>10.2.0.0/24</p>
+</li>
+<li>
+<p>10.3.0.0/16</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">私网节点</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.199.x.197</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>10.10.115.0/24</p>
+</li>
+<li>
+<p>10.10.2.0/24</p>
+</li>
+<li>
+<p>10.10.3.0/24</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>下面逐一讨论3种应用场景。</p>
+</div>
+</div>
+<div class="sect1">
+<h2 id="路由模式-静态路由">路由模式+静态路由</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>以lab和User1为例，这两个节点均有静态互联网IP，节点OS均为debian。</p>
+</div>
+<div class="paragraph">
+<p><strong>lab</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>创建一个network</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo mkdir -p /etc/tinc/mgmt/hosts</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>tinc可以同时开启多个vpn进程，每个进程的相关配置存放到一个被称为<code>network id</code>的文件夹中，本文的<code>network id</code>取名为mgmt。</p>
+</div>
+</li>
+<li>
+<p>生成本机的hosts文件</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo echo &lt;&lt;'EOF' &gt; /etc/tinc/mgmt/hosts/lab
+Address = 221.x.x.165
+
+## vpn subnet
+Subnet = 10.9.1.1/24
+
+## lab's internal subnet
+Subnet = 192.168.33.0/24
+Subnet = 192.168.66.0/24
+EOF</pre>
+</div>
+</div>
+</li>
+<li>
+<p>生成证书</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tincd -n mgmt -K4096</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>tinc将会提示公私钥的存放位置，默认情况下，私钥以独立文件方式存放在<code>/etc/tinc/&lt;network id&gt;</code>目录，公钥会附在hosts文件末尾。最终的结果如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo cat /etc/tinc/mgmt/hosts/lab
+Address = 221.xx.xx.165
+
+## vpn subnet
+Subnet = 10.9.1.1/24
+
+## lab's internal subnet
+Subnet = 192.168.33.0/24
+Subnet = 192.168.66.0/24
+
+-----BEGIN RSA PUBLIC KEY-----
+...
+-----END RSA PUBLIC KEY-----</pre>
+</div>
+</div>
+</li>
+<li>
+<p>生成tinc.conf</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo echo &lt;&lt;'EOF' &gt; /etc/tinc/mgmt/tinc.conf
+Name = lab
+AddressFamily = ipv4
+ConnectTo = User1
+Interface = tun0
+EOF</pre>
+</div>
+</div>
+</li>
+<li>
+<p>创建tinc-up脚本</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo echo &lt;&lt;'EOF' &gt; /etc/tinc/mgmt/tinc-up
+#!/bin/sh
+
+User1_VIP="10.9.1.2"
+lab_VIP="10.9.1.1"
+
+ip link set $INTERFACE up
+ip address add dev $INTERFACE ${lab_VIP}/24
+
+ip route add $User1_VIP via $lab_VIP
+
+## to User1's internal subnet
+ip route add 10.168.1.0/24 via $User1_VIP
+ip route add 10.168.9.0/24 via $User1_VIP
+ip route add 10.1.0.0/24 via $User1_VIP
+ip route add 10.2.0.0/24 via $User1_VIP
+ip route add 10.3.0.0/16 via $User1_VIP
+ip route add 192.168.200.0/24 via $User1_VIP
+EOF</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>OS需添加相关静态路由，tinc才能转发数据包；</p>
+</li>
+<li>
+<p>先添加一条点对点路由，然后再将对端网段指向对端tinc IP地址；</p>
+</li>
+</ol>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>User1</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>创建hosts文件</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo echo &lt;&lt;'EOF' &gt; /etc/tinc/mgmt/hosts/User1
+Address = 221.xx.xx.44</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre># VPN subnet
+Subnet = 10.9.1.2/24</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre># User1's internal subnet
+Subnet = 10.168.1.0/24
+Subnet = 10.168.9.0/24
+Subnet = 10.1.0.0/24
+Subnet = 10.2.0.0/24
+Subnet = 10.3.0.0/16
+Subnet = 192.168.200.0/24
+EOF</pre>
+</div>
+</div>
+</li>
+<li>
+<p>生成证书</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo tincd -n mgmt -K4096</pre>
+</div>
+</div>
+</li>
+<li>
+<p>创建tinc-up脚本</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo echo &lt;&lt;'EOF' &gt; /etc/tinc/mgmt/tinc-up
+#!/bin/sh
+
+User1_VIP="10.9.1.2"
+lab_VIP="10.9.1.1"
+
+ip link set $INTERFACE up
+ip address add dev $INTERFACE ${User1_VIP}/24
+
+ip route add $lab_VIP via $User1_VIP
+
+# to lab's real subnet
+ip route add 192.168.33.0/24 via $lab_VIP
+ip route add 192.168.55.0/24 via $lab_VIP
+ip route add 192.168.66.0/24 via $lab_VIP
+ip route add 192.168.88.0/24 via $lab_VIP
+EOF</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>至此，完成User1的配置。</p>
+</div>
+<div class="paragraph">
+<p>在启动前，需要把hosts文件分别拷贝到对方的hosts目录下：</p>
+</div>
+<div class="listingblock">
+<div class="title">User1</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo scp /etc/tinc/mgmt/hosts/User1 $lab_internet_ip:/etc/tinc/mgmt/hosts <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>$lab_internet_ip是lab节点的公网ip地址</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="title">lab</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo scp /etc/tinc/mgmt/hosts/lab $User1_internet_ip:/etc/tinc/mgmt/hosts</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>最后，分别启动lab和User1的tinc。这样就在lab和User1之间创建了一条加密隧道，非常简单。</p>
+</div>
+<div class="paragraph">
+<p>路由模式+静态路由模式的一个缺陷就是，随着节点的增多，需要手工配置的路由越来越多，维护工作量也越来越大。下面是<code>corp</code>节点的<code>tinc-up</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/tinc/mgmt/tinc-up
+#!/usr/sh
+lab_VIP   = "10.9.1.1"
+User1_VIP = "10.9.1.2"
+home_VIP  = "10.9.1.3"
+User2_VIP = "10.9.1.4"
+corp_VIP  = "10.9.1.5"
+
+ip link set $INTERFACE up
+ip address add dev $INTERFACE ${corp_VIP}/24
+
+ip route add $User1_VIP via $corp_VIP
+ip route add $lab_VIP via $corp_VIP
+ip route add $User2_VIP via $corp_VIP
+ip route add $home_VIP via $corp_VIP
+
+
+# to User1's internal subnet
+ip route add 10.168.1.0/24 via $User1_VIP
+ip route add 10.168.9.0/24 via $User1_VIP
+ip route add 10.1.0.0/24 via $User1_VIP
+ip route add 10.2.0.0/24 via $User1_VIP
+ip route add 10.3.0.0/16 via $User1_VIP
+ip route add 192.168.200.0/24 via $User1_VIP
+
+# to lab's internal subnet
+ip route add 192.168.33.0/24 via $lab_VIP
+ip route add 192.168.55.0/24 via $lab_VIP
+ip route add 192.168.66.0/24 via $lab_VIP
+ip route add 192.168.88.0/24 via $lab_VIP
+
+# to User2's internal subnet
+ip route add 10.10.115.0/24 via $User2_VIP
+ip route add 10.10.80.0/24 via $User2_VIP
+ip route add 10.10.84.0/24 via $User2_VIP
+ip route add 10.10.88.0/24 via $User2_VIP
+
+# to home's internal subnet
+ip route add 192.168.22.0/24 via $home_VIP</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置冗长，这还不算完，各节点的核心路由器也要添加相应的静态路由，它们的内网方能互相通信。这就不能忍了，之所以抛弃OpenVPN而选择tinc，不就是看到它自我标榜的<strong>easily expand</strong>吗？怎么办呢？上动态路由吧。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="交换模式-动态路由">交换模式+动态路由</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>动态路由是一个庞大的话题，因而本文就不误人子弟了，有需要的读者请自行参考cisco出的通俗读物。</p>
+</div>
+<div class="paragraph">
+<p>现在，我们需要在所有节点上跑动态路由协议，它们之间互相协商，根据链路的通断动态调整路由指向，最后形成一张临时路由表。有了这个功能，我们就不需要再手工维护路由表了。</p>
+</div>
+<div class="sect2">
+<h3 id="tinc配置">tinc配置</h3>
+<div class="paragraph">
+<p>引入动态路由后，tinc-up的配置得到极大的简化：</p>
+</div>
+<div class="listingblock">
+<div class="title">lab</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/tinc/mgmt/tinc-up
+#!/bin/sh
+ip link set $INTERFACE up
+ip address add dev $INTERFACE 10.9.1.1</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">corp</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ cat /etc/tinc/mgmt/tinc-up
+#!/bin/sh
+ip link set $INTERFACE up
+ip address add dev $INTERFACE 10.9.1.5</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然而，引入动态路由后，<code>tinc.conf</code>还需要手工添加<code>Subnet=本节点内网</code>，各节点之间才能正常的通信。解决办法是将tinc的组网模式需要从router变更为switch（在<code>tinc.conf</code>中添加<code>Mode = switch</code>），switch的性能比route要差一些，因为还要处理broadcast和arp请求等数据包，但是可以不用再费心去维护各节点的子网信息了。以一点性能损失来换取维护的便利还是值得的。</p>
+</div>
+<div class="paragraph">
+<p>全部节点的<code>tinc.conf</code>和<code>tinc-up</code>都得到简化，顿时感觉清爽了不少！</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="动态路由">动态路由</h3>
+<div class="paragraph">
+<p>动态路由包含路由平台和动态路由协议。路由平台运行在linux服务器上，而动态路由协议则运行在路由平台上，可以将运行着路由平台的服务器看作一台路由器。</p>
+</div>
+<div class="sect3">
+<h4 id="选择">选择</h4>
+<div class="paragraph">
+<p>每次选择开源软件都很痛苦，因为不知道它能活多久。譬如我之前为n2n歌功颂德，没几天，作者就说没时间维护，请关注fork，这不是坑爹吗？幸好开源的路由平台也没有太多的选择：quagga or bird。10年前曾试过zebra，稳定性实在太差，所以对quagga<sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnote_3" title="View footnote.">3</a>]</sup>也不太感冒，加上bird已经在欧洲多个Internet exchanger部署，所以就选了bird。bird目前仅支持传统的RIP、BGP、OSPF，尚不支持babel、olsr等mesh network协议，因而路由协议就选了ospf，没有选择也是一种幸福。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="安装">安装</h4>
+<div class="listingblock">
+<div class="title">debian</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo apt-get update &amp;&amp; aptitude -t squeeze-backports install bird</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">openwrt</div>
+<div class="content">
+<pre class="highlightjs highlight"><code># opkg update &amp;&amp; opkg install bird4 birdc4</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="配置">配置</h4>
+<div class="paragraph">
+<p>这里以<code>lab</code>和<code>corp</code>为例：</p>
+</div>
+<div class="paragraph">
+<p><strong>lab</strong></p>
+</div>
+<div class="listingblock">
+<div class="title">/etc/bird.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>log syslog { debug, trace, info, remote, warning, error, auth, fatal, bug };
+router id 10.9.1.1;
+debug protocols all;
+
+protocol kernel {
+        persist;                # Don't remove routes on bird shutdown
+        scan time 20;           # Scan kernel routing table every 20 seconds
+        export all;             # Default is export none
+}
+
+protocol device {
+        scan time 10;           # Scan interfaces every 10 seconds
+}
+
+protocol direct {
+        interface "eth0";
+}
+
+protocol static {
+       debug all;
+}
+
+protocol ospf {
+        import all;
+        export all;
+        area 0.0.0.0 {
+                interface "tun0" {
+                        hello 9;
+                        retransmit 6;
+                        cost 10;
+                        transmit delay 5;
+                        dead count 60;
+                        wait 10;
+                        type pointopoint;
+                };
+        };
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>corp</strong></p>
+</div>
+<div class="paragraph">
+<p>bird的配置与lab几乎一致，区别是</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>route id 10.9.1.5;
+protocol direct {
+        interface "br-lan", "wlan0";
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>protocol direct的意思是将直连路由塞入ospf中参与协商，换句话说，通告给相连路由器，我这里有<code>192.168.44.0/24</code>和      <code>192.168.77.0/24</code>这两个子网，请将目标地址属于这两个子网的数据包丢过来给我处理吧。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="常用指令">常用指令</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>启动</p>
+<div class="listingblock">
+<div class="title">debian</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo /etc/init.d/bird start</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">openwrt</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo /etc/init.d/bird4 start</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>自启动</p>
+<div class="listingblock">
+<div class="title">debian</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo /etc/init.d/bird enable</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">openwrt</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo /etc/init.d/bird4 enable</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>查看状态</p>
+<div class="paragraph">
+<p>可以通过birdc/birdc4来查看bird平台状态</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo birdc4
+BIRD 1.3.7 ready.
+bird&gt; show route
+...
+10.2.0.0/24        via 10.9.1.253 on tun0 [ospf1 Jul28] * E2 (150/10/10000) [10.9.1.2]
+10.3.0.0/16        via 10.9.1.253 on tun0 [ospf1 Jul28] * E2 (150/10/10000) [10.9.1.2]
+10.1.0.0/24        via 10.9.1.253 on tun0 [ospf1 Jul28] * E2 (150/10/10000) [10.9.1.2]
+10.10.10.0/24      via 10.9.1.253 on tun0 [ospf1 Jul28] * E2 (150/10/10000) [10.9.1.2]
+192.168.33.0/24    via 10.9.1.254 on tun0 [ospf1 Jul29] * E2 (150/10/10000) [10.9.1.1]
+192.168.66.0/24    via 10.9.1.254 on tun0 [ospf1 Jul29] * E2 (150/10/10000) [10.9.1.1]
+10.10.115.0/25     via 10.9.1.251 on tun0 [ospf1 Jul29] * E2 (150/10/10000) [10.9.1.4]
+10.10.80.0/24      via 10.9.1.251 on tun0 [ospf1 Jul29] ! E2 (150/10/10000) [10.9.1.4]
+10.10.84.0/24      via 10.9.1.251 on tun0 [ospf1 Jul29] ! E2 (150/10/10000) [10.9.1.4]
+10.10.88.0/24      via 10.9.1.251 on tun0 [ospf1 Jul29] ! E2 (150/10/10000) [10.9.1.4]
+10.168.9.0/24      via 10.9.1.253 on tun0 [ospf1 Jul28] * E2 (150/10/10000) [10.9.1.4]
+10.168.1.0/24      via 10.9.1.253 on tun0 [ospf1 Jul28] * E2 (150/10/10000) [10.9.1.4]
+bird&gt;exit</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>再用<code>ip route show</code>查看，就会发现bird已经将路由写入到kernel路由表中了，每条路由后面带有<code>proto bird</code>的后缀。需要说明的是，手工设置的路由优先级最高，bird无法覆盖。</p>
+</div>
+</li>
+<li>
+<p>log</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo tail -f /var/log/syslog | grep bird</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>动态路由的引入极大地拓展tinc的应用场景，譬如在全国拥有大量分支机构的企业，就可以利用“交换+动态路由”模式在互联网上构建一张灵活的full mesh network。当然，tinc+动态路由并非万能，需满足以下条件：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>各节点的IP地址段统一分配；</p>
+</li>
+<li>
+<p>各节点内网的核心路由器/交换机也需开启动态路由协议。</p>
+<div class="paragraph">
+<p>否则会出现：</p>
+</div>
+</li>
+<li>
+<p>节点的IP地址段冲突；</p>
+</li>
+<li>
+<p>各节点核心路由器/交换机的路由表需手工维护，工作量大；</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">关于静态路由管理</div>
+<div class="paragraph">
+<p>倘若希望lab和User1之间内部网段的互访，各自核心交换机需将对方网段指向本节点的tinc网关：</p>
+</div>
+<div class="listingblock">
+<div class="title">huawei-S5328(lab核心交换机)</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>ip route 192.168.44.0 255.255.255.0 &lt;lab lan ip&gt; desc to corp
+ip route 192.168.77.0 255.255.255.0 &lt;lab lan ip&gt; desc to corp
+
+ip route 10.1.0.0 255.255.255.0 &lt;User1 lan ip&gt; desc to User1
+ip route 10.2.0.0 255.255.255.0 &lt;User1 lan ip&gt; desc to User1
+ip route 10.3.0.0 255.255.0.0 &lt;User1 lan ip&gt; desc to User1
+ip route 10.168.1.0 255.255.255.0 &lt;User1 lan ip&gt; desc to User1
+ip route 10.168.9.0 255.255.255.0 &lt;User1 lan ip&gt; desc to User1
+ip route 192.168.200.0 255.255.255.0 &lt;User1 lan ip&gt; desc to User1
+
+ip route 10.9.0.0 255.255.0.0 &lt;lab lan ip&gt; desc to local tinc gw</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">h3c-S5500(User1节点核心交换机)</div>
+<div class="content">
+<pre class="highlightjs highlight"><code>ip route 192.168.44.0 255.255.255.0 &lt;User1 lan ip&gt; desc to corp
+ip route 192.168.77.0 255.255.255.0 &lt;User1 lan ip&gt; desc to corp
+
+ip route 192.168.33.0 255.255.255.0 &lt;User1 lan ip&gt; desc to lab
+ip route 192.168.55.0 255.255.255.0 &lt;User1 lan ip&gt; desc to lab
+ip route 192.168.66.0 255.255.255.0 &lt;User1 lan ip&gt; desc to lab
+ip route 192.168.88.0 255.255.255.0 &lt;User1 lan ip&gt; desc to lab
+ip route 10.9.0.0 255.255.0.0 &lt;User1 lan ip&gt; desc to local tinc gw</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>在本项目中，我无权改动corp、User1、User2这三个节点的网络规划，所以<strong>交换+动态路由</strong>注定只是匆匆过客。虽然它的出现给tinc带来了无限的可能，但此时我只能无情地抛弃它，重新寻找新的解决方案。不久，NAT在不经意中出现了。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="路由-nat">路由+NAT</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>前面提到希望通过NAT的方式来“解决IP地址冲突”和“缓解节点核心路由器路由表维护工作”这两个问题，其思路是：</p>
+</div>
+<div class="paragraph">
+<p>将一个B类（10.9.0.0/16）切割成多个C类网段，每个节点分配一个C类子网段，子网段的第一个可用IP地址作为该节点的接口IP地址，剩余的以1:1 NAT方式映射至节点内主机。</p>
+</div>
+<div class="paragraph">
+<p>假设vpn地址分配&amp;映射表如下：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 1. vpn地址分配&amp;映射表</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">节点名称</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vpn地址段</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">节点ip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lab</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.1.0/24</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.1.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.2.0/24</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.2.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">home</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.3.0/24</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.3.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.4.0/24</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.4.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">corp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.5.0/24</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10.9.5.1</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>下面以monitor@lab与storage@User2这两台主机之间的通信为例，monitor和storage的IP地址均为192.168.33.78，处于冲突状态，原本无法相互通信。</p>
+</div>
+<div class="paragraph">
+<p>使用1:1 NAT之后：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>lab:monitor的tinc IP地址为10.9.1.2</p>
+</li>
+<li>
+<p>User2:storage的tinc IP地址为10.9.4.97</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>当lab:monitor访问User2:storage时，数据包IP层为src ip: 192.168.33.78/dst ip: 10.9.4.97，当数据包经过lab网关时，src ip被替换成10.9.1.2，当数据包到达User2网关时，dst ip被替换成10.10.115.3，数据包IP层变成了src ip: 10.9.1.2/dst ip: 192.168.33.78，最后到达storage；</p>
+</div>
+<div class="paragraph">
+<p>当User2:storage访问lab:monitor时，数据包IP层为src ip: 192.168.33.78/dst ip: 10.9.1.2，当数据包经过User2网关时，src ip被替换成10.9.4.97，当数据包达到lab网关时，dst ip被替换成192.168.33.78，数据包IP层变成了src ip: 10.9.4.97/dst ip: 192.168.33.78，最后到达monitor；</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>在vpn中，源和目标地址均为10.9.0.0/16，充分利用了tinc的<code>auto routing</code>功能特性，实现tinc vpn的路由不需要配置路由；</p>
+</li>
+<li>
+<p>在节点内，核心路由器只需要配置一条静态路由，将10.9.0.0/16指向本节点网关的内网IP即可。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>也就是说，利用1:1 NAT技术可以实现：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>规避节点内网路由；</p>
+</li>
+<li>
+<p>规避各节点内网段的冲突问题；</p>
+</li>
+<li>
+<p>减轻节点内的核心路由器路由表的维护工作；</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>1:1 NAT需要利用到netfilter中的masq技术，通俗点来说，就是要在节点网关上利用iptables对ip进行伪装。在增加iptables/masq之前，先调整tinc的配置。</p>
+</div>
+<div class="sect2">
+<h3 id="tinc配置-2">tinc配置</h3>
+<div class="paragraph">
+<p>tinc需要修改host和tinc.conf这两个文件：</p>
+</div>
+<div class="sect3">
+<h4 id="host文件">host文件</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><em>lab</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/tinc/mgmt/hosts/lab
+------------8&lt;------------
+Address = 221.xx.xx.165 <i class="conum" data-value="1"></i><b>(1)</b>
+Subnet = 10.9.1.0/24
+------------&gt;8------------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>两个节点网关只需要有一个公网IP即可，第二个公网IP可以随便填，甚至删掉<code>address</code>这个选项都可以。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p><em>corp</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/tinc/mgmt/hosts/corp
+------------8&lt;------------
+Address = 211.xx.xx.189 <i class="conum" data-value="1"></i><b>(1)</b>
+Subnet = 10.9.5.0/24
+------------&gt;8------------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>两个节点网关只需要有一个公网IP即可，第二个公网IP可以随便填，甚至删掉<code>address</code>这个选项都可以。</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="tinc-conf">tinc.conf</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><em>lab</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/tinc/mgmt/tinc.conf
+------------8&lt;------------
+Mode = route <i class="conum" data-value="1"></i><b>(1)</b>
+------------&gt;8------------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>在route模式下，tinc会自动将目标地址为10.9.0.0/16网段丢到10.9.3.1。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p><em>corp</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo cat /etc/tinc/mgmt/tinc.conf
+------------8&lt;------------
+Mode = route <i class="conum" data-value="1"></i><b>(1)</b>
+------------&gt;8------------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>在route模式下，tinc会自动将目标地址为10.8.0.0/24网段丢到10.8.0.65。</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="防火墙">防火墙</h3>
+<div class="paragraph">
+<p>毫无疑问，需要在各节点启用iptables/netfilter，但自从用了pf后，我对iptables的语法深恶痛绝，故在linux安装了shorewall，OpenWRT则用了shorewall-lite。</p>
+</div>
+<div class="paragraph">
+<p>下面分别以lab和corp为例说明shorewall和shorewall-lite的配置，关于这两者的安装详见[shorewall]和[shorewall-lite]。</p>
+</div>
+<div class="paragraph">
+<p>shorewall主要是要理解zones，policy和rules，具体的就不献丑了，官网文档很详尽。另外，为了更好的排错，我用ulogd替代了syslog，默认情况下，netfilter利用syslog来记录，一是效率低，二是跟<code>/var/log/syslog</code>混在一起，改用ulogd后效率更高，而且可以将日志存放在单独的文件中。</p>
+</div>
+<div class="sect3">
+<h4 id="lab">lab</h4>
+<div class="paragraph">
+<p>shorewall的配置文件夹为<code>/etc/shorewall</code></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>shorewall.conf</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code># 修改以下参数：
+LOGFILE=/var/log/ulog/syslogemu.log
+LOGFORMAT=""
+# 将所有info替换成$LOG</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>params</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>INT_IF=eth0
+VPN_IF=tun0
+LOG=ULOG</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>zones</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>fw      firewall
+net     ipv4
+vpn     ipv4</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>interfaces</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>net     $INT_IF            dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0
+vpn     $VPN_IF            dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>policy</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$FW             net             ACCEPT
+$FW             vpn             ACCEPT
+vpn             $FW             ACCEPT
+net             all             DROP            $LOG
+all             all             REJECT          $LOG</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>rules</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>###############
+# net2fw
+
+# allow ssh,http,https,655,80,2003 from net to $FW
+ACCEPT          net             $FW             tcp             ssh,http,https,2003
+ACCEPT          net             $FW             udp,tcp         655
+
+###############
+# vpn2net
+
+# allow ssh,http from USER1 to LAB
+ACCEPT     vpn:10.9.2.0/24    net:192.168.33.0/24,192.168.66.0/24  tcp     ssh,http
+
+# allow all from CORP to LAB
+ACCEPT          vpn:10.9.5.0/24        net:192.168.33.0/24     all
+ACCEPT          vpn:10.9.5.0/24        net:192.168.55.0/24     all
+ACCEPT          vpn:10.9.5.0/24        net:192.168.66.0/24     all
+ACCEPT          vpn:10.9.5.0/24        net:192.168.88.0/24     all
+ACCEPT          vpn:10.9.5.0/24        net:192.168.100.0/24    all
+ACCEPT          vpn:10.9.5.0/24        net:172.16.33.0/24      all
+
+###############
+# net2vpn
+
+ACCEPT  net:192.168.33.0/24     vpn     all
+ACCEPT  net:192.168.66.0/24     vpn     all
+ACCEPT  net:172.16.33.0/24      vpn     all
+
+###############
+# all2all
+
+Ping(ACCEPT)   all             all</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>nat</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>10.9.2.2       tun0            192.168.33.78     No               No
+10.9.2.3       tun0            192.168.33.79     No               No
+10.9.2.4       tun0            192.168.33.80     No               No
+10.9.2.5       tun0            192.168.33.81     No               No
+10.9.2.6       tun0            192.168.66.21      No               No
+10.9.2.7       tun0            192.168.66.22      No               No
+10.9.2.8       tun0            192.168.66.23      No               No
+10.9.2.9       tun0            192.168.55.120     No               No
+10.9.2.10      tun0            192.168.88.120     No               No</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>最后重启shorewall</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo shorewall check
+$ sudo shorewall restart
+$ sudo /etc/init.d/ulogd start</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="corp">corp</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><em>params</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>WAN_IF=eth0
+LAN_IF=br-lan
+OA_IF=br-oa
+VPN_IF=tun0
+LOG=ULOG</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>zones</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>fw      firewall
+oa      ipv4
+lan     ipv4
+wan     ipv4
+vpn     ipv4</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>interfaces</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>wan             $WAN_IF                 dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0
+lan             $LAN_IF                 tcpflags,logmartians,nosmurfs,sourceroute=0
+vpn             $VPN_IF                 tcpflags,logmartians,nosmurfs,sourceroute=0
+oa              $OA_IF                  tcpflags,logmartians,nosmurfs,sourceroute=0 ```</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>policy</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$FW     all     ACCEPT
+lan     all     ACCEPT
+wan     all     DROP            $LOG    10/sec:40
+all     all     REJECT</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>rules</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>SECTION NEW
+Invalid(DROP)   wan             all
+
+###############
+# vpn2fw
+
+Ping(ACCEPT)    vpn             $FW
+SSH(ACCEPT)     vpn             $FW
+HTTP(ACCEPT)    vpn             $FW
+
+###############
+# wan2fw
+
+ACCEPT          wan             $FW     tcp     655
+ACCEPT          wan             $FW     udp     655
+SSH(ACCEPT)     wan             $FW</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>masq</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$OA_IF          192.168.44.0/24 10.199.27.17
+$VPN_IF         192.168.44.0/24 10.9.5.1
+$WAN_IF         192.168.44.0/24 192.168.7.21</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><em>nat</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>10.9.5.2       tun0   192.168.44.3 No   No
+10.9.5.3       tun0   192.168.44.5 No   No
+10.9.5.4       tun0   192.168.44.14 No   No</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+因为shorewall-lite由管理节点控制，所以请使用管理节点来管理防火墙节点的配置，包括更新及重启shorewall-lite进程，详情请参阅<a href="{uri-shorewall-lite}">shorewall-lite</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>至此，tinc的三种部署方式均做了详细的介绍，读者可以根据自己的情况任选其一。在使用的过程中，需要注意些什么问题呢？详见<a href="/2013-11-14-a-mesh-vpn-network-4/">tinc的日常</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnote_1">
+<a href="#_footnoteref_1">1</a>. 互联网IP
+</div>
+<div class="footnote" id="_footnote_2">
+<a href="#_footnoteref_2">2</a>. 是的，你没有看错，跟home的内网网段相同
+</div>
+<div class="footnote" id="_footnote_3">
+<a href="#_footnoteref_3">3</a>. quagga是zebra的一个fork版本
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

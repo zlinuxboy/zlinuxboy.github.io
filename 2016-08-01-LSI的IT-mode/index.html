@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>LSI的IT mode</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-08-01-LSI%E7%9A%84IT-mode/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">LSI的IT mode</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-08-01&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/LSI"><i class="fa fa-tag">&nbsp;&nbsp;LSI</i></a>
+           <!--a class="post-tag" href="/tag/LSI">LSI</a-->
+         
+           <a class="post-tag" href="/tag/存储"><i class="fa fa-tag">&nbsp;&nbsp;存储</i></a>
+           <!--a class="post-tag" href="/tag/存储">存储</a-->
+         
+           <a class="post-tag" href="/tag/硬件"><i class="fa fa-tag">&nbsp;&nbsp;硬件</i></a>
+           <!--a class="post-tag" href="/tag/硬件">硬件</a-->
+         
+           <a class="post-tag" href="/tag/技术"><i class="fa fa-tag">&nbsp;&nbsp;技术</i></a>
+           <!--a class="post-tag" href="/tag/技术">技术</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>华为的RH2285 v1的raid卡使用的是LSI 1068E芯片，出厂的默认firmware为IR mode，支持raid模式。现在需要将这张卡的firmware刷成IT mode。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="创建可启动的iso镜像">创建可启动的iso镜像</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lsi的刷机工具可运行在dos、windows和linux之下，显然，创建dos启动盘是最简便。网上有很多教程是针对创建freedos的u盘启动盘，但是采用u盘启动有一个问题：那就是需要到机房将u盘插到服务器中。我懒，所以想了一个招：如果能创建一个freedos的cd iso，然后利用华为ipmi所提供的虚拟安装介质功能，那就可以远程升级了。于是，我google到<a href="http://crashmag.net/creating-a-bootable-firmware-bios-update-iso-for-your-supermicro-motherboard">一篇文档</a></p>
+</div>
+<div class="paragraph">
+<p>步骤是：</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>下载并解压<a href="http://www.fdos.org/bootdisks/ISO/FDOEMCD.builder.zip">freedos oem disc builder assistant(简称FDOEMCD.builder)</a></p>
+<div class="paragraph">
+<p>使用FDOEMCD.builder可以创建iso，解压后得到的是FDOEMCD这个目录。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+该版本可运行在32位windows操作系统，如果是64位的操作系统，需要使用第三方提供的mkisofs.exe来替换掉原版。
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>下载<a href="http://smithii.com/files/cdrtools-latest.zip">64位mkisofs.exe</a>并覆盖原版</p>
+<div class="paragraph">
+<p>该二进制文件包含在cdrtools中，压缩包加压后，将里面的mkisofs.exe和cygwin1.dll拷贝到FDOEMCD目录中，并覆盖mkisofs.exe。</p>
+</div>
+</li>
+<li>
+<p>下载lsi it mode的firmware和bios</p>
+<div class="paragraph">
+<p>使用了lsi 1068e芯片的lsi原厂的sas卡型号为3081ER，通过官网可以找到该卡最新的firmware下载，注：lsi已被avagotech收购。</p>
+</div>
+<div class="paragraph">
+<p>将其中的3081ETB3.fw、mptsas.rom和sasflash.exe拷贝到FDOEMCD\CDROOT下</p>
+</div>
+</li>
+<li>
+<p>双机运行makeiso.bat，即可生成一个fdoem.iso的镜像文件。</p>
+<div class="paragraph">
+<p>假如主板支持uefi，<a href="http://blog.widodh.nl/2014/10/flash-lsi-2308-to-it-mode-on-a-supermicro-x10sl7-f-mainboard/">那情况就更简单一些</a></p>
+</div>
+<div class="paragraph">
+<p>我尚未深入了解uefi，但是根据文中的描述来看，uefi自带启动功能，该文所创建的iso只是包含了需要刷机所用的sasflash、firmware和bios而已。</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="刷机">刷机</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>将之前创建的iso镜像文件插入华为ipmi虚拟媒体的光驱中。</p>
+<div class="paragraph">
+<p><span class="image"><img src="http://ofugtm1dt.bkt.clouddn.com/2016-08-01-华为ipmi虚拟媒体.png" alt="华为ipmi虚拟媒体"></span></p>
+</div>
+</li>
+<li>
+<p>重启华为服务器，并在bios中设置启动的顺序。接着就可以启动到freedos中了。</p>
+</li>
+<li>
+<p>在命令行提示符下键入<code>C:\sasflash.exe -o -f 3081etb3.fw -b mptsas.rom</code>，根据提示完成刷机，过程比较简单。</p>
+</li>
+<li>
+<p>有些教程建议将sas的<code>boot support</code>设成<code>disabled</code>，但是设置为<code>disabled</code>之后，bios无法找不到硬盘，然而奇怪的是，仍然可以使用proxmox的iso完成系统安装，只是重启之后仍然找不到硬盘，于是将<code>boot support</code>改回<code>both by os or bios</code>，最后可以成功引导到proxmox。</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

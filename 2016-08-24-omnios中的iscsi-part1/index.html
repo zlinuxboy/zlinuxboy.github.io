@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>OmniOS中的iSCSI-part1</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/asciidoctor-default.css">
+  <link rel="stylesheet" href="/css/googlecode.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/scripts/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <link rel="canonical" href="https://blog.zlinuxboy.com/2016-08-24-omnios%E4%B8%AD%E7%9A%84iscsi-part1/">
+  <link rel="alternate" type="application/rss+xml" title="zlinuxboy的博客" href="https://blog.zlinuxboy.com/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">zlinuxboy的博客</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">OmniOS中的iSCSI-part1</h1>
+    <div class="post-meta">
+        <span class="post-date" style="display: inline-block;">2016-08-24&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>
+         <!-- tags -->
+         
+           <a class="post-tag" href="/tag/OmniOS"><i class="fa fa-tag">&nbsp;&nbsp;OmniOS</i></a>
+           <!--a class="post-tag" href="/tag/OmniOS">OmniOS</a-->
+         
+           <a class="post-tag" href="/tag/iscsi"><i class="fa fa-tag">&nbsp;&nbsp;iscsi</i></a>
+           <!--a class="post-tag" href="/tag/iscsi">iscsi</a-->
+         
+           <a class="post-tag" href="/tag/storage"><i class="fa fa-tag">&nbsp;&nbsp;storage</i></a>
+           <!--a class="post-tag" href="/tag/storage">storage</a-->
+         
+       </span>
+     </div>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>iscsi是Internet SCSI的缩写，是一种存储通信协议。它将SCSI协议封装在传统的TCP/IP协议中。可以实现一台主机通过IP网络远程访问另一台主机所提供的存储设备，就像访问本地块设备一样。</p>
+</div>
+<div class="paragraph">
+<p>除了nfs外，OmniOS还提供了iscsi和fc两种SAN，而且都是免费的，这也是它吸引广大用户的原因之一。从iscsi稳定性这个角度来说，FreeNAS9还是比不上OmniOS，linux就更不用说了。所以目前在iscsi target的选择上，OmniOS是当之无愧的首选。</p>
+</div>
+<div class="paragraph">
+<p>当然，FreeNAS9也有它的过人之处，它提供了一个叫VAAI的插件。系统管理员可以在VMware vShpere/Client图形界面中轻易地创建和配置iscsi target。这一切都是通过VAAI来实现的，系统管理员在下达指令的时候，VMware vSphere通过VAAI与FreeNAS实现联动，由FreeNAS自动在后台完成iscsi target的创建和配置工作，非常方便。OmniOS/napp-it还没有这个功能。</p>
+</div>
+<div class="paragraph">
+<p>未来鹿死谁手就很难说，因为FreeBSD10重写了iscsi target，并将其作为内核模块发布，稳定性方面应该有提升。FreeNAS10也即将发布，再加上VAAI插件的加持，FreeNAS10在iscsi target存储方面更具吸引力。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="术语">术语</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">COMSTAR</dt>
+<dd>
+<p>COmmon Multiprotocol SCSI TARget的缩写。是solaris中的一个软件框架，它可以将solaris*转换成一个SCSI target设备。initiator可通过存储网络访问SCSI target设备。支持的存储协议为 iSCSI、FC、iSER 和 SRP，本文仅涉及iSCSI。</p>
+</dd>
+<dt class="hdlist1">iscsi target</dt>
+<dd>
+<p>iscsi target设备，可以看作是具备网络通信功能的硬盘驱动器；</p>
+</dd>
+<dt class="hdlist1">iscsi initator</dt>
+<dd>
+<p>iscsi 启动器，向iscsi target设备发起scsi请求，可以看作是客户端。</p>
+</dd>
+<dt class="hdlist1">iqn</dt>
+<dd>
+<p>iqn是iscsi网络中的设备的唯一标识符。当初始化iscsi target或initiator时，系统将自动为它们分配一个唯一是iqn。</p>
+</dd>
+<dt class="hdlist1">LU</dt>
+<dd>
+<p>Logical Unit的缩写，逻辑单元，是iscsi存储系统中实际被读写的实体。每个LU都有一个唯一的Logical Unit Number(LUN)。</p>
+</dd>
+<dt class="hdlist1">host group</dt>
+<dd>
+<p>指的是被允许访问相同LUs的一组initiators的名称。</p>
+</dd>
+<dt class="hdlist1">target group</dt>
+<dd>
+<p>指的是将同一组LUs导出到同一组host group的一组target的名称。</p>
+</dd>
+<dt class="hdlist1">view</dt>
+<dd>
+<p>view是粘合剂，负责将LU、initiator/host group、target/target group关联起来。当来自host group的initiator登录到包含在target group中的target端口时，LU可被访问。</p>
+</dd>
+<dt class="hdlist1">target portal group</dt>
+<dd>
+<p>确定一组iSCSI targets将侦听哪些接口的<code>IP地址:TCP端口</code>(又名network portal)列表。换句话说，它是network portals的集合，通过与view的配合可以灵活的控制target和initiator的关系。</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="网络拓扑">网络拓扑</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="硬件信息">硬件信息</h3>
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 1. 主机角色</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">角色</th>
+<th class="tableblock halign-left valign-top">主机名</th>
+<th class="tableblock halign-left valign-top">ip地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">iscsi target</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">storage1.jklab.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.55.120</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.56.120</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.57.120</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="6"><p class="tableblock">iscsi initiator</p></td>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">pmx2.jklab.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.55.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.56.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.57.232</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" rowspan="3"><p class="tableblock">pmx3.jklab.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.55.233</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.56.233</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192.168.57.233</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="网络拓扑-2">网络拓扑</h3>
+<div class="paragraph">
+<p>iscsi各组件关系图如下：</p>
+</div>
+<div class="paragraph">
+<p>LU是initiator最终读写数据的地方，然而initiator连接的是target，那么LU和target是如何关联的呢？</p>
+</div>
+<div class="paragraph">
+<p>首先创建一个LU，然后创建一个target和target group，接着将target添加到该target group中，随后创建一个view，将target group和LU关联起来，实现LU和target的结合。</p>
+</div>
+<div class="paragraph">
+<p>在生产环境中建议每个LU、Target、Target Group、View是一一对应关系，便于管理，减少数据冲突风险。当然，如果是构建cluster的话请参考OmniOS中的iscsi-part2。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="iscsi-target的配置">iscsi target的配置</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="启用stmf服务">启用stmf服务</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>安装相关软件包</p>
+<div class="paragraph">
+<p>illumos将常用的存储功能（包括iscsi、fc等）打包成一个软件包：<code>storage-server</code>，所以在配置iscsi target之前，需要确保该软件包已安装。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec pkg info -r storage-server
+          Name: storage-server
+       Summary:
+         State: Not installed (Obsolete)
+     Publisher: OmniOS
+       Version: 0.1
+        Branch: 0.133
+Packaging Date: June  3, 2016 03:22:19 AM
+          Size: 1.75 kB
+          FMRI: pkg://OmniOS/storage-server@0.1-0.133:20160603T032219Z
+
+          Name: storage/storage-server
+       Summary:
+         State: Not installed (Obsolete)
+     Publisher: OmniOS
+       Version: 0.1
+        Branch: 0.151018
+Packaging Date: June  3, 2016 03:22:19 AM
+          Size: 1.75 kB
+          FMRI: pkg://OmniOS/storage/storage-server@0.1-0.151018:20160603T032219Z</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>OmniOS repo提供了两个同名的storage-server软件包，这里应安装第二个。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec pkg install storage/storage-server</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>启动stmf服务</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec svcadm enable svc:/system/stmf:default</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="创建logical-unit-简称lu">创建Logical Unit(简称LU)</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>创建一个zfs卷</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec zfs create -V 50G tank2/zvol001
+$ pfexec zfs list tank2/iscsi-pmx
+NAME              USED  AVAIL  REFER  MOUNTPOINT
+tank2/iscsi-vol001  51.6G  2.62T  18.1G  - <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>zfs卷这种数据集跟zfs fs不一样，它没有mountpoint。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>在zfs卷上创建LU</p>
+<div class="paragraph">
+<p>创建完zfs卷后，还需要在该卷的上创建LU。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec sbdadm create-lu /dev/zvol/rdsk/tank2/zvol001
+GUID                    DATA SIZE           SOURCE
+--------------------------------  -------------------  ----------------
+600144F039A72F5A000057E111300001  53687091200          /dev/zvol/rdsk/tank2/zvol001</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查LU的状态</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm list-lu -v
+LU Name: 600144F039A72F5A000057E111300001
+    Operational Status: Online
+    Provider Name     : sbd
+    Alias             : /dev/zvol/rdsk/tank2/zvol001
+    View Entry Count  : 1
+    Data File         : /dev/zvol/rdsk/tank2/zvol001
+    Meta File         : not set
+    Size              : 53687091200
+    Block Size        : 512
+    Management URL    : not set
+    Vendor ID         : SUN
+    Product ID        : COMSTAR
+    Serial Num        : not set
+    Write Protect     : Disabled
+    Writeback Cache   : Disabled
+    Access State      : Active</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="创建iscsi-target">创建iscsi target</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>启动iscsi target服务</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec  svcadm enable svc:/network/iscsi/target:default</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查iscsi target服务的状态</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm list-state
+Operational Status: online
+Config Status     : initialized
+ALUA Status       : disabled   <i class="conum" data-value="1"></i><b>(1)</b>
+ALUA Node         : 0</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>假如ALUA Status为enabled，则stmf允许一个LUN同时以fc target和iscsi target的方式呈现。以多种协议发布同一个LUN的行为很危险，这意味着多台initator可同时对该LUN进行写操作，导致数据损毁。需要确保它处于disabled状态。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>创建一个iscsi target</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec itadm create-target
+Target iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 successfully created <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>创建target时将自动生成一个iqn</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>将iscsi target置于Offline状态</p>
+<div class="paragraph">
+<p>后面还需要将iSCSI target添加到target group中。这个动作要求iSCSI target处于offline状态。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm offline-target iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>显示iscsi target信息</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec itadm list-target -v
+TARGET NAME                                                  STATE    SESSIONS
+iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 offline   0
+        alias:                  -
+        auth:                   none (defaults)
+        targetchapuser:         -
+        targetchapsecret:       unset
+        tpg-tags:               default</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="lu映射">LU映射</h3>
+<div class="paragraph">
+<p>创建完LU和target之后，还不能向initiator提供连接服务，还需要做LU映射(mapping)，有两种映射方式：</p>
+</div>
+<div class="sect3">
+<h4 id="简单映射-simple-mapping">简单映射(simple mapping)</h4>
+<div class="paragraph">
+<p>将LU在所有network portals上暴露给全部的initiator，该方式只需要一条命令即可完成配置，非常方便，但也会带来安全隐患。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>查找LU的guid-number</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm list-lu
+LU Name: 600144F039A72F5A000057E111300001 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>LU Name就是guid-number</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>开启简单映射</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm add-view 600144F039A72F5A000057E111300001</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>自此，所有的initiator就可以访问该target了。</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="选择性映射-selective-mapping">选择性映射(selective mapping)</h4>
+<div class="paragraph">
+<p>该方式允许用户设置特定的initiator访问LU，步骤如下：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>创建一个target group</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm create-tg tg-zvol001</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>将target添加到target group中</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm add-tg-member -g tg-zvol001
+iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>在target group中，target以iqn的样式存在</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>检查target group的配置</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm list-tg -v
+Target Group: tg-zvol001
+Member: iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>创建一个host group</p>
+<div class="paragraph">
+<p>host group存在的意义是为了简化管理。譬如希望设置多台initator均能访问同一个LU的时候，就可以将这几台initator放在同一个host group中。在本文中，pmx1、pmx2、pmx3均能访问 <code>t-zvol001</code> 这个target，所以在这里定义了一个名为 <code>hg-proxmox</code> 的host group。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ pfexec stmfadm create-hg hg-proxmox</pre>
+</div>
+</div>
+</li>
+<li>
+<p>将iscsi initator添加到host group</p>
+<div class="paragraph">
+<p>在host group中，iscsi initator是以iqn的方式存在的。所以需要先找出iscsi initiator的iqn，才能添加至host group中。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm add-hg-member -g pmx2 iqn.1986-03.com.sun:01:c0ca4ce904ff.4f45b957</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>创建view</p>
+<div class="paragraph">
+<p>view是配置的关键，它负责将target group、host group、LU捆绑在一起。如果一个链接不能满足前面两个条件，那么iscsi initiator将无法访问LU。另外，当你配置多台iscsi initiator可同时访问同一个LU的情况下，需要特别小心，否则容易引起数据损毁。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec stmfadm add-view -t tg-zvol001 -h hg-proxmox</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+允许多台initiator访问同一个LU的时候，应考虑将多台initiator构建群集，由群集软件来控制在特定时间点由哪台initiator读写该LU
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>新建一个target portal group</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec itadm create-tpg igb0 192.168.56.120 <i class="conum" data-value="1"></i><b>(1)</b>
+$ pfexec itadm create-tpg igb1 192.168.57.120 <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>默认的TCP端口为3260</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>为了方便管理，建议tpg的名称与网卡名称一致</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>配置iscsi target</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec modify-target -t igb0, igb1 iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>此处iqn属于前面所创建的iscsi target</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>检查target portal group</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec itadm list-tpg -v
+TARGET PORTAL GROUP           PORTAL COUNT
+igb1                          1
+    portals:    192.168.57.120:3260
+igb0                          1
+    portals:    192.168.56.120:3260</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>启用静态发现模式(static mode discovery)</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ pfexec devfsadm -i iscsi</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>至此完成了iscsi target的全部配置，接下来是iscsi initiator的配置。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="iscsi-initiator的配置">iscsi initiator的配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>iscsi initiator可以理解为客户端，主流OS都有各自的实现。</p>
+</div>
+<div class="sect2">
+<h3 id="linux">linux</h3>
+<div class="paragraph">
+<p>本文中所用的linux OS为proxmox，基于debian的虚拟化平台。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>安装open-iscsi软件包</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo apt-get update &amp;&amp; sudo apt-get install open-iscsi</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>配置iscsid.conf</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo /etc/iscsi/iscsid.conf
+------------8&lt;-------------
+node.startup = automatic <i class="conum" data-value="1"></i><b>(1)</b>
+node.session.timeo.replacement_timeout = 15 <i class="conum" data-value="2"></i><b>(2)</b>
+------------&gt;8-------------</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>默认情况下需手动登陆iscsi target，建议设置为<code>automatic</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>默认值为120，建议调小该数值。</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>启用<code>iscsid</code>守护进程</p>
+<div class="paragraph">
+<p>默认情况下，安装完open-iscsi将自动启动iscsid守护进程，前面修改了<code>iscsid.conf</code>，所以需要重启<code>iscsid</code>方能生效。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo systemctl restart open-iscsi</pre>
+</div>
+</div>
+</li>
+<li>
+<p>扫描iscsi target</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo iscsiadm --mode discovery --type sendtargets --portal 192.168.56.120 --discover
+192.168.56.120:3260,2 iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>登陆iscsi target</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo iscsiadm --mode node --targetname iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 --portal 192.168.56.120:3260 --login</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>检查结果</p>
+<div class="paragraph">
+<p>如果成功登陆，iscsi session结果如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo iscsiadm --mode session -P0
+tcp: [1] 192.168.56.120:3260,2 iqn.2010-08.org.illumos:02:35d2f21f-2385-6274-b267-8d325db86491 (non-flash)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在initiator中最终看到的iscsi target是一个块设备：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sda  0:0:0:0    disk ATA      GB0250EAFYK      HPG2 sata
+sdb  1:0:0:0    disk ATA      GB0250EAFJF      HPGB sata
+sdc  7:0:0:0    disk SUN      COMSTAR          1.0  iscsi <i class="conum" data-value="1"></i><b>(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>/dev/sdc为新增的iscsi target设备</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>初始化硬盘</p>
+<div class="paragraph">
+<p>target在initiator中是以块设备的形式存在，在使用之前需初始化，包括格式化和准备文件系统。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo parted -a optimal /dev/sdc mklabel gpt
+$ sudo parted /dev/sdc
+(parted) mkpart primary '0%' '100%' <i class="conum" data-value="1"></i><b>(1)</b>
+(parted&gt; quit
+$ sudo mkfs.xfs /dev/sdc1
+$ sudo mkdir /mnt/iscsi-storage
+$ sudo mount -t xfs /dev/sdc1 /mnt/iscsi-storage</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>(parted)表示交互模式</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>修改<code>fstab</code></p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo vim /etc/fstab
+---------8&lt;-----------
+/dev/sdc1 /mnt/iscsi-storage       ext4           defaults        0         0
+---------&gt;8-----------</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>维护的时候，需要手工退出iscsi target，操作步骤如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ sudo umount /mnt/storage  <i class="conum" data-value="1"></i><b>(1)</b>
+$ sudo iscsiadm --mode node --targetname --portal 192.168.56.120 --logout <i class="conum" data-value="2"></i><b>(2)</b>
+$ sudo iscsiadm --mode node --targetname --portal 192.168.56.120 --op delete <i class="conum" data-value="3"></i><b>(3)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>umount文件系统</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>注销iscsi target登陆</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>删除target的会话</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>检查session</p>
+<div class="listingblock">
+<div class="content">
+<pre>$ sudo iscsiadm --mode session --print 0</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>至此完成linux iscsi initiator的配置。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="windows">windows</h3>
+<div class="paragraph">
+<p>未完，待续。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="性能测试">性能测试</h3>
+<div class="paragraph">
+<p>可以参考proxmox的link:(<a href="https://pve.proxmox.com/wiki/Iscsi/tests)">wiki</a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="参考">参考</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://www.itfromallangles.com/2012/02/adventures-in-zfs-configuring-iscsi-targets/" class="bare">https://www.itfromallangles.com/2012/02/adventures-in-zfs-configuring-iscsi-targets/</a></p>
+</li>
+<li>
+<p><a href="https://www.highlnk.com/2014/04/zfs-iscsi-configuration/" class="bare">https://www.highlnk.com/2014/04/zfs-iscsi-configuration/</a></p>
+</li>
+<li>
+<p><a href="https://www.highlnk.com/2015/01/zfs-iscsi-lun-mpio-setup-windows-server/" class="bare">https://www.highlnk.com/2015/01/zfs-iscsi-lun-mpio-setup-windows-server/</a></p>
+</li>
+<li>
+<p><a href="http://docs.oracle.com/cd/E26502_01/html/E29006/toc.html">Oracle Solaris 11.1 Administration: Devices and File Systems</a></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+  </div>
+
+  <!-- related_posts-->
+  
+  <div>
+    <h4>相关阅读</h4>
+    <ul class="related-post">
+      
+        <li>
+          <a herf="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">
+            <span class="post-title">pfsense2.4和2.5的roadmap</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-05-02
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-05-02-pfsense2.4%E5%92%8C2.5%E7%9A%84roadmap/">pfsense2.4和2.5的roadmap</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-05-02
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">
+            <span class="post-title">pfsense中的tmux和mosh</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-25
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-25-pfsense%E4%B8%AD%E7%9A%84tmux%E5%92%8Cmosh/">pfsense中的tmux和mosh</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-25
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+        <li>
+          <a herf="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="post-title">babun更新慢的问题</span>
+            &nbsp;&nbsp;
+            <span class="post-date">
+              2017-03-21
+            </span>
+          </a>
+          <!--div>
+            <span class="post-title">
+              <a href="/2017-03-21-babun%E6%9B%B4%E6%96%B0%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">babun更新慢的问题</a>
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <aside class="post-date">
+              2017-03-21
+            </aside>
+          </div-->
+          <div style="clear: both;"></div>
+        </li>
+      
+    </ul>
+  </div>
+  
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <p>人若无志，与鲍鱼何异</p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+              <i class="fa fa-github"></i> <a href="https://github.com/zlinuxboy">zlinuxboy</a>
+          </li>
+          
+
+          <li>
+              <i class="fa fa-rss"></i> <a href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li><a href="mailto:zlinuxboy@outlook.com">zlinuxboy@outlook.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
